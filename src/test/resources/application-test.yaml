@@ -1,0 +1,24 @@
+springdoc:
+  version: '@springdoc.version@'
+  api-docs:
+    path: /form-modeler/v3/api-docs
+
+keycloak:
+  issuer-uri: https://localhost:8080/auth/realms/techsophy-platform
+gateway:
+  uri: http://localhost:8080/api
+
+database:
+  url: mongodb://localhost:27020
+  name: techsophy-platform
+
+default:
+  pagelimit: 5
+
+elastic:
+  enable: true
+  source: true
+
+mongock:
+  enabled: false
+

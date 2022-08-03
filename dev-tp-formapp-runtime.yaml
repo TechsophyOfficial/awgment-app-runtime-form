@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: runtime-form-app
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: runtime-form-app
+  template:
+    metadata:
+      labels:
+        name: runtime-form-app
+    spec:
+      containers:
+      - image: tsdevopsteam/platform:runtime-form-app$BUILD_NUMBER
+        name: runtime-form-app
+        envFrom:
+        - configMapRef:
+            name: runtimeform-env
+        ports:
+        - containerPort: 8080
+      imagePullSecrets:
+      - name: ts-platform
+
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: runtime-form-app
+  namespace: dev
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+  selector:
+    name: runtime-form-app
