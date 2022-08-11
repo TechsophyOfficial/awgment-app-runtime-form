@@ -68,7 +68,7 @@ public class ValidationCheckServiceImpl
                     }
                 }
             }
-            if(fieldsMap.get(key).getOrDefault(REQUIRED,false).equals(Boolean.TRUE)&&(!data.containsKey(key)||data.get(key)==null))
+            if(fieldsMap.get(key).getOrDefault(REQUIRED,false).equals(Boolean.TRUE)&&(!data.containsKey(key)||data.get(key)==null||String.valueOf(data.get(key)).isBlank()))
             {
                 return List.of(String.valueOf(0),key);
             }
