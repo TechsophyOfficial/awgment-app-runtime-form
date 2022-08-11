@@ -73,7 +73,9 @@ dependencies {
     implementation 'io.github.resilience4j:resilience4j-spring-boot2:1.7.1'
 
     runtimeOnly 'org.springframework.cloud:spring-cloud-dependencies:2021.0.1'
-
+    implementation "io.mongock:mongock:5.0.32"
+    implementation "io.mongock:mongock-springboot:5.0.32"
+    implementation "io.mongock:mongodb-springdata-v3-driver:5.0.32"
     implementation 'com.techsophy:id-generator:1.0.0@jar'
     implementation 'com.techsophy:multitenancy-mongo:1.0.0@jar'
     implementation 'org.apache.commons:commons-lang3:3.12.0'

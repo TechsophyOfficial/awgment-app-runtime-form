@@ -8,8 +8,15 @@ public class FormModelerConstants
 {
     //DatabaseChangeLog
     public static final String ORDER_1="1";
+    public static final String ORDER_2="2";
+    public static final String ORDER_3="3";
+    public static final String ORDER_4="4";
     public static final String SYSTEM_VERSION_1="1";
-    public static final String TP_APP_RUNTIME_FORM="tp-app-runtime-form";
+    public static final String ADD_USER_FORM= "add-user-form01";
+    public static final String EDIT_GROUP_FORM= "edit-group-form01";
+    public static final String ADD_GROUP_FORM= "add-group-form01";
+    public static final String EDIT_USER_FORM= "edit-user-form01";
+    public static final String FORM_CONTENT ="TP_ADD_USER.json";
 
     //LoggingHandler
     public static final String CONTROLLER_CLASS_PATH = "execution(* com.techsophy.tsf.runtime.form.controller..*(..))";
@@ -114,6 +121,9 @@ public class FormModelerConstants
 
     /*FormDefinitionConstants*/
     public static final String TP_FORM_DEFINITION_COLLECTION = "tp_runtime_form_definition";
+
+    /*AddUserConstants*/
+    public static final String AWGMENT_ADD_USER = "awgment_add_user";
 
     /*FormDefinitionCustomRepositoryConstants*/
     public static final String FORM_ID ="formId";
