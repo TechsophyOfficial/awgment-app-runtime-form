@@ -4,6 +4,8 @@ import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -20,6 +22,7 @@ public class ValidationCheckServiceImpl
 {
     private GlobalMessageSource globalMessageSource;
     private MongoTemplate mongoTemplate;
+    private static final Logger logger = LoggerFactory.getLogger(ValidationCheckServiceImpl.class);
 
     public List<String> allFieldsValidations(LinkedHashMap<String,LinkedHashMap<String,Object>> fieldsMap,Map<String, Object> data,String formId,String id)
     {
@@ -68,8 +71,10 @@ public class ValidationCheckServiceImpl
                     }
                 }
             }
-            if(fieldsMap.get(key).getOrDefault(REQUIRED,false).equals(Boolean.TRUE)&&(!data.containsKey(key)||data.get(key)==null||String.valueOf(data.get(key)).isBlank()))
+            if(fieldsMap.get(key).getOrDefault(REQUIRED,false).equals(Boolean.TRUE)&&(!data.containsKey(key)||data.get(key)==null||StringUtils.isEmpty(String.valueOf(data.get(key)))
+                    ||StringUtils.isBlank(String.valueOf(data.get(key)))))
             {
+                logger.info("field "+key+" is empty "+StringUtils.isEmpty(String.valueOf(data.get(key))));
                 return List.of(String.valueOf(0),key);
             }
             if(fieldsMap.get(key).get(MIN_LENGTH)!=null&&!String.valueOf(fieldsMap.get(key).get(MIN_LENGTH)).isBlank())
