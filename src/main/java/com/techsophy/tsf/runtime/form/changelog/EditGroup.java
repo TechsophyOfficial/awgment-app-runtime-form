@@ -1,35 +1,29 @@
 package com.techsophy.tsf.runtime.form.changelog;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoDatabase;
 import com.nimbusds.jose.shaded.json.parser.ParseException;
 import com.techsophy.tsf.runtime.form.entity.FormDefinition;
 import io.mongock.api.annotations.ChangeUnit;
 import io.mongock.api.annotations.Execution;
 import io.mongock.api.annotations.RollbackExecution;
 import lombok.AllArgsConstructor;
-import org.bson.Document;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.SYSTEM_VERSION_1;
 
 @ChangeUnit(id=EDIT_GROUP_FORM, order =ORDER_4,systemVersion=SYSTEM_VERSION_1)
 @AllArgsConstructor(onConstructor_ = {@Autowired})
+@Slf4j
 public class EditGroup {
     private  final MongoTemplate template;
     private final ObjectMapper objectMapper;
-    public static  int count =0;
     @Execution
     public void changeSetFormDefinition() throws IOException, ParseException {
         String  path ="TP_EDIT_GROUP.json";
@@ -45,6 +39,6 @@ public class EditGroup {
     @RollbackExecution
     public void rollback()
     {
-
+        log.info(EXCEUTION_IS_FAILED);
     }
 }
