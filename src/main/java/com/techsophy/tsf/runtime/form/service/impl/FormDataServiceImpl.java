@@ -533,7 +533,7 @@ public class FormDataServiceImpl implements FormDataService
         {
             if(keysList.get(i).equals(ID))
             {
-                c1.add(Criteria.where(keysList.get(i)).is(Long.valueOf(valuesList.get(i))));
+                c1.add(Criteria.where(UNDERSCORE_ID).is(Long.valueOf(valuesList.get(i))));
             }
             else
             {
@@ -725,7 +725,7 @@ public class FormDataServiceImpl implements FormDataService
         {
             if(keysList.get(i).equals(ID))
             {
-               c1.add(Criteria.where(keysList.get(i)).is(Long.valueOf(valuesList.get(i))));
+               c1.add(Criteria.where(UNDERSCORE_ID).is(Long.valueOf(valuesList.get(i))));
             }
             else
             {
