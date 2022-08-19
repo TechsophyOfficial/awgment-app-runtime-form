@@ -22,16 +22,15 @@ import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 public class EditUser {
     private  final MongoTemplate template;
     private final ObjectMapper objectMapper;
-    public static  int count =0;
     @Execution
     public void changeSetFormDefinition() throws IOException
     {
-        String  path ="TP_EDIT_USER.json";
+        String  path = TP_EDIT_USER;
         InputStream inputStreamTest=new ClassPathResource(path).getInputStream();
         FormDefinition formDefinition1 = objectMapper.readValue(inputStreamTest,FormDefinition.class);
         String id = String.valueOf(formDefinition1.getId());
         Query query = new Query();
-        query.addCriteria(Criteria.where("_id").is(id));
+        query.addCriteria(Criteria.where(UNDERSCORE_ID).is(id));
         if(template.find(query,FormDefinition.class).size()==0) {
             template.save(formDefinition1, TP_FORM_DEFINITION_COLLECTION);
         }

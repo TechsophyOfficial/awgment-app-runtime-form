@@ -17,6 +17,10 @@ public class FormModelerConstants
     public static final String ADD_GROUP_FORM= "add-group-form01";
     public static final String EDIT_USER_FORM= "edit-user-form01";
     public static final String EXCEUTION_IS_FAILED="storing data using mongock is failed";
+    public static final String TP_ADD_GROUP="TP_ADD_GROUP.json";
+    public static final String TP_EDIT_USER="TP_EDIT_USER.json";
+    public static final String TP_ADD_USER="TP_ADD_USER.json";
+    public static final String TP_EDIT_GROUP="TP_EDIT_GROUP.json";
 
     //LoggingHandler
     public static final String CONTROLLER_CLASS_PATH = "execution(* com.techsophy.tsf.runtime.form.controller..*(..))";

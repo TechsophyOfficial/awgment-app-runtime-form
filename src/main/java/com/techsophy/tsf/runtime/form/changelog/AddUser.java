@@ -26,12 +26,12 @@ public class AddUser
     private final ObjectMapper objectMapper;
     @Execution
     public void changeSetFormDefinition() throws IOException, ParseException {
-            String  path ="TP_ADD_USER.json";
+            String  path = TP_ADD_USER;
             InputStream inputStreamTest=new ClassPathResource(path).getInputStream();
             FormDefinition formDefinition1 = objectMapper.readValue(inputStreamTest,FormDefinition.class);
             String id = String.valueOf(formDefinition1.getId());
             Query query = new Query();
-            query.addCriteria(Criteria.where("_id").is(id));
+            query.addCriteria(Criteria.where(UNDERSCORE_ID).is(id));
             if(template.find(query,FormDefinition.class).size()==0) {
                 template.save(formDefinition1, TP_FORM_DEFINITION_COLLECTION);
             }
