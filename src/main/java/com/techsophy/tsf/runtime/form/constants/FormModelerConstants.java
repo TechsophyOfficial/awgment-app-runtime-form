@@ -393,6 +393,7 @@ public class FormModelerConstants
            "    }\n" +
            "}";
 
+    public static final String CONTAINS_ATLEAST_ONE_SPECIAL_CHARACTER =".*[!@#$%^&*()_+=]+.*";
 
     //Constants for Requestmapping
     public static final String ELASTIC_VERSION1 = "/elastic/v1";
