@@ -94,7 +94,6 @@ public class FormDataControllerImpl implements FormDataController
     public ApiResponse aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation)
     {
         AggregationResponse aggregationResponse=formDataService.aggregateByFormIdFilterGroupBy(formId,filter,groupBy,operation);
-
         return new ApiResponse<>(aggregationResponse,true,globalMessageSource.get(GET_FORM_DATA_SUCCESS));
     }
 }

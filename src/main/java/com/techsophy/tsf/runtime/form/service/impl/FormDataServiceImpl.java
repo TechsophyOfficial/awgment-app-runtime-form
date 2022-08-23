@@ -537,8 +537,16 @@ public class FormDataServiceImpl implements FormDataService
             }
             else
             {
-                String searchString = valuesList.get(i);
-                c1.add(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)));
+                String searchString = valuesList.get(i);  //if SearchString contains any alphabets or any special character
+                if(searchString.matches(CONTAINS_ATLEAST_ONE_ALPHABET)||searchString.matches(CONTAINS_ATLEAST_ONE_SPECIAL_CHARACTER))
+                {
+                    c1.add(new Criteria().orOperator(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
+                }
+                else
+                {
+                    c1.add(new Criteria().orOperator(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                            Criteria.where(keysList.get(i)).is(Long.valueOf(searchString))));
+                }
             }
         }
         criteria = criteria.andOperator(c1.toArray(new Criteria[0]));
@@ -729,8 +737,16 @@ public class FormDataServiceImpl implements FormDataService
             }
             else
             {
-              String searchString = valuesList.get(i);
-              c1.add(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)));
+                String searchString = valuesList.get(i);  //if SearchString contains any alphabets or any special character
+                if(searchString.matches(CONTAINS_ATLEAST_ONE_ALPHABET)||searchString.matches(CONTAINS_ATLEAST_ONE_SPECIAL_CHARACTER))
+                {
+                    c1.add(new Criteria().orOperator(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
+                }
+                else
+                {
+                    c1.add(new Criteria().orOperator(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                            Criteria.where(keysList.get(i)).is(Long.valueOf(searchString))));
+                }
             }
         }
         criteria = criteria.andOperator(c1.toArray(new Criteria[0]));
@@ -1830,8 +1846,23 @@ public class FormDataServiceImpl implements FormDataService
             }
             for (int i = 0; i < keysList.size(); i++)
             {
-                String searchString = valuesList.get(i);
-                c1.add(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)));
+                if(keysList.get(i).equals(ID))
+                {
+                    c1.add(Criteria.where(UNDERSCORE_ID).is(Long.valueOf(valuesList.get(i))));
+                }
+                else
+                {
+                    String searchString = valuesList.get(i);  //if SearchString contains any alphabets or any special character
+                    if(searchString.matches(CONTAINS_ATLEAST_ONE_ALPHABET)||searchString.matches(CONTAINS_ATLEAST_ONE_SPECIAL_CHARACTER))
+                    {
+                        c1.add(new Criteria().orOperator(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
+                    }
+                    else
+                    {
+                        c1.add(new Criteria().orOperator(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                                Criteria.where(keysList.get(i)).is(Long.valueOf(searchString))));
+                    }
+                }
             }
             criteria = criteria.andOperator(c1.toArray(new Criteria[0]));
             aggregationOperationsList.add(Aggregation.match(criteria));
