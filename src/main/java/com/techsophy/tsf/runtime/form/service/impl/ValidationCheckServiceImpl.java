@@ -99,8 +99,8 @@ public class ValidationCheckServiceImpl
                 {
                     return List.of(String.valueOf(4),key);
                 }
-                int minLimit = String.valueOf(fieldsMap.get(key).get(MIN)).isBlank()?0:Integer.parseInt(String.valueOf(fieldsMap.get(key).get(MIN)));
-                int givenValue =String.valueOf(data.get(key)).isBlank()?-1:Integer.parseInt(String.valueOf(data.get(key)));
+                double minLimit = String.valueOf(fieldsMap.get(key).get(MIN)).isBlank()?0:Double.parseDouble(String.valueOf(fieldsMap.get(key).get(MIN)));
+                double givenValue =String.valueOf(data.get(key)).isBlank()?-1:Double.parseDouble(String.valueOf(data.get(key)));
                 if(givenValue < minLimit)
                 {
                     return List.of(String.valueOf(5),key);
@@ -112,8 +112,8 @@ public class ValidationCheckServiceImpl
                 {
                     return List.of(String.valueOf(6),key);
                 }
-                int maxLimit = String.valueOf(fieldsMap.get(key).get(MAX)).isBlank()?-1:Integer.parseInt(String.valueOf(fieldsMap.get(key).get(MAX)));
-                int givenValue =String.valueOf(data.get(key)).isBlank()?0:Integer.parseInt(String.valueOf(data.get(key)));
+                double maxLimit = String.valueOf(fieldsMap.get(key).get(MAX)).isBlank()?-1:Double.parseDouble(String.valueOf(fieldsMap.get(key).get(MAX)));
+                double givenValue =String.valueOf(data.get(key)).isBlank()?0:Double.parseDouble(String.valueOf(data.get(key)));
                 if(givenValue > maxLimit)
                 {
                     return List.of(String.valueOf(7),key);
