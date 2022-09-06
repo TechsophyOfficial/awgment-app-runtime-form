@@ -139,24 +139,24 @@ public class ValidationCheckServiceImpl
                     return List.of(String.valueOf(9),key);
                 }
             }
-            String insideEditGridKey;
-            if(((Map)fieldsMap.get(key)).get(INSIDE_EDIT_GRID)!=null&&fieldsMap.get(key).getOrDefault(UNIQUE,false).equals(Boolean.TRUE))
-            {
-                if(!String.valueOf(((Map)fieldsMap.get(key)).get(INSIDE_EDIT_GRID)).equals(key))
-                {
-                    insideEditGridKey=((Map)fieldsMap.get(key)).get(INSIDE_EDIT_GRID)+DOT+key;
-                    criteriaList.add(Criteria.where(FORM_DATA_DOT+insideEditGridKey).is(data.get(key)));
-                }
-                else
-                {
-                    criteriaList.add(Criteria.where(FORM_DATA_DOT+key).is(data.get(key)));
-                }
-                if(mongoTemplate.exists(Query.query(new Criteria().orOperator(criteriaList)), TP_RUNTIME_FORM_DATA_+formId))
-                {
-                    return  List.of(String.valueOf(1),key);
-                }
-            }
-            else if(fieldsMap.get(key).getOrDefault(UNIQUE,false).equals(Boolean.TRUE)&&StringUtils.isBlank(id)&&!when.contains("\\."))
+//            String insideEditGridKey;
+//            if(((Map)fieldsMap.get(key)).get(INSIDE_EDIT_GRID)!=null&&fieldsMap.get(key).getOrDefault(UNIQUE,false).equals(Boolean.TRUE))
+//            {
+//                if(!String.valueOf(((Map)fieldsMap.get(key)).get(INSIDE_EDIT_GRID)).equals(key))
+//                {
+//                    insideEditGridKey=((Map)fieldsMap.get(key)).get(INSIDE_EDIT_GRID)+DOT+key;
+//                    criteriaList.add(Criteria.where(FORM_DATA_DOT+insideEditGridKey).is(data.get(key)));
+//                }
+//                else
+//                {
+//                    criteriaList.add(Criteria.where(FORM_DATA_DOT+key).is(data.get(key)));
+//                }
+//                if(mongoTemplate.exists(Query.query(new Criteria().orOperator(criteriaList)), TP_RUNTIME_FORM_DATA_+formId))
+//                {
+//                    return  List.of(String.valueOf(1),key);
+//                }
+//            }
+            if(fieldsMap.get(key).getOrDefault(UNIQUE,false).equals(Boolean.TRUE)&&StringUtils.isBlank(id)&&!when.contains("\\."))
             {
                 criteriaList.add(Criteria.where(FORM_DATA_DOT+key).is(data.get(key)));
                 if(mongoTemplate.exists(Query.query(new Criteria().orOperator(criteriaList)), TP_RUNTIME_FORM_DATA_+formId))
