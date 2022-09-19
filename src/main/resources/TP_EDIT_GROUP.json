@@ -383,5 +383,6 @@
     ],
     "display": "form"
   },
-  "properties": {}
+  "properties": {},
+  "type":"form"
 }
