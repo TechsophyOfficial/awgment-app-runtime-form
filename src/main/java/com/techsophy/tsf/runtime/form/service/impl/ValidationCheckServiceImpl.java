@@ -4,6 +4,8 @@ import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -20,6 +22,7 @@ public class ValidationCheckServiceImpl
 {
     private GlobalMessageSource globalMessageSource;
     private MongoTemplate mongoTemplate;
+    private static final Logger logger = LoggerFactory.getLogger(ValidationCheckServiceImpl.class);
 
     public List<String> allFieldsValidations(LinkedHashMap<String,LinkedHashMap<String,Object>> fieldsMap,Map<String, Object> data,String formId,String id)
     {
@@ -68,8 +71,10 @@ public class ValidationCheckServiceImpl
                     }
                 }
             }
-            if(fieldsMap.get(key).getOrDefault(REQUIRED,false).equals(Boolean.TRUE)&&(!data.containsKey(key)||data.get(key)==null))
+            if(fieldsMap.get(key).getOrDefault(REQUIRED,false).equals(Boolean.TRUE)&&(!data.containsKey(key)||data.get(key)==null||StringUtils.isEmpty(String.valueOf(data.get(key)))
+                    ||StringUtils.isBlank(String.valueOf(data.get(key)))))
             {
+                logger.info("field "+key+" is empty "+StringUtils.isEmpty(String.valueOf(data.get(key))));
                 return List.of(String.valueOf(0),key);
             }
             if(fieldsMap.get(key).get(MIN_LENGTH)!=null&&!String.valueOf(fieldsMap.get(key).get(MIN_LENGTH)).isBlank())
@@ -94,8 +99,8 @@ public class ValidationCheckServiceImpl
                 {
                     return List.of(String.valueOf(4),key);
                 }
-                int minLimit = String.valueOf(fieldsMap.get(key).get(MIN)).isBlank()?0:Integer.parseInt(String.valueOf(fieldsMap.get(key).get(MIN)));
-                int givenValue =String.valueOf(data.get(key)).isBlank()?-1:Integer.parseInt(String.valueOf(data.get(key)));
+                double minLimit = String.valueOf(fieldsMap.get(key).get(MIN)).isBlank()?0:Double.parseDouble(String.valueOf(fieldsMap.get(key).get(MIN)));
+                double givenValue =String.valueOf(data.get(key)).isBlank()?-1:Double.parseDouble(String.valueOf(data.get(key)));
                 if(givenValue < minLimit)
                 {
                     return List.of(String.valueOf(5),key);
@@ -107,8 +112,8 @@ public class ValidationCheckServiceImpl
                 {
                     return List.of(String.valueOf(6),key);
                 }
-                int maxLimit = String.valueOf(fieldsMap.get(key).get(MAX)).isBlank()?-1:Integer.parseInt(String.valueOf(fieldsMap.get(key).get(MAX)));
-                int givenValue =String.valueOf(data.get(key)).isBlank()?0:Integer.parseInt(String.valueOf(data.get(key)));
+                double maxLimit = String.valueOf(fieldsMap.get(key).get(MAX)).isBlank()?-1:Double.parseDouble(String.valueOf(fieldsMap.get(key).get(MAX)));
+                double givenValue =String.valueOf(data.get(key)).isBlank()?0:Double.parseDouble(String.valueOf(data.get(key)));
                 if(givenValue > maxLimit)
                 {
                     return List.of(String.valueOf(7),key);
@@ -134,24 +139,24 @@ public class ValidationCheckServiceImpl
                     return List.of(String.valueOf(9),key);
                 }
             }
-            String insideEditGridKey;
-            if(((Map)fieldsMap.get(key)).get(INSIDE_EDIT_GRID)!=null&&fieldsMap.get(key).getOrDefault(UNIQUE,false).equals(Boolean.TRUE))
-            {
-                if(!String.valueOf(((Map)fieldsMap.get(key)).get(INSIDE_EDIT_GRID)).equals(key))
-                {
-                    insideEditGridKey=((Map)fieldsMap.get(key)).get(INSIDE_EDIT_GRID)+DOT+key;
-                    criteriaList.add(Criteria.where(FORM_DATA_DOT+insideEditGridKey).is(data.get(key)));
-                }
-                else
-                {
-                    criteriaList.add(Criteria.where(FORM_DATA_DOT+key).is(data.get(key)));
-                }
-                if(mongoTemplate.exists(Query.query(new Criteria().orOperator(criteriaList)), TP_RUNTIME_FORM_DATA_+formId))
-                {
-                    return  List.of(String.valueOf(1),key);
-                }
-            }
-            else if(fieldsMap.get(key).getOrDefault(UNIQUE,false).equals(Boolean.TRUE)&&StringUtils.isBlank(id)&&!when.contains("\\."))
+//            String insideEditGridKey;
+//            if(((Map)fieldsMap.get(key)).get(INSIDE_EDIT_GRID)!=null&&fieldsMap.get(key).getOrDefault(UNIQUE,false).equals(Boolean.TRUE))
+//            {
+//                if(!String.valueOf(((Map)fieldsMap.get(key)).get(INSIDE_EDIT_GRID)).equals(key))
+//                {
+//                    insideEditGridKey=((Map)fieldsMap.get(key)).get(INSIDE_EDIT_GRID)+DOT+key;
+//                    criteriaList.add(Criteria.where(FORM_DATA_DOT+insideEditGridKey).is(data.get(key)));
+//                }
+//                else
+//                {
+//                    criteriaList.add(Criteria.where(FORM_DATA_DOT+key).is(data.get(key)));
+//                }
+//                if(mongoTemplate.exists(Query.query(new Criteria().orOperator(criteriaList)), TP_RUNTIME_FORM_DATA_+formId))
+//                {
+//                    return  List.of(String.valueOf(1),key);
+//                }
+//            }
+            if(fieldsMap.get(key).getOrDefault(UNIQUE,false).equals(Boolean.TRUE)&&StringUtils.isBlank(id)&&!when.contains("\\."))
             {
                 criteriaList.add(Criteria.where(FORM_DATA_DOT+key).is(data.get(key)));
                 if(mongoTemplate.exists(Query.query(new Criteria().orOperator(criteriaList)), TP_RUNTIME_FORM_DATA_+formId))
