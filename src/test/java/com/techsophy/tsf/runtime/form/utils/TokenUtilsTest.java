@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -150,6 +151,7 @@ class TokenUtilsTest
         String[] strings = new String[2];
         strings[0]="abc:ab";
         strings[1]="abc";
-        tokenUtils.getSortBy(strings);
+        Sort response = tokenUtils.getSortBy(strings);
+        assertThat(response).isInstanceOf(Sort.class);
     }
 }

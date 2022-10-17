@@ -76,7 +76,7 @@ dependencies {
     implementation "io.mongock:mongock:5.0.32"
     implementation "io.mongock:mongock-springboot:5.0.32"
     implementation "io.mongock:mongodb-springdata-v3-driver:5.0.32"
-    implementation 'com.techsophy:id-generator:1.0.0@jar'
+    implementation 'com.techsophy:id-generator:2.0.0@jar'
     implementation 'com.techsophy:multitenancy-mongo:1.0.0@jar'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
 
@@ -114,12 +114,54 @@ tasks.withType(JavaCompile) {
 test {
     useJUnitPlatform()
 }
-
 jacocoTestReport {
+    dependsOn test
     reports {
         xml.enabled true
+        html.enabled true
     }
 }
-jar {
+
+jar{
     enabled = false
 }
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.28
+            }
+        }
+
+    }
+}
+check.dependsOn jacocoTestCoverageVerification
+
+//Integration test configuration
+sourceSets{
+    integrationTest {
+        java{
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integrationTest/java')
+
+        }
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests.'
+    group = 'verification'
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    shouldRunAfter test
+    outputs.upToDateWhen { false }
+}
+check.dependsOn compileIntegrationTestJava

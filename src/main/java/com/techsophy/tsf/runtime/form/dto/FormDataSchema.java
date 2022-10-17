@@ -14,6 +14,6 @@ public class FormDataSchema
     @NotBlank(message = FORM_ID_NOT_BLANK)
     String formId;
     Integer version;
-    LinkedHashMap<String,Object> formData;
+    Map<String,Object> formData;
     Map<String,Object> formMetadata;
 }
