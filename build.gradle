@@ -112,6 +112,7 @@ tasks.withType(JavaCompile) {
 }
 
 test {
+    finalizedBy jacocoTestReport
     useJUnitPlatform()
 }
 jacocoTestReport {
