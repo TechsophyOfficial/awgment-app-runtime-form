@@ -3,6 +3,7 @@ package com.techsophy.tsf.runtime.form.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techsophy.tsf.runtime.form.config.CustomFilter;
 import com.techsophy.tsf.runtime.form.dto.FormDataAuditSchema;
+import com.techsophy.tsf.runtime.form.exception.ExternalServiceErrorException;
 import com.techsophy.tsf.runtime.form.exception.FormIdNotFoundException;
 import com.techsophy.tsf.runtime.form.exception.GlobalExceptionHandler;
 import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
@@ -74,6 +75,17 @@ class FormDataAuditControllerExceptionTest
         Mockito.when(mockFormDataAuditController.saveFormDataAudit(formDataAuditSchemaTest)).thenThrow(new UserDetailsIdNotFoundException(errorCode,USER_DETAILS_NOT_FOUND_WITH_GIVEN_ID));
         RequestBuilder requestBuilderTest = MockMvcRequestBuilders.post(BASE_URL + VERSION_V1 + HISTORY+FORM_DATA_URL).header(ACCEPT_LANGUAGE, LOCALE_EN)
                 .content(objectMapperTest.writeValueAsString(formDataAuditSchemaTest))
+                .contentType(MediaType.APPLICATION_JSON);
+        MvcResult mvcResult = this.mockMvc.perform(requestBuilderTest).andExpect(status().isInternalServerError()).andReturn();
+        assertEquals(500,mvcResult.getResponse().getStatus());
+    }
+
+    @Test
+    void ExternalServiceErrorExceptionTest() throws Exception
+    {
+        Mockito.when(mockTokenUtils.getIssuerFromToken(TOKEN)).thenReturn(TENANT);
+        Mockito.when(mockFormDataAuditController.getAllFormDatAuditByFormIdAndDocumentId(TEST_FORM_ID,TEST_FORM_DATA_ID)).thenThrow(new ExternalServiceErrorException(errorCode,FORM_NOT_FOUND_EXCEPTION));
+        RequestBuilder requestBuilderTest = MockMvcRequestBuilders.get(BASE_URL + VERSION_V1 + HISTORY+FORM_DATA_DOCUMENT_ID_URL).param(FORM_ID,TEST_FORM_ID).param(FORM_DATA_ID,TEST_FORM_DATA_ID).header(ACCEPT_LANGUAGE, LOCALE_EN)
                 .contentType(MediaType.APPLICATION_JSON);
         MvcResult mvcResult = this.mockMvc.perform(requestBuilderTest).andExpect(status().isInternalServerError()).andReturn();
         assertEquals(500,mvcResult.getResponse().getStatus());

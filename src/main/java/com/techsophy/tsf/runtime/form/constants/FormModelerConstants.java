@@ -12,6 +12,7 @@ public class FormModelerConstants
     public static final String ORDER_3="3";
     public static final String ORDER_4="4";
     public static final String SYSTEM_VERSION_1="1";
+    public static final String TP_APP_RUNTIME_FORM="tp-app-runtime-form";
     public static final String ADD_USER_FORM= "add-user-form01";
     public static final String EDIT_GROUP_FORM= "edit-group-form01";
     public static final String ADD_GROUP_FORM= "add-group-form01";
@@ -149,6 +150,7 @@ public class FormModelerConstants
 
     //FormDataService
     public static final String TP_RUNTIME_FORM_DATA_ ="tp_runtime_form_data_";
+    public static final String TP_RUNTIME_FORM_DATA =TP_RUNTIME_FORM_DATA_;
     public static final String FORM_DATA="formData";
     public static final String SPACE=" ";
     public static final String USER_DEFINITION_FIRST_NAME="firstName";
@@ -457,4 +459,6 @@ public class FormModelerConstants
     public static final String RUNTIME_FORM_MODELER_API_VERSION_1 = "Runtime Form API v1.0";
     public static final String EMAIL_PATTERN = "^[a-zA-Z0-9+_%.-]+@[a-zA-Z0-9.-]+\\.[A-Za-z]{2,3}$";
     public static final String SERVICE = "service";
+    public static final String SUCCESS = "success";
+    public static final String VALIDATION = "All are validated";
 }

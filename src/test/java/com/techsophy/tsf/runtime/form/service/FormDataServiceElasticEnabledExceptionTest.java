@@ -7,7 +7,6 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertOneResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
-import com.techsophy.tsf.runtime.form.exception.FormIdNotFoundException;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataAuditServiceImpl;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataServiceImpl;
@@ -31,26 +30,21 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.reactive.function.client.WebClient;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.logging.Logger;
+
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.CREATED_BY_ID;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.CREATED_BY_NAME;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.CREATED_ON;
+
+import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.DATA;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.ELASTIC_ENABLE;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.ELASTIC_SOURCE;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.EMPTY_STRING;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.ID;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.NULL;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.UPDATED_BY_ID;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.UPDATED_BY_NAME;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.UPDATED_ON;
+
+import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.FORM_DATA;
+import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.SUCCESS;
+
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 
 @ActiveProfiles(TEST_ACTIVE_PROFILE)
 @SpringBootTest
@@ -529,7 +523,7 @@ class FormDataServiceElasticEnabledExceptionTest
     {
         Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(EMPTY_STRING);
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
-        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_+TEST_FORM_ID)).thenReturn(mockMongoCollection);
+        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_ +TEST_FORM_ID)).thenReturn(mockMongoCollection);
         DeleteResult mockDeleteResult=Mockito.mock(DeleteResult.class);
         Mockito.when(mockMongoCollection.deleteMany(any())).thenReturn(mockDeleteResult);
         Mockito.when(mockDeleteResult.getDeletedCount()).thenReturn(Long.valueOf(1));
@@ -566,7 +560,7 @@ class FormDataServiceElasticEnabledExceptionTest
         Mockito.when(mockObjectMapper.readValue(responseTest,Map.class)).thenReturn(responseMapTest);
         Mockito.when(mockObjectMapper.convertValue(responseMapTest.get(DATA),Map.class)).thenReturn(dataMapTest);
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
-        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_+TEST_FORM_ID)).thenReturn(mockMongoCollection);
+        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_ +TEST_FORM_ID)).thenReturn(mockMongoCollection);
         DeleteResult mockDeleteResult=Mockito.mock(DeleteResult.class);
         Mockito.when(mockMongoCollection.deleteMany(any())).thenReturn(mockDeleteResult);
         Mockito.when(mockDeleteResult.getDeletedCount()).thenReturn(Long.valueOf(1));
@@ -601,18 +595,10 @@ class FormDataServiceElasticEnabledExceptionTest
         responseMapTest.put(DATA, null);
         responseMapTest.put(SUCCESS,true);
         Mockito.when(mockObjectMapper.convertValue(responseMapTest.get(DATA),Map.class)).thenReturn(dataMapTest);
-        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_+TEST_FORM_ID)).thenReturn(mockMongoCollection);
+        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_ +TEST_FORM_ID)).thenReturn(mockMongoCollection);
         DeleteResult mockDeleteResult=Mockito.mock(DeleteResult.class);
         Mockito.when(mockMongoCollection.deleteMany(any())).thenReturn(mockDeleteResult);
         Mockito.when(mockDeleteResult.getDeletedCount()).thenReturn(Long.valueOf(1));
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID));
-    }
-
-
-    @Test
-    void aggregateByFormIdAndFilterGroupByExceptionTest()
-    {
-        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(false);
-        Assertions.assertThrows(FormIdNotFoundException.class,()->mockFormDataServiceImpl.aggregateByFormIdFilterGroupBy(TEST_FORM_ID,TEST_FILTER,TEST_GROUP_BY,TEST_OPERATION));
     }
 }
