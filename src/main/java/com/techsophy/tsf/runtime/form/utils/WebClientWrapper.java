@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import javax.validation.constraints.NotBlank;
@@ -24,7 +25,12 @@ public class WebClientWrapper {
     private final ObjectMapper objectMapper;
 
     public WebClient createWebClient(String token) {
+        final int size = 16 * 1024 * 1024;
+        final ExchangeStrategies strategies = ExchangeStrategies.builder()
+                .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(size))
+                .build();
         return WebClient.builder()
+                .exchangeStrategies(strategies)
                 .defaultHeader(AUTHORIZATION, BEARER + token)
                 .defaultHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .build();
