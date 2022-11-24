@@ -106,12 +106,10 @@ class FormControllerTest
         ObjectMapper objectMapperTest=new ObjectMapper();
         FormSchema formSchemaTest=objectMapperTest.readValue(resource,FormSchema.class);
         FormSchema formSchemaTest1=new FormSchema("1",STRING,map,list,null,"component",1,true);
-        FormResponseSchema formResponseSchema = new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,list,TEST_PROPERTIES, TEST_TYPE_FORM,
-                TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID, TEST_CREATED_ON,
-                TEST_CREATED_BY_NAME,TEST_UPDATED_BY_ID,TEST_UPDATED_ON,TEST_UPDATED_BY_NAME);
-        FormResponseSchema formResponseSchema1 = new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,list,TEST_PROPERTIES, "component",
-                TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID, TEST_CREATED_ON,
-                TEST_CREATED_BY_NAME,TEST_UPDATED_BY_ID,TEST_UPDATED_ON,TEST_UPDATED_BY_NAME);
+        FormResponseSchema formResponseSchema = new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
+                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON, TEST_UPDATED_BY_ID,TEST_UPDATED_ON);
+        FormResponseSchema formResponseSchema1 = new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
+                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON, TEST_UPDATED_BY_ID,TEST_UPDATED_ON);
         Mockito.when(mockFormService.getRuntimeFormById(any())).thenReturn(formResponseSchema).thenReturn(formResponseSchema1);
         RequestBuilder requestBuilderTest = MockMvcRequestBuilders.get(BASE_URL_TEST+VERSION_V1_TEST+FORM_BY_ID_URL_TEST,1)
                 .content(objectMapperTest.writeValueAsString(formSchemaTest))
@@ -139,11 +137,10 @@ class FormControllerTest
         FormSchema formSchemaTest=objectMapperTest.readValue(inputStreamTest,FormSchema.class);
         Mockito.when(mockTokenUtils.getIssuerFromToken(TOKEN)).thenReturn(TENANT);
         Mockito.when(mockFormService.getAllRuntimeForms(true, TYPE_FORM)).thenReturn(Stream.of(
-                new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,list,TEST_PROPERTIES,
-                        TYPE_FORM,TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON,
-                        TEST_CREATED_BY_NAME,TEST_UPDATED_BY_ID,TEST_UPDATED_ON,TEST_UPDATED_BY_NAME),
-                new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,list,TEST_PROPERTIES, TYPE_FORM,
-                        TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID, TEST_CREATED_ON,TEST_CREATED_BY_NAME, TEST_UPDATED_BY_ID, TEST_UPDATED_ON,TEST_UPDATED_BY_NAME)));
+                new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
+                        list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON, TEST_UPDATED_BY_ID,TEST_UPDATED_ON),
+                new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
+                        list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON, TEST_UPDATED_BY_ID,TEST_UPDATED_ON)));
         RequestBuilder requestBuilderTest = MockMvcRequestBuilders.get(BASE_URL + VERSION_V1_TEST + FORMS_URL).param(INCLUDE_CONTENT, String.valueOf(true)).param(TYPE,FORM)
                 .content(objectMapperTest.writeValueAsString(formSchemaTest))
                 .with(jwtRead)
@@ -192,9 +189,10 @@ class FormControllerTest
         ObjectMapper objectMapperTest=new ObjectMapper();
         FormSchema formSchemaTest=objectMapperTest.readValue(inputStreamTest,FormSchema.class);
         Mockito.when(mockFormService.searchRuntimeFormByIdOrNameLike(TEST_ID, TYPE_FORM)).thenReturn(Stream.of(
-                new FormResponseSchema(TEST_ID, TEST_NAME,TEST_COMPONENTS,list,TEST_PROPERTIES,TYPE_FORM,TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON,
-                        TEST_CREATED_BY_NAME,TEST_UPDATED_BY_ID,TEST_UPDATED_ON,TEST_UPDATED_BY_NAME),
-                new FormResponseSchema(TEST_ID,TEST_NAME,TEST_COMPONENTS,list,TEST_PROPERTIES, TYPE_FORM,TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON,TEST_CREATED_BY_NAME,TEST_UPDATED_BY_ID, TEST_UPDATED_ON,TEST_UPDATED_BY_NAME)));
+                new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
+                        list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON, TEST_UPDATED_BY_ID,TEST_UPDATED_ON),
+                new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
+                        list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON, TEST_UPDATED_BY_ID,TEST_UPDATED_ON)));
         RequestBuilder requestBuilderTest=MockMvcRequestBuilders.get(BASE_URL + VERSION_V1 + SEARCH_FORM_URL).param(ID_OR_NAME_LIKE, String.valueOf(1)).param(TYPE,FORM)
                 .content(objectMapperTest.writeValueAsString(formSchemaTest))
                 .with(jwtRead)

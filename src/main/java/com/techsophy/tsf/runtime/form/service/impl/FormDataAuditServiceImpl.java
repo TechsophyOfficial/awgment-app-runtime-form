@@ -97,8 +97,7 @@ public class FormDataAuditServiceImpl implements FormDataAuditService
                    formDataAuditResponseSchema=new FormDataAuditResponseSchema
                            (document.get(UNDERSCORE_ID).toString(),document.get(FORM_DATA_ID).toString(),document.get(FORM_ID).toString(),
                                    Integer.valueOf(String.valueOf(document.get(VERSION))),formData,formMetaData,
-                                   document.get(CREATED_BY_ID).toString(),((Date)document.get(CREATED_ON)).toInstant(),
-                                   document.get(CREATED_BY_NAME).toString());
+                                   document.get(CREATED_BY_ID).toString(),((Date)document.get(CREATED_ON)).toInstant());
                    formDataAuditResponseSchemasList.add(formDataAuditResponseSchema);
                }
            }
