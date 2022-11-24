@@ -45,7 +45,7 @@ public class FormModelerConstants
 
     //JWTRoleConverter
     public static final String CLIENT_ROLES="clientRoles";
-    public static final String USER_INFO_URL= "techsophy-platform/protocol/openid-connect/userinfo";
+    public static final String USER_INFO_URL= "/protocol/openid-connect/userinfo";
 
     /*LocaleConfig Constants*/
     public static final String ACCEPT_LANGUAGE = "Accept-Language";
