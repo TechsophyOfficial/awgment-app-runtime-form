@@ -15,8 +15,6 @@ public class FormDataResponseSchema
     String version;
     String  createdById;
     Instant createdOn;
-    String createdByName;
     String updatedById;
     Instant updatedOn;
-    String updatedByName;
 }

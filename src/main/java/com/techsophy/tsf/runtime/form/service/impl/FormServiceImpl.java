@@ -44,10 +44,8 @@ public class FormServiceImpl implements FormService
         BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(loggedInUserDetails.get(ID).toString()));
         FormDefinition formDefinition=new FormDefinition(BigInteger.valueOf(Long.parseLong(formSchema.getId())),formSchema.getName(),BigInteger.valueOf(formSchema.getVersion()),formSchema.getComponents(),formSchema.getAcls(),formSchema.getProperties(),formSchema.getType(),formSchema.getIsDefault());
         formDefinition.setCreatedById(loggedInUserId);
-        formDefinition.setCreatedByName(loggedInUserDetails.get(USER_DEFINITION_FIRST_NAME).toString() + SPACE + loggedInUserDetails.get(USER_DEFINITION_LAST_NAME).toString());
         formDefinition.setCreatedOn(Instant.now());
         formDefinition.setUpdatedById(loggedInUserId);
-        formDefinition.setUpdatedByName(loggedInUserDetails.get(USER_DEFINITION_FIRST_NAME).toString()+SPACE+loggedInUserDetails.get(USER_DEFINITION_LAST_NAME).toString());
         formDefinition.setUpdatedOn(Instant.now());
         if(String.valueOf(formSchema.getIsDefault()).equals(NULL))
         {

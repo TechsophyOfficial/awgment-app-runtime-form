@@ -604,7 +604,7 @@ public class FormDataServiceImpl implements FormDataService
             for (FormDataDefinition formDataDefinition : formDataDefinitionsList)
             {
                 FormDataResponseSchema formDataResponseSchema = new FormDataResponseSchema(String.valueOf(formDataDefinition.getId()), formDataDefinition.getFormData(),
-                        formDataDefinition.getFormMetadata(),String.valueOf(formDataDefinition.getVersion()), String.valueOf(formDataDefinition.getCreatedById()), formDataDefinition.getCreatedOn(), formDataDefinition.getCreatedByName(), String.valueOf(formDataDefinition.getUpdatedById()), formDataDefinition.getUpdatedOn(), formDataDefinition.getUpdatedByName());
+                        formDataDefinition.getFormMetadata(),String.valueOf(formDataDefinition.getVersion()), String.valueOf(formDataDefinition.getCreatedById()), formDataDefinition.getCreatedOn(), String.valueOf(formDataDefinition.getUpdatedById()), formDataDefinition.getUpdatedOn());
                 formDataResponseSchemasList.add(formDataResponseSchema);
             }
             return formDataResponseSchemasList;
@@ -620,8 +620,8 @@ public class FormDataServiceImpl implements FormDataService
         {
             FormDataResponseSchema formDataResponseSchema = new FormDataResponseSchema(String.valueOf(formDataDefinition.getId()),
                     formDataDefinition.getFormData(), formDataDefinition.getFormMetadata(),String.valueOf(formDataDefinition.getVersion()),
-                    String.valueOf(formDataDefinition.getCreatedById()), formDataDefinition.getCreatedOn(), formDataDefinition.getCreatedByName(),
-                    String.valueOf(formDataDefinition.getUpdatedById()), formDataDefinition.getUpdatedOn(), formDataDefinition.getUpdatedByName());
+                    String.valueOf(formDataDefinition.getCreatedById()), formDataDefinition.getCreatedOn(),
+                    String.valueOf(formDataDefinition.getUpdatedById()), formDataDefinition.getUpdatedOn());
             formDataResponseSchemasList.add(formDataResponseSchema);
         }
         return formDataResponseSchemasList;
@@ -851,10 +851,8 @@ public class FormDataServiceImpl implements FormDataService
                 singleDocumentContent.put(VERSION, String.valueOf(formDataDefinition.getVersion()));
                 singleDocumentContent.put(CREATED_BY_ID, String.valueOf(formDataDefinition.getCreatedById()));
                 singleDocumentContent.put(CREATED_ON, formDataDefinition.getCreatedOn());
-                singleDocumentContent.put(CREATED_BY_NAME, formDataDefinition.getCreatedByName());
                 singleDocumentContent.put(UPDATED_BY_ID, String.valueOf(formDataDefinition.getUpdatedById()));
                 singleDocumentContent.put(UPDATED_ON, formDataDefinition.getUpdatedOn());
-                singleDocumentContent.put(UPDATED_BY_NAME,formDataDefinition.getUpdatedByName());
                 content.add(singleDocumentContent);
             }
             paginationResponsePayload.setContent(content);
@@ -882,10 +880,8 @@ public class FormDataServiceImpl implements FormDataService
             singleDocumentContent.put(VERSION, String.valueOf(formDataDefinition.getVersion()));
             singleDocumentContent.put(CREATED_BY_ID,String.valueOf(formDataDefinition.getCreatedById()));
             singleDocumentContent.put(CREATED_ON,formDataDefinition.getCreatedOn());
-            singleDocumentContent.put(CREATED_BY_NAME,formDataDefinition.getCreatedByName());
             singleDocumentContent.put(UPDATED_BY_ID,String.valueOf(formDataDefinition.getUpdatedById()));
             singleDocumentContent.put(UPDATED_ON,formDataDefinition.getUpdatedOn());
-            singleDocumentContent.put(UPDATED_BY_NAME, formDataDefinition.getUpdatedByName());
             content.add(singleDocumentContent);
         }
         paginationResponsePayload.setContent(content);
@@ -1071,7 +1067,7 @@ public class FormDataServiceImpl implements FormDataService
                 FormDataResponseSchema formDataResponseSchema =
                         new FormDataResponseSchema(String.valueOf(formDataDefinition.getId()),
                                 formDataDefinition.getFormData(), formDataDefinition.getFormMetadata(),String.valueOf(formDataDefinition.getVersion()),String.valueOf(formDataDefinition.getCreatedById()),
-                                formDataDefinition.getCreatedOn(), formDataDefinition.getCreatedByName(), String.valueOf(formDataDefinition.getUpdatedById()), formDataDefinition.getUpdatedOn(), formDataDefinition.getUpdatedByName());
+                                formDataDefinition.getCreatedOn(), String.valueOf(formDataDefinition.getUpdatedById()), formDataDefinition.getUpdatedOn());
                 formDataResponseSchemasList.add(formDataResponseSchema);
             }
             return formDataResponseSchemasList;
@@ -1096,7 +1092,7 @@ public class FormDataServiceImpl implements FormDataService
             FormDataResponseSchema formDataResponseSchema =
                     new FormDataResponseSchema(String.valueOf(formDataDefinition.getId()), formDataDefinition.getFormData(),
                             formDataDefinition.getFormMetadata(),String.valueOf(formDataDefinition.getVersion()), String.valueOf(formDataDefinition.getCreatedById()), formDataDefinition.getCreatedOn(),
-                            formDataDefinition.getCreatedByName(), String.valueOf(formDataDefinition.getUpdatedById()), formDataDefinition.getUpdatedOn(), formDataDefinition.getUpdatedByName());
+                            String.valueOf(formDataDefinition.getUpdatedById()), formDataDefinition.getUpdatedOn());
             formDataResponseSchemasList.add(formDataResponseSchema);
         }
         return formDataResponseSchemasList;
@@ -1334,10 +1330,8 @@ public class FormDataServiceImpl implements FormDataService
                 singleDocumentContent.put(VERSION, String.valueOf(formDataDefinition.getVersion()));
                 singleDocumentContent.put(CREATED_BY_ID, String.valueOf(formDataDefinition.getCreatedById()));
                 singleDocumentContent.put(CREATED_ON, formDataDefinition.getCreatedOn());
-                singleDocumentContent.put(CREATED_BY_NAME, formDataDefinition.getCreatedByName());
                 singleDocumentContent.put(UPDATED_BY_ID, String.valueOf(formDataDefinition.getUpdatedById()));
                 singleDocumentContent.put(UPDATED_ON, formDataDefinition.getUpdatedOn());
-                singleDocumentContent.put(UPDATED_BY_NAME, formDataDefinition.getUpdatedByName());
                 content.add(singleDocumentContent);
             }
             paginationResponsePayload.setContent(content);
@@ -1372,10 +1366,8 @@ public class FormDataServiceImpl implements FormDataService
             singleDocumentContent.put(VERSION, String.valueOf(formDataDefinition.getVersion()));
             singleDocumentContent.put(CREATED_BY_ID, String.valueOf(formDataDefinition.getCreatedById()));
             singleDocumentContent.put(CREATED_ON, formDataDefinition.getCreatedOn());
-            singleDocumentContent.put(CREATED_BY_NAME, formDataDefinition.getCreatedByName());
             singleDocumentContent.put(UPDATED_BY_ID, String.valueOf(formDataDefinition.getUpdatedById()));
             singleDocumentContent.put(UPDATED_ON, formDataDefinition.getUpdatedOn());
-            singleDocumentContent.put(UPDATED_BY_NAME, formDataDefinition.getUpdatedByName());
             content.add(singleDocumentContent);
         }
         paginationResponsePayload.setContent(content);
@@ -1522,10 +1514,8 @@ public class FormDataServiceImpl implements FormDataService
             singleDocumentContent.put(VERSION, String.valueOf(formDataDefinition.getVersion()));
             singleDocumentContent.put(CREATED_BY_ID, String.valueOf(formDataDefinition.getCreatedById()));
             singleDocumentContent.put(CREATED_ON, formDataDefinition.getCreatedOn());
-            singleDocumentContent.put(CREATED_BY_NAME, formDataDefinition.getCreatedByName());
             singleDocumentContent.put(UPDATED_BY_ID, String.valueOf(formDataDefinition.getUpdatedById()));
             singleDocumentContent.put(UPDATED_ON, formDataDefinition.getUpdatedOn());
-            singleDocumentContent.put(UPDATED_BY_NAME,formDataDefinition.getUpdatedByName());
             content.add(singleDocumentContent);
         }
         paginationResponsePayload.setPage(0);
@@ -1646,8 +1636,8 @@ public class FormDataServiceImpl implements FormDataService
                     formMetaData = objectMapper.convertValue(document.get(FORM_META_DATA), Map.class);
                     formDataResponseSchema = new FormDataResponseSchema(String.valueOf(document.get(UNDERSCORE_ID)),formData,formMetaData,
                             String.valueOf(document.get(VERSION)),
-                            String.valueOf(document.get(CREATED_BY_ID)), ((Date) document.get(CREATED_ON)).toInstant(), String.valueOf(document.get(CREATED_BY_NAME)),
-                            String.valueOf(document.get(UPDATED_BY_ID)), ((Date) document.get(UPDATED_ON)).toInstant(), String.valueOf(document.get(UPDATED_BY_NAME)));
+                            String.valueOf(document.get(CREATED_BY_ID)), ((Date) document.get(CREATED_ON)).toInstant(),
+                            String.valueOf(document.get(UPDATED_BY_ID)), ((Date) document.get(UPDATED_ON)).toInstant());
                 }
             }
         }

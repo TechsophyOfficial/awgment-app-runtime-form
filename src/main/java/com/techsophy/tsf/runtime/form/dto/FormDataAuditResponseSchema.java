@@ -20,5 +20,4 @@ public class FormDataAuditResponseSchema
     Map<String,Object> formMetadata;
     String  createdById;
     Instant createdOn;
-    String createdByName;
 }

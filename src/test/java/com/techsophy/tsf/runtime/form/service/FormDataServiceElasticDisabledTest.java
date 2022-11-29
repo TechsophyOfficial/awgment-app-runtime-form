@@ -338,9 +338,7 @@ class FormDataServiceElasticDisabledTest
                 TEST_VERSION,testFormData,testFormMetaData);
         formDataDefinitionTest.setCreatedById(BigInteger.valueOf(Long.parseLong(TEST_CREATED_BY_ID)));
         formDataDefinitionTest.setCreatedOn(TEST_CREATED_ON);
-        formDataDefinitionTest.setCreatedByName(TEST_CREATED_BY_NAME);
         formDataDefinitionTest.setUpdatedById(BigInteger.valueOf(Long.parseLong(TEST_UPDATED_BY_ID)));
-        formDataDefinitionTest.setUpdatedByName(TEST_UPDATED_BY_NAME);
         formDataDefinitionTest.setUpdatedOn(TEST_UPDATED_ON);
         Mockito.doReturn(aggregationResults).when(mockMongoTemplate).aggregate(Mockito.any(Aggregation.class), Mockito.eq(COLLECTION), Mockito.eq(Map.class));
         Mockito.when(mockMongoTemplate.find(ArgumentMatchers.any(),ArgumentMatchers.any(),ArgumentMatchers.any())).thenReturn(List.of(formDataDefinitionTest));
@@ -408,9 +406,7 @@ class FormDataServiceElasticDisabledTest
                 TEST_VERSION,testFormData,testFormMetaData);
         formDataDefinitionTest.setCreatedById(BigInteger.valueOf(Long.parseLong(TEST_CREATED_BY_ID)));
         formDataDefinitionTest.setCreatedOn(TEST_CREATED_ON);
-        formDataDefinitionTest.setCreatedByName(TEST_CREATED_BY_NAME);
         formDataDefinitionTest.setUpdatedById(BigInteger.valueOf(Long.parseLong(TEST_UPDATED_BY_ID)));
-        formDataDefinitionTest.setUpdatedByName(TEST_UPDATED_BY_NAME);
         formDataDefinitionTest.setUpdatedOn(TEST_UPDATED_ON);
         Mockito.when(mockMongoTemplate.find(ArgumentMatchers.any(),ArgumentMatchers.any(),ArgumentMatchers.any())).thenReturn(List.of(formDataDefinitionTest));
         PaginationResponsePayload response1 = mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,null, EMPTY_STRING, EMPTY_STRING, EMPTY_STRING, PageRequest.of(0,5));
