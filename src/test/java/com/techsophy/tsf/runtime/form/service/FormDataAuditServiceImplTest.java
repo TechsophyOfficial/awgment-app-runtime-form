@@ -10,12 +10,15 @@ import com.mongodb.client.result.InsertOneResult;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants;
 import com.techsophy.tsf.runtime.form.dto.FormDataAuditSchema;
+import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
+import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataAuditServiceImpl;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import com.techsophy.tsf.runtime.form.utils.WebClientWrapper;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -116,6 +119,42 @@ class FormDataAuditServiceImplTest
         Mockito.when(mockMongoTemplate.save(any(),any())).thenReturn(document);
         mockFormDataAuditServiceImpl.saveFormDataAudit(formDataAuditSchemaTest);
         verify(mockMongoTemplate,times(1)).save(any(),any());
+    }
+
+    @Test
+    void saveFormDataCollectionExistsTestWhileUserIdIsEmpty() throws JsonProcessingException
+    {
+        doReturn(userList).when(mockUserDetails).getUserDetails();
+        Map<String, Object> map = new HashMap<>();
+        map.put("id","");
+        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(List.of(map));
+        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
+        Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
+        Map<String, Object> testFormMetaData = new HashMap<>();
+        testFormMetaData.put(FORM_VERSION, 1);
+        Map<String, Object> testFormData = new HashMap<>();
+        testFormData.put(NAME, NAME_VALUE);
+        testFormData.put(AGE,AGE_VALUE);
+        FormDataAuditSchema formDataAuditSchemaTest = new FormDataAuditSchema(TEST_ID,TEST_FORM_DATA_ID,TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
+        Mockito.when(mockMongoTemplate.collectionExists( TP_RUNTIME_FORM_DATA_+formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(true);
+        Assertions.assertThrows(UserDetailsIdNotFoundException.class, () -> mockFormDataAuditServiceImpl.saveFormDataAudit(formDataAuditSchemaTest));
+    }
+
+    @Test
+    void saveFormDataCollectionExistsTestWhileFormIdIsEmpty() throws JsonProcessingException
+    {
+        doReturn(userList).when(mockUserDetails).getUserDetails();
+        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(List.of(map));
+        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
+        Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
+        Map<String, Object> testFormMetaData = new HashMap<>();
+        testFormMetaData.put(FORM_VERSION, 1);
+        Map<String, Object> testFormData = new HashMap<>();
+        testFormData.put(NAME, NAME_VALUE);
+        testFormData.put(AGE,AGE_VALUE);
+        FormDataAuditSchema formDataAuditSchemaTest = new FormDataAuditSchema(TEST_ID,TEST_FORM_DATA_ID,"", TEST_VERSION, testFormData, testFormMetaData);
+        Mockito.when(mockMongoTemplate.collectionExists( TP_RUNTIME_FORM_DATA_+formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(true);
+        Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataAuditServiceImpl.saveFormDataAudit(formDataAuditSchemaTest));
     }
 
     @Test
