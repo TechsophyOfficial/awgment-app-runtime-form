@@ -111,7 +111,6 @@ class FormDataServiceElasticEnabledTest
     @BeforeEach
     public void init()
     {
-
         ReflectionTestUtils.setField(mockFormDataServiceImpl,ELASTIC_SOURCE,true);
         ReflectionTestUtils.setField(mockFormDataServiceImpl,GATEWAY_API,GATEWAY_API_VALUE);
         ReflectionTestUtils.setField(mockFormDataServiceImpl,"defaultPageLimit",20);
@@ -131,7 +130,8 @@ class FormDataServiceElasticEnabledTest
         map.put(DEPARTMENT, NULL);
         userList.add(map);
     }
-    //@Test
+
+    @Test
     void getAllFormDataByFormIdEmptySortBySortOrderTest() throws JsonProcessingException
     {
         ReflectionTestUtils.setField(mockFormDataServiceImpl, ELASTIC_ENABLE, true);

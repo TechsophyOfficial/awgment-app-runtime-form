@@ -33,6 +33,7 @@ class SequenceGeneratorServiceImplTest {
     IdGeneratorImpl idGeneratorImpl;
     @InjectMocks
     SequenceGeneratorServiceImpl sequenceGeneratorService;
+
     @Test
     void generateSequence() throws Exception
     {

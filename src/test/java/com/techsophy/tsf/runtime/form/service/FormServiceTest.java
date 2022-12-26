@@ -104,7 +104,7 @@ class FormServiceTest
     }
 
     @Test
-    void saveRuntimeFormgetIsDefaultNullTest() throws IOException
+    void saveRuntimeFormGetIsDefaultNullTest() throws IOException
     {
         Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
         ObjectMapper objectMapperTest = new ObjectMapper();

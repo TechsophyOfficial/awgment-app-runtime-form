@@ -28,7 +28,7 @@ class SequenceGeneratorCustomRepositoryImplTest {
     void existsBySequenceNameAndLengthTest(){
         Mockito.when(sequenceGeneratorCustomRepository.existsBySequenceNameAndLength("abc",1)).thenReturn(true);
         boolean response = sequenceGeneratorCustomRepository.existsBySequenceNameAndLength("abc",1);
-        Assertions.assertEquals(true,response);
+        Assertions.assertTrue(response);
     }
 
     @Test
