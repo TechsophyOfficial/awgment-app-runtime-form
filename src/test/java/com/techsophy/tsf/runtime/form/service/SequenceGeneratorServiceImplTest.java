@@ -11,37 +11,32 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigInteger;
 import java.time.Instant;
 
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.STRING;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.TEST_ACTIVE_PROFILE;
 import static org.mockito.ArgumentMatchers.*;
 import static shadow.org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ActiveProfiles(TEST_ACTIVE_PROFILE)
-@ExtendWith({SpringExtension.class})
+@ExtendWith({MockitoExtension.class})
 class SequenceGeneratorServiceImplTest {
     @Mock
-    SequenceGeneratorRepository sequenceGeneratorRepository;;
+    SequenceGeneratorRepository sequenceGeneratorRepository;
     @Mock
     IdGeneratorImpl idGeneratorImpl;
     @InjectMocks
     SequenceGeneratorServiceImpl sequenceGeneratorService;
 
     @Test
-    void generateSequence() throws Exception
+    void generateSequence()
     {
         SequenceGeneratorDefinition sequenceGeneratorDefinition=new SequenceGeneratorDefinition(1L,1,STRING,1L);
         sequenceGeneratorDefinition.setCreatedOn(Instant.now());
         sequenceGeneratorDefinition.setUpdatedOn(Instant.now());
         SequenceGeneratorDTO sequenceGeneratorDTO = new SequenceGeneratorDTO();
-        SequenceGeneratorResponse sequenceGeneratorResponse = new SequenceGeneratorResponse(1,STRING,STRING,STRING,STRING);
+//        SequenceGeneratorResponse sequenceGeneratorResponse = new SequenceGeneratorResponse(1,STRING,STRING,STRING,STRING);
         sequenceGeneratorDTO.setSequenceName(STRING);
         sequenceGeneratorDTO.setLength("1");
         Mockito.when(idGeneratorImpl.nextId()).thenReturn(BigInteger.ONE);

@@ -10,12 +10,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.test.context.ActiveProfiles;
-
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.TEST_ACTIVE_PROFILE;
 
 @ExtendWith(MockitoExtension.class)
-@ActiveProfiles(TEST_ACTIVE_PROFILE)
 class SequenceGeneratorCustomRepositoryImplTest {
     @Mock
     MongoTemplate mongoTemplate;

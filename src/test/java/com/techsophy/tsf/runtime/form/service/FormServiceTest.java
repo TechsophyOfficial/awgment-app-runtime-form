@@ -13,16 +13,17 @@ import com.techsophy.tsf.runtime.form.repository.FormDefinitionRepository;
 import com.techsophy.tsf.runtime.form.service.impl.FormServiceImpl;
 import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import lombok.Cleanup;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -34,10 +35,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@ActiveProfiles(TEST_ACTIVE_PROFILE)
-@ExtendWith({ SpringExtension.class})
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@ExtendWith({MockitoExtension.class})
 class FormServiceTest
 {
     @Mock
@@ -91,14 +89,7 @@ class FormServiceTest
     void saveRuntimeFormTest() throws IOException
     {
         Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
-        ObjectMapper objectMapperTest = new ObjectMapper();
-        @Cleanup InputStream inputStreamTest = new ClassPathResource(TEST_FORMS_DATA_2).getInputStream();
-        String formDataTest = new String(inputStreamTest.readAllBytes());
-        FormDefinition formDefinitionTest = objectMapperTest.readValue(formDataTest,FormDefinition.class);
         FormSchema formSchemaTest =new FormSchema(TEST_ID,TEST_NAME,TEST_COMPONENTS,list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE);
-        when(this.mockObjectMapper.convertValue(any(), eq(FormDefinition.class)))
-                .thenReturn(formDefinitionTest);
-        when(mockFormDefinitionRepository.save(formDefinitionTest)).thenReturn(formDefinitionTest.withId(BigInteger.valueOf(Long.parseLong(TEST_ID))));
         mockFormServiceImpl.saveRuntimeForm(formSchemaTest);
         verify(mockFormDefinitionRepository, times(1)).save(any());
     }
@@ -107,14 +98,7 @@ class FormServiceTest
     void saveRuntimeFormGetIsDefaultNullTest() throws IOException
     {
         Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
-        ObjectMapper objectMapperTest = new ObjectMapper();
-        @Cleanup InputStream inputStreamTest = new ClassPathResource(TEST_FORMS_DATA_2).getInputStream();
-        String formDataTest = new String(inputStreamTest.readAllBytes());
-        FormDefinition formDefinitionTest = objectMapperTest.readValue(formDataTest,FormDefinition.class);
         FormSchema formSchemaTest =new FormSchema(TEST_ID,TEST_NAME,TEST_COMPONENTS,list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,null);
-        when(this.mockObjectMapper.convertValue(any(), eq(FormDefinition.class)))
-                .thenReturn(formDefinitionTest);
-        when(mockFormDefinitionRepository.save(formDefinitionTest)).thenReturn(formDefinitionTest.withId(BigInteger.valueOf(Long.parseLong(TEST_ID))));
         mockFormServiceImpl.saveRuntimeForm(formSchemaTest);
         verify(mockFormDefinitionRepository, times(1)).save(any());
     }
@@ -147,14 +131,7 @@ class FormServiceTest
     {
         Mockito.when(mockUserDetails.getUserDetails())
                 .thenReturn(userList);
-        ObjectMapper objectMapperTest = new ObjectMapper();
-        @Cleanup InputStream inputStreamTest = new ClassPathResource(TEST_FORMS_DATA_1).getInputStream();
-        String formData = new String(inputStreamTest.readAllBytes());
-        FormDefinition formDefinitionTest = objectMapperTest.readValue(formData,FormDefinition.class);
         FormSchema formSchemaTest =new FormSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE);
-        when(this.mockObjectMapper.convertValue(any(), eq(FormDefinition.class)))
-                .thenReturn(formDefinitionTest);
-        when(mockFormDefinitionRepository.save(formDefinitionTest)).thenReturn(formDefinitionTest.withId(BigInteger.valueOf(Long.parseLong(TEST_ID))));
         mockFormServiceImpl.saveRuntimeForm(formSchemaTest);
         verify(mockFormDefinitionRepository, times(1)).save(any());
     }
@@ -164,16 +141,7 @@ class FormServiceTest
     {
         Mockito.when(mockUserDetails.getUserDetails())
                 .thenReturn(userList);
-        ObjectMapper objectMapperTest = new ObjectMapper();
-        @Cleanup InputStream inputStreamTest = new ClassPathResource(TEST_FORMS_DATA_1).getInputStream();
-        String formDataTest = new String(inputStreamTest.readAllBytes());
         FormSchema formSchemaTest =new FormSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,list,TEST_PROPERTIES, TEST_TYPE_COMPONENT, TEST_VERSION,IS_DEFAULT_VALUE);
-        FormDefinition formDefinitionTest = objectMapperTest.readValue(formDataTest,FormDefinition.class);
-        when(this.mockObjectMapper.convertValue(any(), eq(FormDefinition.class)))
-                .thenReturn(formDefinitionTest);
-        when(mockFormDefinitionRepository.save(formDefinitionTest)).thenReturn(formDefinitionTest.withId(BigInteger.valueOf(Long.parseLong(TEST_ID))));
-        when(mockFormDefinitionRepository.existsById(BigInteger.valueOf(Long.parseLong(TEST_ID)))).thenReturn(true);
-        when(mockFormDefinitionRepository.findById(BigInteger.valueOf(Long.parseLong(TEST_ID)))).thenReturn(Optional.of(formDefinitionTest));
         mockFormServiceImpl.saveRuntimeForm(formSchemaTest);
         verify(mockFormDefinitionRepository, times(1)).save(any());
     }
@@ -199,11 +167,7 @@ class FormServiceTest
         ObjectMapper objectMapperTest = new ObjectMapper();
         @Cleanup InputStream inputStreamTest = new ClassPathResource(TEST_FORMS_DATA_1).getInputStream();
         String formsDataTest = new String(inputStreamTest.readAllBytes());
-        FormResponseSchema formSchemaTest =new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
-                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON,
-                TEST_UPDATED_BY_ID,TEST_UPDATED_ON);
         FormDefinition formDefinitionTest = objectMapperTest.readValue(formsDataTest, FormDefinition.class);
-        when(this.mockObjectMapper.convertValue(any(),eq(FormResponseSchema.class))).thenReturn(formSchemaTest);
         when(mockFormDefinitionRepository.findByType(TEST_TYPE_FORM)).thenReturn(List.of(formDefinitionTest));
         mockFormServiceImpl.getAllRuntimeForms(true, TEST_TYPE_FORM);
         verify(mockFormDefinitionRepository,times(1)).findByType(TEST_TYPE_FORM);
@@ -215,11 +179,7 @@ class FormServiceTest
         ObjectMapper objectMapperTest = new ObjectMapper();
         @Cleanup InputStream inputStreamTest = new ClassPathResource(TEST_FORMS_DATA_1).getInputStream();
         String formsData = new String(inputStreamTest.readAllBytes());
-        FormResponseSchema formSchemaTest =new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
-                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON,
-                TEST_UPDATED_BY_ID,TEST_UPDATED_ON);
         FormDefinition formDefinitionTest = objectMapperTest.readValue(formsData, FormDefinition.class);
-        when(this.mockObjectMapper.convertValue(any(), eq(FormResponseSchema.class))).thenReturn(formSchemaTest);
         when(mockFormDefinitionRepository.findByType(TEST_TYPE_COMPONENT)).thenReturn(List.of(formDefinitionTest));
         mockFormServiceImpl.getAllRuntimeForms(true, TEST_TYPE_COMPONENT);
         verify(mockFormDefinitionRepository,times(1)).findByType(TEST_TYPE_COMPONENT);
@@ -231,11 +191,7 @@ class FormServiceTest
         ObjectMapper objectMapperTest = new ObjectMapper();
         @Cleanup InputStream inputStreamTest = new ClassPathResource(TEST_FORMS_DATA_1).getInputStream();
         String formsDataTest = new String(inputStreamTest.readAllBytes());
-        FormResponseSchema formSchemaTest =new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
-                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON,
-                TEST_UPDATED_BY_ID,TEST_UPDATED_ON);
         FormDefinition formDefinitionTest = objectMapperTest.readValue(formsDataTest, FormDefinition.class);
-        when(this.mockObjectMapper.convertValue(mockFormDefinition,FormResponseSchema.class)).thenReturn(formSchemaTest);
         when(mockFormDefinitionRepository.findAll()).thenReturn(List.of(formDefinitionTest));
         mockFormServiceImpl.getAllRuntimeForms(true, null);
         verify(mockFormDefinitionRepository,times(1)).findAll();
@@ -247,13 +203,8 @@ class FormServiceTest
         ObjectMapper objectMapperTest = new ObjectMapper();
         @Cleanup InputStream inputStreamTest = new ClassPathResource(TEST_FORMS_DATA_1).getInputStream();
         String formData = new String(inputStreamTest.readAllBytes());
-        FormResponseSchema formSchemaTest =new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
-                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON,
-                TEST_UPDATED_BY_ID,TEST_UPDATED_ON);
         FormDefinition formDefinitionTest = objectMapperTest.readValue(formData, FormDefinition.class);
-        when(this.mockObjectMapper.convertValue(any(), eq(FormResponseSchema.class))).thenReturn(formSchemaTest);
         when(mockFormDefinitionRepository.findAll()).thenReturn(List.of(formDefinitionTest));
-        when(this.mockObjectMapper.convertValue(mockFormDefinition,FormResponseSchema.class)).thenReturn(formSchemaTest);
         mockFormServiceImpl.getAllRuntimeForms(false, null );
         verify(mockFormDefinitionRepository,times(1)).findAll();
     }
@@ -264,13 +215,8 @@ class FormServiceTest
         ObjectMapper objectMapperTest = new ObjectMapper();
         @Cleanup InputStream inputStreamTest = new ClassPathResource(TEST_FORMS_DATA_1).getInputStream();
         String formData = new String(inputStreamTest.readAllBytes());
-        FormResponseSchema formSchemaTest =new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
-                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON,
-                TEST_UPDATED_BY_ID,TEST_UPDATED_ON);
         FormDefinition formDefinitionTest = objectMapperTest.readValue(formData, FormDefinition.class);
-        when(this.mockObjectMapper.convertValue(any(), eq(FormResponseSchema.class))).thenReturn(formSchemaTest);
         when(mockFormDefinitionRepository.findAll()).thenReturn(List.of(formDefinitionTest));
-        when(this.mockObjectMapper.convertValue(mockFormDefinition,FormResponseSchema.class)).thenReturn(formSchemaTest);
         mockFormServiceImpl.getAllRuntimeForms(false, null );
         verify(mockFormDefinitionRepository,times(1)).findAll();
     }
@@ -281,13 +227,8 @@ class FormServiceTest
         ObjectMapper objectMapperTest = new ObjectMapper();
         @Cleanup InputStream inputStreamTest = new ClassPathResource(TEST_FORMS_DATA_1).getInputStream();
         String formData = new String(inputStreamTest.readAllBytes());
-        FormResponseSchema formSchemaTest =new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
-                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON,
-                TEST_UPDATED_BY_ID,TEST_UPDATED_ON);
         FormDefinition formDefinitionTest = objectMapperTest.readValue(formData, FormDefinition.class);
-        when(this.mockObjectMapper.convertValue(any(), eq(FormResponseSchema.class))).thenReturn(formSchemaTest);
         when(mockFormDefinitionRepository.findByType(TEST_TYPE_FORM)).thenReturn(List.of(formDefinitionTest));
-        when(this.mockObjectMapper.convertValue(mockFormDefinition,FormResponseSchema.class)).thenReturn(formSchemaTest);
         mockFormServiceImpl.getAllRuntimeForms(false, TEST_TYPE_FORM );
         verify(mockFormDefinitionRepository,times(1)).findByType(TEST_TYPE_FORM);
     }
@@ -320,10 +261,7 @@ class FormServiceTest
         ObjectMapper objectMapperTest=new ObjectMapper();
         @Cleanup InputStream inputStreamTest = new ClassPathResource(TEST_FORMS_DATA_1).getInputStream();
         String formData= new String(inputStreamTest.readAllBytes());
-        FormResponseSchema formSchemaTest =new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
-                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON, TEST_UPDATED_BY_ID,TEST_UPDATED_ON);
         FormDefinition formDefinitionTest =objectMapperTest.readValue(formData,FormDefinition.class);
-        when(this.mockObjectMapper.convertValue(any(),eq(FormResponseSchema.class))).thenReturn(formSchemaTest);
         when(mockFormDefinitionRepository.findByNameOrIdAndType(TEST_ID_OR_NAME_LIKE, TEST_TYPE_FORM)).thenReturn(Collections.singletonList(formDefinitionTest));
         mockFormServiceImpl.searchRuntimeFormByIdOrNameLike(TEST_ID_OR_NAME_LIKE, TEST_TYPE_FORM);
         verify(mockFormDefinitionRepository, times(1)).findByNameOrIdAndType(TEST_ID_OR_NAME_LIKE, TEST_TYPE_FORM);
@@ -335,10 +273,7 @@ class FormServiceTest
         ObjectMapper objectMapperTest=new ObjectMapper();
         @Cleanup InputStream inputStreamTest = new ClassPathResource(TEST_FORMS_DATA_1).getInputStream();
         String formData= new String(inputStreamTest.readAllBytes());
-        FormResponseSchema formSchemaTest =new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
-                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON, TEST_UPDATED_BY_ID,TEST_UPDATED_ON);
         FormDefinition formDefinitionTest =objectMapperTest.readValue(formData,FormDefinition.class);
-        when(this.mockObjectMapper.convertValue(any(),eq(FormResponseSchema.class))).thenReturn(formSchemaTest);
         when(mockFormDefinitionRepository.findByNameOrId(TEST_ID_OR_NAME_LIKE)).thenReturn(Collections.singletonList(formDefinitionTest));
         mockFormServiceImpl.searchRuntimeFormByIdOrNameLike(TEST_ID_OR_NAME_LIKE, null);
         verify(mockFormDefinitionRepository,times(1)).findByNameOrId(TEST_ID_OR_NAME_LIKE);

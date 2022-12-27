@@ -9,23 +9,23 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import java.util.*;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.FORM_DATA;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.MAX_LENGTH;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.MIN_LENGTH;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static shadow.org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith({SpringExtension.class})
-@SpringBootTest
-@ActiveProfiles(TEST_ACTIVE_PROFILE)
+@ExtendWith({MockitoExtension.class})
 class ValidationCheckServiceImplTest
 {
     @Mock
@@ -93,10 +93,7 @@ class ValidationCheckServiceImplTest
         fieldsMap.put(REQUIRED,false);
         fieldsMap.put(UNIQUE,false);
         schemaMap.put(NAME,fieldsMap);
-        Iterator<String> iterator=mock(Iterator.class);
-        Mockito.when(mockKeys.iterator()).thenReturn(iterator);
-        Mockito.when(iterator.hasNext()).thenReturn(true).thenReturn(false);
-        Mockito.when(iterator.next()).thenReturn(NAME);
+//        Iterator<String> iterator=mock(Iterator.class);
         List<String> response = mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,dataMapTest,TEST_FORM_ID,TEST_ID);
         assertThat(response).isInstanceOf(List.class);
     }
@@ -127,10 +124,7 @@ class ValidationCheckServiceImplTest
         fieldsMap.put(REQUIRED,false);
         fieldsMap.put(UNIQUE,false);
         schemaMap.put(NAME,fieldsMap);
-        Iterator<String> iterator=mock(Iterator.class);
-        Mockito.when(mockKeys.iterator()).thenReturn(iterator);
-        Mockito.when(iterator.hasNext()).thenReturn(false);
-        Mockito.when(iterator.next()).thenReturn(NAME);
+//        Iterator<String> iterator=mock(Iterator.class);
         List<String> response = mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,dataMapTest,TEST_FORM_ID,TEST_ID);
         assertThat(response).isInstanceOf(List.class);
     }

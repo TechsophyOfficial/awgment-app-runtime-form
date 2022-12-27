@@ -3,7 +3,6 @@ package com.techsophy.tsf.runtime.form.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
@@ -19,7 +18,6 @@ import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import com.techsophy.tsf.runtime.form.utils.ValidateFormUtils;
 import com.techsophy.tsf.runtime.form.utils.WebClientWrapper;
-import org.bson.conversions.Bson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,22 +26,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import javax.swing.text.Document;
-import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
-
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.FORM_DATA;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.MAX_LENGTH;
@@ -53,9 +46,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
-@ActiveProfiles(TEST_ACTIVE_PROFILE)
-@SpringBootTest
-@ExtendWith({SpringExtension.class})
+@ExtendWith({MockitoExtension.class})
 class FormDataServiceElasticDisabledExceptionTest
 {
     @Mock
@@ -123,11 +114,10 @@ class FormDataServiceElasticDisabledExceptionTest
         Map<String,Object> mapData =new HashMap<>();
         mapData.put("create","true");
         list.add(mapData);
-
     }
 
     @Test
-    void saveFormDataFormIdNullExceptionTest() throws IOException
+    void saveFormDataFormIdNullExceptionTest()
     {
         Map<String,Object> testFormData=new HashMap<>();
         testFormData.put(NAME,NAME_VALUE);
@@ -135,7 +125,6 @@ class FormDataServiceElasticDisabledExceptionTest
         Map<String,Object> testFormMetaData=new HashMap<>();
         testFormMetaData.put(FORM_VERSION,1);
         FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID,null,TEST_VERSION,testFormData,testFormMetaData);
-        doReturn(userList).when(mockUserDetails).getUserDetails();
         Assertions.assertThrows(InvalidInputException.class, () ->
                 mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
     }
@@ -448,34 +437,6 @@ class FormDataServiceElasticDisabledExceptionTest
                 mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, null, CREATED_ON, null, null));
     }
 
-//    @Test
-//    void getAllFormDataByFormId()
-//    {
-//        PaginationResponsePayload paginationResponsePayload;
-//        List<Map<String,Object>> list = new ArrayList<>();
-//        Map<String, Object> testFormMetaData = new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION, 1);
-//        FormDataDefinition formDataDefinition = new FormDataDefinition(BigInteger.ONE,1,testFormMetaData,testFormMetaData);
-//        list.add(testFormMetaData);
-//        Map<String, Object> testFormData2 = new HashMap<>();
-//        testFormData2.put(NAME, NAME_VALUE);
-//        testFormData2.put(AGE,AGE_VALUE);
-//        FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
-//        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-//        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(mockMongoCollection);
-////        Mockito.when(mockMongoTemplate.find(any(),any(FormDataDefinition.class),TP_RUNTIME_FORM_DATA_+formDataSchemaTest.getFormId())).thenReturn(List.of(formDataDefinition));
-//        Mockito.when(mockMongoTemplate.find(any(),any(),any())).thenReturn(List.of(formDataDefinition));
-//        Mockito.doReturn(aggregationResults).when(mockMongoTemplate).aggregate(Mockito.any(Aggregation.class), Mockito.eq(COLLECTION), Mockito.eq(Map.class));
-//        PaginationResponsePayload responseData1 = mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,EMPTY_STRING, ABC, CREATED_ON, DESCENDING, PageRequest.of(0,2));
-//        PaginationResponsePayload response = mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,TEST_RELATIONS, ABC, CREATED_ON, DESCENDING, PageRequest.of(0,2));
-//        PaginationResponsePayload responseData = mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,TEST_RELATIONS, ABC, EMPTY_STRING, EMPTY_STRING, PageRequest.of(0,2));
-//        PaginationResponsePayload responsePayload = mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,EMPTY_STRING, ABC, EMPTY_STRING, EMPTY_STRING, PageRequest.of(0,2));
-//        assertThat(response).isInstanceOf(PaginationResponsePayload.class);
-//        assertThat(responsePayload).isInstanceOf(PaginationResponsePayload.class);
-//        assertThat(responseData).isInstanceOf(PaginationResponsePayload.class);
-//        assertThat(responseData1).isInstanceOf(PaginationResponsePayload.class);
-//    }
-
     @Test
     void getAllFormDataByFormIdInvalidInputExceptionTest() throws JsonProcessingException {
         ReflectionTestUtils.setField(mockFormDataServiceImpl,"elasticEnable",true);
@@ -514,8 +475,8 @@ class FormDataServiceElasticDisabledExceptionTest
     }
 
     @Test
-    void getAllFormDataByFormIdNotFoundExceptionTest2() {
-        try {
+    void getAllFormDataByFormIdNotFoundExceptionTest2()
+    {
             Map<String, Object> testFormMetaData = new HashMap<>();
             testFormMetaData.put(FORM_VERSION, 1);
             Map<String, Object> testFormData2 = new HashMap<>();
@@ -523,11 +484,7 @@ class FormDataServiceElasticDisabledExceptionTest
             testFormData2.put(AGE, AGE_VALUE);
             FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
             when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formDataSchemaTest.getFormId())).thenReturn(false);
-            mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, null, CREATED_ON, null, PageRequest.of(0, 2));}
-        catch(FormIdNotFoundException e)
-        {
-            System.out.println(e);
-        }
+            Assertions.assertThrows(FormIdNotFoundException.class,()->mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, null, CREATED_ON, null, PageRequest.of(0, 2)));
     }
 
     @Test
@@ -540,13 +497,6 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(AGE,AGE_VALUE);
         FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
         when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_+formDataSchemaTest.getFormId())).thenReturn(true);
-        List<Map> testAggregationList=new ArrayList<>();
-        Map<String,Object> aggregationMap=new HashMap<>();
-        aggregationMap.put(UNDERSCORE_ID,TEST_ID_VALUE);
-        testAggregationList.add(aggregationMap);
-        org.bson.Document document=new org.bson.Document();
-        AggregationResults<Map> aggregationResults=new AggregationResults<>(testAggregationList,document);
-        when(mockMongoTemplate.aggregate((Aggregation) any(), (String) any(),eq(Map.class))).thenReturn(aggregationResults);
         Assertions.assertThrows(InvalidInputException.class, () ->
                 mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,EMPTY_STRING , null, null, null));
     }
@@ -566,7 +516,8 @@ class FormDataServiceElasticDisabledExceptionTest
     }
 
     @Test
-    void getAllFormDataByFormIdAndQFormIdNotFoundExceptionTest() {
+    void getAllFormDataByFormIdAndQFormIdNotFoundExceptionTest()
+    {
         Map<String, Object> testFormMetaData = new HashMap<>();
         testFormMetaData.put(FORM_VERSION, 1);
         Map<String, Object> testFormData2 = new HashMap<>();
@@ -655,12 +606,8 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(NAME, NAME_VALUE);
         testFormData2.put(AGE,AGE_VALUE);
         FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
-        Bson filter= Filters.eq(UNDERSCORE_ID,UNDERSCORE_ID_VALUE);
         when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-        when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_+formDataSchemaTest.getFormId())).thenReturn(mockMongoCollection);
-        DeleteResult deleteResult=DeleteResult.acknowledged(0);
-        when(mockDocument.deleteMany(any(org.bson.conversions.Bson.class))).thenReturn(deleteResult);
-        when(mockDeleteResult.getDeletedCount()).thenReturn(Long.valueOf(0));
+        when(mockMongoTemplate.getCollection(any())).thenReturn(mockMongoCollection);
         Assertions.assertThrows(InvalidInputException.class, () ->
                 mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_FORM_DATA_ID));
     }
