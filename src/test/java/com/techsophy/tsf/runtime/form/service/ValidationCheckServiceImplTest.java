@@ -23,7 +23,6 @@ import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.MIN_LENGTH;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.ArgumentMatchers.any;
-import static shadow.org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith({MockitoExtension.class})
 class ValidationCheckServiceImplTest
@@ -62,9 +61,7 @@ class ValidationCheckServiceImplTest
         fieldsMap.put(REQUIRED,false);
         fieldsMap.put(UNIQUE,false);
         schemaMap.put(NAME,fieldsMap);
-        List<String> response = mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,dataMapTest,TEST_FORM_ID,TEST_ID);
-        assertThat(response).isInstanceOf(List.class);
-
+        Assertions.assertNotNull(mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,dataMapTest,TEST_FORM_ID,TEST_ID));
     }
 
     @Test
@@ -93,9 +90,7 @@ class ValidationCheckServiceImplTest
         fieldsMap.put(REQUIRED,false);
         fieldsMap.put(UNIQUE,false);
         schemaMap.put(NAME,fieldsMap);
-//        Iterator<String> iterator=mock(Iterator.class);
-        List<String> response = mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,dataMapTest,TEST_FORM_ID,TEST_ID);
-        assertThat(response).isInstanceOf(List.class);
+        Assertions.assertNotNull(mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,dataMapTest,TEST_FORM_ID,TEST_ID));
     }
 
     @Test
@@ -124,9 +119,7 @@ class ValidationCheckServiceImplTest
         fieldsMap.put(REQUIRED,false);
         fieldsMap.put(UNIQUE,false);
         schemaMap.put(NAME,fieldsMap);
-//        Iterator<String> iterator=mock(Iterator.class);
-        List<String> response = mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,dataMapTest,TEST_FORM_ID,TEST_ID);
-        assertThat(response).isInstanceOf(List.class);
+        Assertions.assertNotNull(mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,dataMapTest,TEST_FORM_ID,TEST_ID));
     }
 
     @Test
@@ -139,7 +132,7 @@ class ValidationCheckServiceImplTest
         fieldsMap.put(REQUIRED,false);
         fieldsMap.put(UNIQUE,false);
         schemaMap.put(NAME,fieldsMap);
-        org.junit.jupiter.api.Assertions.assertThrows(InvalidInputException.class, () ->
+        Assertions.assertThrows(InvalidInputException.class, () ->
                 mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,dataMapTest,TEST_FORM_ID,TEST_ID));
     }
 
