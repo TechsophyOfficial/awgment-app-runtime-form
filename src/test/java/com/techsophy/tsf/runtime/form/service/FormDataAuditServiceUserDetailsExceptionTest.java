@@ -16,12 +16,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.reactive.function.client.WebClient;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,9 +31,7 @@ import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.Mockito.doReturn;
 
-@SpringBootTest
-@ActiveProfiles(TEST_ACTIVE_PROFILE)
-@ExtendWith({SpringExtension.class})
+@ExtendWith({MockitoExtension.class})
 class FormDataAuditServiceUserDetailsExceptionTest
 {
     @Mock

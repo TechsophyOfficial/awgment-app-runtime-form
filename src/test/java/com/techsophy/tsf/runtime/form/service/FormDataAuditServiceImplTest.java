@@ -8,7 +8,6 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.InsertOneResult;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
-import com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants;
 import com.techsophy.tsf.runtime.form.dto.FormDataAuditSchema;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
@@ -25,11 +24,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.reactive.function.client.WebClient;
 import java.time.Instant;
 import java.util.*;
@@ -38,9 +35,7 @@ import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@ActiveProfiles(TEST_ACTIVE_PROFILE)
-@ExtendWith({SpringExtension.class})
+@ExtendWith({MockitoExtension.class})
 class FormDataAuditServiceImplTest
 {
     @Mock
@@ -92,16 +87,12 @@ class FormDataAuditServiceImplTest
     void saveFormDataCollectionExistsTest() throws JsonProcessingException
     {
         doReturn(userList).when(mockUserDetails).getUserDetails();
-        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-        Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
         Map<String, Object> testFormMetaData = new HashMap<>();
         testFormMetaData.put(FORM_VERSION, 1);
         Map<String, Object> testFormData = new HashMap<>();
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
         FormDataAuditSchema formDataAuditSchemaTest = new FormDataAuditSchema(TEST_ID,TEST_FORM_DATA_ID,TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists( TP_RUNTIME_FORM_DATA_+formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(true);
-        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_ +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(mockMongoCollection);
         Map<String, Object> formDataMap = new HashMap<>();
         formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
         formDataMap.put(FORM_DATA_ID,TEST_FORM_DATA_ID);
@@ -128,15 +119,12 @@ class FormDataAuditServiceImplTest
         Map<String, Object> map = new HashMap<>();
         map.put("id","");
         Mockito.when(mockUserDetails.getUserDetails()).thenReturn(List.of(map));
-        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-        Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
         Map<String, Object> testFormMetaData = new HashMap<>();
         testFormMetaData.put(FORM_VERSION, 1);
         Map<String, Object> testFormData = new HashMap<>();
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
         FormDataAuditSchema formDataAuditSchemaTest = new FormDataAuditSchema(TEST_ID,TEST_FORM_DATA_ID,TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists( TP_RUNTIME_FORM_DATA_+formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(true);
         Assertions.assertThrows(UserDetailsIdNotFoundException.class, () -> mockFormDataAuditServiceImpl.saveFormDataAudit(formDataAuditSchemaTest));
     }
 
@@ -145,15 +133,12 @@ class FormDataAuditServiceImplTest
     {
         doReturn(userList).when(mockUserDetails).getUserDetails();
         Mockito.when(mockUserDetails.getUserDetails()).thenReturn(List.of(map));
-        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-        Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
         Map<String, Object> testFormMetaData = new HashMap<>();
         testFormMetaData.put(FORM_VERSION, 1);
         Map<String, Object> testFormData = new HashMap<>();
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
         FormDataAuditSchema formDataAuditSchemaTest = new FormDataAuditSchema(TEST_ID,TEST_FORM_DATA_ID,"", TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists( TP_RUNTIME_FORM_DATA_+formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(true);
         Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataAuditServiceImpl.saveFormDataAudit(formDataAuditSchemaTest));
     }
 
@@ -161,15 +146,12 @@ class FormDataAuditServiceImplTest
     void saveFormDataCollectionUpdateTest() throws JsonProcessingException
     {
         doReturn(userList).when(mockUserDetails).getUserDetails();
-        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-        Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
         Map<String, Object> testFormMetaData = new HashMap<>();
         testFormMetaData.put(FORM_VERSION, 1);
         Map<String, Object> testFormData = new HashMap<>();
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
         FormDataAuditSchema formDataAuditSchemaTest = new FormDataAuditSchema(TEST_ID,TEST_FORM_DATA_ID,TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(false);
         Map<String, Object> formDataMap = new HashMap<>();
         formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
         formDataMap.put(FORM_DATA_ID,TEST_FORM_DATA_ID);
@@ -194,11 +176,11 @@ class FormDataAuditServiceImplTest
     {
         Map<String, Object> testFormMetaData = new HashMap<>();
         testFormMetaData.put(FORM_VERSION, 1);
-        Map<String, Object> testFormData = new HashMap<>();
+        LinkedHashMap<String, Object> testFormData = new LinkedHashMap<>();
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
         FormDataAuditSchema formDataAuditSchemaTest = new FormDataAuditSchema(TEST_ID,TEST_FORM_DATA_ID,TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Map<String, Object> formDataMap = new HashMap<>();
+        LinkedHashMap<String, Object> formDataMap = new LinkedHashMap<>();
         formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
         formDataMap.put(FORM_DATA_ID,TEST_FORM_DATA_ID);
         formDataMap.put(FORM_ID,TEST_FORM_ID);
@@ -222,7 +204,7 @@ class FormDataAuditServiceImplTest
         Mockito.when(iterable.iterator()).thenReturn(cursor);
         Mockito.when(cursor.hasNext()).thenReturn(true).thenReturn(false);
         Mockito.when(cursor.next()).thenReturn(document);
-        Mockito.when(mockObjectMapper.convertValue(document.get(FORM_DATA),Map.class)).thenReturn(testFormData);
+        Mockito.when(mockObjectMapper.convertValue(document.get(FORM_DATA),LinkedHashMap.class)).thenReturn(testFormData);
         Mockito.when(mockObjectMapper.convertValue(document.get(FORM_META_DATA),Map.class)).thenReturn(testFormMetaData);
         mockFormDataAuditServiceImpl.getAllFormDataAuditByFormIdAndDocumentId(TEST_FORM_ID,TEST_ID);
         verify(mockMongoCollection,times(1)).find(any(Bson.class));
