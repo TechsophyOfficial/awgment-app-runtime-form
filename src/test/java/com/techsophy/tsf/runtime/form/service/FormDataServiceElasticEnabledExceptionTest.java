@@ -2,14 +2,11 @@ package com.techsophy.tsf.runtime.form.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertOneResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
-import com.techsophy.tsf.runtime.form.dto.FormDataAuditSchema;
 import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
 import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
@@ -21,7 +18,6 @@ import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import com.techsophy.tsf.runtime.form.utils.ValidateFormUtils;
 import com.techsophy.tsf.runtime.form.utils.WebClientWrapper;
-import org.bson.Document;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -147,12 +143,6 @@ class FormDataServiceElasticEnabledExceptionTest
             when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_+formDataSchemaTest.getFormId())).thenReturn(true);
             when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_+formDataSchemaTest.getFormId())).thenReturn(mockMongoCollection);
             when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_ID_VALUE)));
-            FormDataAuditSchema formDataAuditSchemaTest = new
-                    FormDataAuditSchema(TEST_ID_VALUE, TEST_FORM_DATA_ID,TEST_FORM_ID,TEST_VERSION,
-                    testFormData,testFormMetaData);
-//            when(mockFormDataAuditServiceImpl.saveFormDataAudit(formDataAuditSchemaTest)).thenReturn(new FormDataAuditResponse(TEST_ID_VALUE,TEST_VERSION));
-            String responseTest =RESPONSE_VALUE_15;
-//            when(mockWebClientWrapper.webclientRequest(any(),any(),eq(GET),any())).thenThrow(HttpServerErrorException.InternalServerError.class);
             Map<String,Object> responseMapTest=new HashMap<>();
             LinkedHashMap<String,Object> dataMapTest =new LinkedHashMap<>();
             dataMapTest.put(FORM_ID,TEST_FORM_ID);
@@ -168,18 +158,14 @@ class FormDataServiceElasticEnabledExceptionTest
             Date date=new Date();
             dataMapTest.put(CREATED_ON,date);
             dataMapTest.put(UPDATED_ON,date);
-            Document document = new Document(dataMapTest);
             responseMapTest.put(DATA, dataMapTest);
             responseMapTest.put(SUCCESS,true);
             responseMapTest.put(MESSAGE,ELASTIC_DATA_FETCHED_SUCCESSFULLY);
-            FindIterable iterable = mock(FindIterable.class);
-            MongoCursor cursor = mock(MongoCursor.class);
             when(mockWebClientWrapper.webclientRequest(any(),any(),eq(POST),any())).thenThrow(HttpServerErrorException.InternalServerError.class);
             List<String> stringList=new ArrayList<>();
             stringList.add("10");
             stringList.add("101");
             when(mockValidationCheckServiceImpl.allFieldsValidations(any(),any(),any(),any())).thenReturn(stringList);
-            final Map<String,Object> updatedElasticFormData=dataMapTest;
             when(mockMongoTemplate.save(any(),anyString())).thenReturn(testFormData);
             Assertions.assertThrows(RecordUnableToSaveException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
         }}
@@ -517,7 +503,6 @@ class FormDataServiceElasticEnabledExceptionTest
         dataMapTest.put(UPDATED_ON,TEST_UPDATED_ON);
         responseMapTest.put(DATA, dataMapTest);
         responseMapTest.put(SUCCESS,true);
-//        when(mockObjectMapper.convertValue(responseMapTest.get(DATA),Map.class)).thenReturn(dataMapTest);
         when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteAllFormDataByFormId(TEST_FORM_ID));
     }
@@ -525,7 +510,6 @@ class FormDataServiceElasticEnabledExceptionTest
     @Test
     void deleteFormDataByFormIdAndIdTest()
     {
-//        when(mockTokenUtils.getTokenFromContext()).thenReturn(EMPTY_STRING);
         when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_ +TEST_FORM_ID)).thenReturn(mockMongoCollection);
         DeleteResult mockDeleteResult=Mockito.mock(DeleteResult.class);
@@ -589,7 +573,6 @@ class FormDataServiceElasticEnabledExceptionTest
         dataMapTest.put(UPDATED_ON,TEST_UPDATED_ON);
         responseMapTest.put(DATA, null);
         responseMapTest.put(SUCCESS,true);
-//        when(mockObjectMapper.convertValue(responseMapTest.get(DATA),Map.class)).thenReturn(dataMapTest);
         when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_ +TEST_FORM_ID)).thenReturn(mockMongoCollection);
         DeleteResult mockDeleteResult=Mockito.mock(DeleteResult.class);
         when(mockMongoCollection.deleteMany(any())).thenReturn(mockDeleteResult);

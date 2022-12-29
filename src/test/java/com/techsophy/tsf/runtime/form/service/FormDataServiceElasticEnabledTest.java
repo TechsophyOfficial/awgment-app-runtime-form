@@ -188,7 +188,6 @@ class FormDataServiceElasticEnabledTest
         dataMapTest.put(NUMBER_OF_ELEMENTS,ONE);
         responseMapTest.put(DATA, dataMapTest);
         responseMapTest.put(SUCCESS,true);
-//        FormDataDefinition formDataDefinition = new FormDataDefinition(BigInteger.ONE,1,dataMapTest,dataMapTest);
         responseMapTest.put(MESSAGE,ELASTIC_DATA_FETCHED_SUCCESSFULLY);
         Mockito.when(mockObjectMapper.readValue(responseTest,Map.class)).thenReturn(responseMapTest);
         Mockito.when(mockObjectMapper.convertValue(responseMapTest.get(DATA),Map.class)).thenReturn(dataMapTest);
@@ -203,7 +202,6 @@ class FormDataServiceElasticEnabledTest
         List<String> list1 = new ArrayList<>();
         list1.add("10");
         list1.add("2");
-//        doReturn(userList).when(mockUserDetails).getUserDetails();
         Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
         Map<String, Object> testFormMetaData = new HashMap<>();
@@ -238,7 +236,6 @@ class FormDataServiceElasticEnabledTest
         data.put(FORM_DATA,data1);
         ArrayList list2 = new ArrayList<>();
         list2.add(data);
-//        Document document = new Document(formDataMap);
         when(mockObjectMapper.readValue(anyString(), eq(Map.class))).thenReturn(formDataMap);
         Date currentDate = new Date();
         Document document1 = new Document("version",1);
@@ -317,7 +314,6 @@ class FormDataServiceElasticEnabledTest
         dataMapTest.put(NUMBER_OF_ELEMENTS,ONE);
         responseMapTest.put(DATA, dataMapTest);
         responseMapTest.put(SUCCESS,true);
-//        FormDataDefinition formDataDefinition = new FormDataDefinition(BigInteger.ONE,1,dataMapTest,dataMapTest);
         responseMapTest.put(MESSAGE,ELASTIC_DATA_FETCHED_SUCCESSFULLY);
         Mockito.when(mockObjectMapper.readValue(responseTest,Map.class)).thenReturn(responseMapTest);
         Mockito.when(mockObjectMapper.convertValue(responseMapTest.get(DATA),Map.class)).thenReturn(dataMapTest);
@@ -365,7 +361,6 @@ class FormDataServiceElasticEnabledTest
         Mockito.when(mockObjectMapper.readValue(responseTest,Map.class)).thenReturn(responseMapTest);
         Mockito.when(mockObjectMapper.convertValue(responseMapTest.get(DATA),Map.class)).thenReturn(dataMapTest);
         Mockito.when(mockObjectMapper.convertValue(dataMapTest.get(CONTENT),List.class)).thenReturn(contentListTest);
-//        FormDataDefinition formDataDefinition = new FormDataDefinition(BigInteger.ONE,1,dataMapTest,dataMapTest);
         responseMapTest.put(MESSAGE,ELASTIC_DATA_FETCHED_SUCCESSFULLY);
         Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, null));
     }
@@ -435,7 +430,6 @@ class FormDataServiceElasticEnabledTest
         Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),eq(GET),any())).thenReturn(responseTest);
         Mockito.when(mockObjectMapper.readValue(responseTest,Map.class)).thenReturn(responseMapTest);
         Mockito.when(mockObjectMapper.convertValue(responseMapTest.get(DATA),Map.class)).thenReturn(dataMapTest);
-//        FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
         Assertions.assertNotNull(mockFormDataServiceImpl.getFormDataByFormIdAndId(TEST_FORM_ID,TEST_FORM_ID, null));
     }
 
@@ -475,7 +469,6 @@ class FormDataServiceElasticEnabledTest
         dataMapTest.put(NUMBER_OF_ELEMENTS,ONE);
         responseMapTest.put(DATA, dataMapTest);
         responseMapTest.put(SUCCESS,true);
-//        FormDataDefinition formDataDefinition = new FormDataDefinition(BigInteger.ONE,1,dataMapTest,dataMapTest);
         responseMapTest.put(MESSAGE,ELASTIC_DATA_FETCHED_SUCCESSFULLY);
         Date currentDate = new Date();
         Document document = new Document("version",1);

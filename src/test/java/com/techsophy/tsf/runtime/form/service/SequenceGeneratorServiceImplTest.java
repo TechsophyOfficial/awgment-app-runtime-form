@@ -12,16 +12,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.math.BigInteger;
 import java.time.Instant;
-
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.STRING;
 import static org.mockito.ArgumentMatchers.*;
 import static shadow.org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith({MockitoExtension.class})
-class SequenceGeneratorServiceImplTest {
+class SequenceGeneratorServiceImplTest
+{
     @Mock
     SequenceGeneratorRepository sequenceGeneratorRepository;
     @Mock
@@ -36,7 +35,6 @@ class SequenceGeneratorServiceImplTest {
         sequenceGeneratorDefinition.setCreatedOn(Instant.now());
         sequenceGeneratorDefinition.setUpdatedOn(Instant.now());
         SequenceGeneratorDTO sequenceGeneratorDTO = new SequenceGeneratorDTO();
-//        SequenceGeneratorResponse sequenceGeneratorResponse = new SequenceGeneratorResponse(1,STRING,STRING,STRING,STRING);
         sequenceGeneratorDTO.setSequenceName(STRING);
         sequenceGeneratorDTO.setLength("1");
         Mockito.when(idGeneratorImpl.nextId()).thenReturn(BigInteger.ONE);

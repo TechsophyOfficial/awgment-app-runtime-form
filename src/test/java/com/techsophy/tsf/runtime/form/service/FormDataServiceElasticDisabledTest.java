@@ -9,7 +9,10 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertOneResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
-import com.techsophy.tsf.runtime.form.dto.*;
+import com.techsophy.tsf.runtime.form.dto.FormDataAuditResponse;
+import com.techsophy.tsf.runtime.form.dto.FormDataAuditSchema;
+import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
+import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
 import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataAuditServiceImpl;
@@ -51,7 +54,6 @@ import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static shadow.org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith({MockitoExtension.class})
 class FormDataServiceElasticDisabledTest
@@ -198,7 +200,6 @@ class FormDataServiceElasticDisabledTest
         FormDataAuditResponse formDataAuditResponse = new FormDataAuditResponse("1",1);
         Mockito.when(mockFormDataAuditServiceImpl.saveFormDataAudit(any())).thenReturn(formDataAuditResponse);
         FormDataSchema formDataSchemaTest = new FormDataSchema(null, TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        FormDataSchema formDataSchemaTest1 = new FormDataSchema("1", TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
         FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,
                 TEST_CREATED_BY_ID, TEST_CREATED_ON,
                 TEST_UPDATED_BY_ID, TEST_UPDATED_ON);        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
@@ -215,7 +216,6 @@ class FormDataServiceElasticDisabledTest
                     .thenReturn(schemaMap);
             Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +formDataSchemaTest.getFormId())).thenReturn(true);
             Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
-            //Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_+formDataSchemaTest.getFormId())).thenReturn(mockMongoCollection);
             Map<String, Object> formDataMap = new HashMap<>();
             formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
             formDataMap.put(FORM_ID,TEST_FORM_ID);
@@ -237,8 +237,6 @@ class FormDataServiceElasticDisabledTest
             data1.put(CREATED_BY_NAME,CREATED_BY_USER_NAME);
             Document document = new Document(formDataMap);
             Mockito.when(mockMongoTemplate.save(any(),any())).thenReturn(document);
-            when(mockObjectMapper.readValue(anyString(), eq(Map.class))).thenReturn(formDataMap).thenReturn(null);
-            when(mockObjectMapper.convertValue(any(), eq(LinkedHashMap.class))).thenReturn(data1);
             Date currentDate = new Date();
             Document document1 = new Document("version",1);
             document1.append("formData",formDataMap);
@@ -247,19 +245,10 @@ class FormDataServiceElasticDisabledTest
             document1.append(CREATED_ON,currentDate);
             document1.append(CREATED_BY_ID,"1");
             document1.append(CREATED_BY_NAME,STRING);
-            Mockito.when(mockMongoTemplate.getCollection(any())).thenReturn(mongoCollectionDocument);
-            Mockito.when(mongoCollectionDocument.findOneAndReplace(any(Bson.class),any(),any())).thenReturn(document1);
-            FindIterable iterable = mock(FindIterable.class);
-            MongoCursor cursor = mock(MongoCursor.class);
-            when(mongoCollectionDocument.find()).thenReturn(iterable);
-            when(iterable.iterator()).thenReturn(cursor);
-            when(cursor.hasNext()).thenReturn(true).thenReturn(false);
-            when(cursor.next()).thenReturn(document1);
             FormDataAuditSchema formDataAuditSchemaTest = new FormDataAuditSchema(TEST_ID_VALUE, TEST_FORM_DATA_ID,TEST_FORM_ID,TEST_VERSION, testFormData,testFormMetaData);
             Mockito.when(mockFormDataAuditServiceImpl.saveFormDataAudit(formDataAuditSchemaTest)).thenReturn(new FormDataAuditResponse(TEST_ID_VALUE,TEST_VERSION));
             Mockito.when(mockValidationCheckService.allFieldsValidations(any(),any(),any(),any())).thenReturn(list1);
             Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),any(),any())).thenReturn(STRING).thenReturn(STRING).thenReturn("1").thenReturn(String.valueOf(new Exception())).thenReturn(String.valueOf(new Exception()));
-            mockFormDataServiceImpl.saveFormData(formDataSchemaTest1);
             Assertions.assertNotNull(mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
         }
     }
@@ -399,8 +388,7 @@ class FormDataServiceElasticDisabledTest
         Mockito.when(mongoCursor.next()).thenReturn(document);
         FormDataSchema formDataSchemaTest = new FormDataSchema("1", TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
         Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +formDataSchemaTest.getFormId())).thenReturn(true);
-        FormDataResponse formDataResponse = mockFormDataServiceImpl.updateFormData(formDataSchemaTest);
-        assertThat(formDataResponse).isInstanceOf(FormDataResponse.class);
+        Assertions.assertNotNull(mockFormDataServiceImpl.updateFormData(formDataSchemaTest));
     }
 
     @Test

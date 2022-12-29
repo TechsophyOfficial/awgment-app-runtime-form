@@ -12,7 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 @ExtendWith(MockitoExtension.class)
-class SequenceGeneratorCustomRepositoryImplTest {
+class SequenceGeneratorCustomRepositoryImplTest
+{
     @Mock
     MongoTemplate mongoTemplate;
     @Mock
@@ -21,14 +22,16 @@ class SequenceGeneratorCustomRepositoryImplTest {
     SequenceGeneratorCustomRepositoryImpl sequenceGeneratorCustomRepository;
 
     @Test
-    void existsBySequenceNameAndLengthTest(){
+    void existsBySequenceNameAndLengthTest()
+    {
         Mockito.when(sequenceGeneratorCustomRepository.existsBySequenceNameAndLength("abc",1)).thenReturn(true);
         boolean response = sequenceGeneratorCustomRepository.existsBySequenceNameAndLength("abc",1);
         Assertions.assertTrue(response);
     }
 
     @Test
-    void findBySequenceNameAndLengthTest(){
+    void findBySequenceNameAndLengthTest()
+    {
         Mockito.when(sequenceGeneratorCustomRepository.findBySequenceNameAndLength("abc",1)).thenReturn(sequenceGeneratorDefinition);
         SequenceGeneratorDefinition response = sequenceGeneratorCustomRepository.findBySequenceNameAndLength("abc",1);
         Assertions.assertNotNull(response);

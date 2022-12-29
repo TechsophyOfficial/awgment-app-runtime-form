@@ -250,7 +250,8 @@ class FormServiceTest
     }
 
     @Test
-    void deleteRuntimeFormByIdExceptionTest(){
+    void deleteRuntimeFormByIdExceptionTest()
+    {
         when(mockFormDefinitionRepository.existsById(BigInteger.valueOf(1))).thenReturn(false);
         Assertions.assertThrows(EntityIdNotFoundException.class,()->mockFormServiceImpl.deleteRuntimeFormById(TEST_ID));
     }
