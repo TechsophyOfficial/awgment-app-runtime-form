@@ -11,8 +11,10 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
 import java.util.regex.Pattern;
+
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.INVALID_EMAIL_PATTERN;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 
@@ -28,6 +30,95 @@ public class ValidationCheckServiceImpl
     {
         return this.checkMissingUniqueLengthWordCount(fieldsMap,data,formId,id);
     }
+
+//    public List<ValidationResult> validateInputFormData(List<FieldsValidation> fieldsValidationList, Map<String,Object> data,String formId,String id)
+//    {
+//        List<ValidationResult> validationResultList=new ArrayList<>();
+//        for(FieldsValidation fieldsValidation:fieldsValidationList)
+//        {
+//            ValidationResult validationResult=new ValidationResult();
+//            String key= fieldsValidation.getKey();
+//            validationResult.setResponse(key);
+//            ConstraintsList constraintsList=fieldsValidation.getConstraintsList();
+//            if(constraintsList.getRequired()&&(!data.containsKey(key)||StringUtils.isEmpty(String.valueOf(data.get(key)))))
+//            {
+//                logger.info("field "+key+" is empty "+StringUtils.isEmpty(String.valueOf(data.get(key))));
+//                validationResult.setResult(0);
+//                validationResultList.add(validationResult);
+//                return  validationResultList;
+//            }
+//            if(constraintsList.getMinLength()!=null)
+//            {
+//               if(String.valueOf(data.get(key)).length()<constraintsList.getMinLength())
+//               {
+//                   validationResult.setResult(2);
+//                   validationResultList.add(validationResult);
+//                   return validationResultList;
+//               }
+//            }
+//            if(constraintsList.getMaxLength()!=null)
+//            {
+//                if(String.valueOf(data.get(key)).length()>constraintsList.getMaxLength())
+//                {
+//                    validationResult.setResult(3);
+//                    validationResultList.add(validationResult);
+//                    return validationResultList;
+//                }
+//            }
+//            if(constraintsList.getMin()!=null)
+//            {
+//                if(String.valueOf(data.get(key)).matches(CONTAINS_ATLEAST_ONE_ALPHABET))
+//                {
+//                    validationResult.setResult(4);
+//                    validationResultList.add(validationResult);
+//                    return validationResultList;
+//                }
+//                if(Double.parseDouble(String.valueOf(data.get(key)))<constraintsList.getMin())
+//                {
+//                    validationResult.setResult(5);
+//                    validationResultList.add(validationResult);
+//                    return validationResultList;
+//                }
+//            }
+//            if(constraintsList.getMax()!=null)
+//            {
+//                if(String.valueOf(data.get(key)).matches(CONTAINS_ATLEAST_ONE_ALPHABET))
+//                {
+//                    validationResult.setResult(6);
+//                    validationResultList.add(validationResult);
+//                    return validationResultList;
+//                }
+//                if(Double.parseDouble(String.valueOf(data.get(key)))>constraintsList.getMax())
+//                {
+//                    validationResult.setResult(7);
+//                    validationResultList.add(validationResult);
+//                    return validationResultList;
+//                }
+//            }
+//            if(constraintsList.getMinWords()!=null)
+//            {
+//                if(Arrays.stream(String.valueOf(data.get(key)).split(COUNT_WORDS)).count()<constraintsList.getMinWords())
+//                {
+//                    validationResult.setResult(8);
+//                    validationResultList.add(validationResult);
+//                    return validationResultList;
+//                }
+//            }
+//            if(constraintsList.getMaxWords()!=null)
+//            {
+//                if(Arrays.stream(String.valueOf(data.get(key)).split(COUNT_WORDS)).count()>constraintsList.getMaxWords())
+//                {
+//                    validationResult.setResult(9);
+//                    validationResultList.add(validationResult);
+//                    return validationResultList;
+//                }
+//            }
+//        }
+//        ValidationResult validationResult=new ValidationResult();
+//        validationResult.setResult(-1);
+//        validationResult.setResponse(EMPTY_STRING);
+//        return validationResultList;
+//    }
 
     public  List<String> checkMissingUniqueLengthWordCount(LinkedHashMap<String,LinkedHashMap<String,Object>> fieldsMap, Map<String,Object> data, String formId,String id)
     {
@@ -71,6 +162,9 @@ public class ValidationCheckServiceImpl
                     }
                 }
             }
+
+
+//            component.getValidate().validate(data.get(component.getLabel()))
             if(fieldsMap.get(key).getOrDefault(REQUIRED,false).equals(Boolean.TRUE)&&(!data.containsKey(key)||data.get(key)==null||StringUtils.isEmpty(String.valueOf(data.get(key)))
                     ||StringUtils.isBlank(String.valueOf(data.get(key)))))
             {
