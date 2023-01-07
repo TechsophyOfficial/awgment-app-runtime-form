@@ -116,7 +116,7 @@ public class FormDataServiceImpl implements FormDataService
             if(!v.isValid())
             {
               flag=true;
-              completeMessage.append(v.getErrorCode()).append(v.getKeyPath().replaceFirst(".","")).append(v.getErrors()).append(";");
+              completeMessage.append(v.getErrorCode()).append(";").append(v.getKeyPath().replaceFirst(".","")).append(";").append(v.getErrors()).append(";");
             }
         }
         if(flag)
@@ -1820,7 +1820,7 @@ public class FormDataServiceImpl implements FormDataService
 //        LinkedHashMap<String,Object> modifiedInputData =refineInputData(data,new LinkedHashMap<>());
 //        assert fieldsMap != null;
 //        List<String> result= validationCheckServiceImpl.allFieldsValidations(fieldsMap,modifiedInputData,formId,formDataSchema.getId());
-        String key = EMPTY_STRING;
+//        String key = EMPTY_STRING;
 //        if(result.get(1)!=null)
 //        {
 //            key=result.get(1);

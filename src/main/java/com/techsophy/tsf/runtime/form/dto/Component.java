@@ -97,28 +97,28 @@ public class Component
 //
 //    }
 
-    public Map<String,Object> getData(Map<String,Object> parentData,String type)
+    public Map<String,Object> getData(Map<String,Object> parentData,String type,String label)
     {
-            if(type.equals("fieldset")||type.equals("well")
-            ||type.equals("table")||type.equals("tabs"))
-            {
-                return parentData;
-            }
-            else if(type.equals("container")||type.equals("datamap"))
+            if(this.type.equals("container")||this.type.equals("datamap"))
             {
                 return (Map<String, Object>) parentData.get(this.label);
             }
-            else if(type.equals("datagrid")||type.equals("editgrid"))
+            else if(this.type.equals("datagrid")||this.type.equals("editgrid"))
             {
-               List<Map> mapList= (List<Map>) parentData.get(this.label);
-               Map<String,Object> requiredMap=new HashMap<>();
-               for(Map m:mapList)
-               {
-                   requiredMap.putAll(m);
-               }
-               return requiredMap;
+//               List<Map> mapList= (List<Map>) parentData.get(this.label);
+//               Map<String,Object> requiredMap=new HashMap<>();
+//               for(Map m:mapList)
+//               {
+//                   requiredMap.putAll(m);
+//               }
+//               return requiredMap;
+               return parentData;
             }
-            else if(type.equals("tree"))
+            else if(this.type.equals("container"))
+            {
+                return (Map<String, Object>) parentData.get(this.label);
+            }
+            else if(this.type.equals("tree"))
             {
               return (Map<String, Object>) parentData.get(DATA);
             }

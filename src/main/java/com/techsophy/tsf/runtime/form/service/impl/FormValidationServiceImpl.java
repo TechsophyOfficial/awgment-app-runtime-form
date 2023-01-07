@@ -47,13 +47,12 @@ public class FormValidationServiceImpl
         return validationResultList;
     }
 
-    public List<ValidationResult> internalLoop(String prefix,Component component,List<ValidationResult> validationResultList,List<Component> componentList,Map<String,Object> data,String formId)
+    public void internalLoop(String prefix,Component component,List<ValidationResult> validationResultList,List<Component> componentList,Map<String,Object> data,String formId)
     {
         for(Component c:componentList)
         {
-            validationResultList.addAll(validateComponent(prefix,c,component.getData(data,c.getType()),formId));
+            validationResultList.addAll(validateComponent(prefix,c,component.getData(data,c.getType(),c.getLabel()),formId));
         }
-        return validationResultList;
     }
 
     public List<ValidationResult> validateComponent(String prefix, Component component,Map<String,Object> data,String formId)
@@ -62,7 +61,8 @@ public class FormValidationServiceImpl
         if(component.isContainer(component)&&!component.getType().equals("address"))
         {
             if(!component.getType().equals("fieldset")&&!component.getType().equals("well")
-            &&!component.getType().equals("table")&&!component.getType().equals("tabs"))
+            &&!component.getType().equals("table")&&!component.getType().equals("tabs")
+            &&!component.getType().equals("columns"))
             {
                 prefix=prefix+"."+component.getLabel();
             }
@@ -71,7 +71,7 @@ public class FormValidationServiceImpl
                 if(component.getType().equals("tabs"))
                 {
                     List<Component> componentList=component.getComponents().get(0).getComponents();
-                    validationResultList.addAll(internalLoop(prefix,component,validationResultList,componentList,data,formId));
+                    internalLoop(prefix,component,validationResultList,componentList,data,formId);
                 }
                 else if(component.getType().equals("tree"))
                 {
@@ -97,7 +97,19 @@ public class FormValidationServiceImpl
 //                        {
 //                            validationResultList.addAll(validateComponent(prefix,c,component.getData(data,new HashMap<>()),formId));
 //                        }
-                       validationResultList.addAll(internalLoop(prefix,component,validationResultList,componentList,data,formId));
+                      internalLoop(prefix,component,validationResultList,componentList,data,formId);
+                    }
+                }
+                else if(component.getType().equals("datagrid")||component.getType().equals("editgrid"))
+                {
+                    if(data.get(component.getLabel())!=null)
+                    {
+                        List<Map<String,Object>> dataGridList= (List<Map<String, Object>>) data.get(component.getLabel());
+                        List<Component> componentList=component.getComponents();
+                        for(Map m:dataGridList)
+                        {
+                            internalLoop(prefix,component,validationResultList,componentList,m,formId);
+                        }
                     }
                 }
                 else
@@ -106,12 +118,12 @@ public class FormValidationServiceImpl
 //                    {
 //                        validationResultList.addAll(validateComponent(prefix,c,component.getData(data,new HashMap<>()),formId));
 //                    }
-                    validationResultList.addAll(internalLoop(prefix,component,validationResultList,component.getComponents(),data,formId));
+                    internalLoop(prefix,component,validationResultList,component.getComponents(),data,formId);
                 }
             }
             if(component.getType().equals("datamap"))
             {
-                validationResultList.addAll(validateComponent(prefix,component.getValueComponent(),component.getData(data,component.getValueComponent().getType()),formId));
+                validationResultList.addAll(validateComponent(prefix,component.getValueComponent(),component.getData(data,component.getValueComponent().getType(),component.getLabel()),formId));
             }
             List<Columns> columns=component.getColumns();
             if(columns!=null)
@@ -126,7 +138,7 @@ public class FormValidationServiceImpl
 //                {
 //                    validationResultList.addAll(validateComponent(prefix, value, data, formId));
 //                }
-                validationResultList.addAll(internalLoop(prefix,component,validationResultList,componentList,data,formId));
+                internalLoop(prefix,component,validationResultList,componentList,data,formId);
             }
             if(component.getRows()!=null)
             {
@@ -135,14 +147,14 @@ public class FormValidationServiceImpl
 //                {
 //                   validationResultList.addAll(validateComponent(prefix,component1,data,formId));
 //                }
-                validationResultList.addAll(internalLoop(prefix,component,validationResultList,componentList,data,formId));
+                internalLoop(prefix,component,validationResultList,componentList,data,formId);
             }
         }
         else
         {
             if(component.getValidate()!=null)
             {
-                return component.getValidate().validate(new Validate.ComponentData(component, data,prefix,formId),globalMessageSource,mongoTemplate);
+                return component.getValidate().validate(new Validate.ComponentData(component,data,prefix,formId),globalMessageSource,mongoTemplate);
             }
         }
         return validationResultList;
