@@ -14,6 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 
 @RestController
@@ -24,8 +26,7 @@ public class FormDataControllerImpl implements FormDataController
     private final FormDataService formDataService;
 
     @Override
-    public ApiResponse<FormDataResponse> saveFormData(FormDataSchema formDataSchema) throws JsonProcessingException
-    {
+    public ApiResponse<FormDataResponse> saveFormData(FormDataSchema formDataSchema) throws IOException {
         FormDataResponse formDataResponse=formDataService.saveFormData(formDataSchema);
         return new ApiResponse<>(formDataResponse,true,globalMessageSource.get(SAVE_FORM_DATA_SUCCESS));
     }

@@ -8,6 +8,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 
 @RequestMapping(BASE_URL+ VERSION_V1)
@@ -15,7 +17,7 @@ public interface FormDataController
 {
     @PostMapping(FORM_DATA_URL)
     @PreAuthorize(CREATE_OR_ALL_ACCESS)
-    ApiResponse<FormDataResponse> saveFormData(@RequestBody @Validated FormDataSchema formDataSchema) throws JsonProcessingException;
+    ApiResponse<FormDataResponse> saveFormData(@RequestBody @Validated FormDataSchema formDataSchema) throws IOException;
 
     @PatchMapping(FORM_DATA_URL)
     ApiResponse<FormDataResponse> updateFormData(@RequestBody @Validated FormDataSchema formDataSchema) throws JsonProcessingException;
