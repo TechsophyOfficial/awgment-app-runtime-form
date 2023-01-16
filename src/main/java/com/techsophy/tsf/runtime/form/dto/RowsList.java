@@ -1,10 +1,11 @@
 package com.techsophy.tsf.runtime.form.dto;
 
 import lombok.Data;
+
 import java.util.List;
 
 @Data
-public class Internal extends Object
+public class RowsList
 {
-    List<Component> componentsList;
+    List<Internal> internalList;
 }

@@ -76,7 +76,6 @@ public class FormDataServiceImpl implements FormDataService
     private FormDataAuditService formDataAuditService = null;
     private static final Logger logger = LoggerFactory.getLogger(FormDataServiceImpl.class);
     private FormService formService = null;
-//    private ValidationCheckServiceImpl validationCheckServiceImpl;
     private FormValidationServiceImpl formValidationServiceImpl;
 
     @Override
@@ -1810,12 +1809,12 @@ public class FormDataServiceImpl implements FormDataService
         }
     }
 
-    @Override
-    public String validateFormDataByFormId(FormDataSchema formDataSchema)
-    {
-        String formId=formDataSchema.getFormId();
-        Map<String,Object> data=formDataSchema.getFormData();
-        FormResponseSchema formResponseSchema= formService.getRuntimeFormById(formId);
+//    @Override
+//    public String validateFormDataByFormId(FormDataSchema formDataSchema)
+//    {
+//        String formId=formDataSchema.getFormId();
+//        Map<String,Object> data=formDataSchema.getFormData();
+//        FormResponseSchema formResponseSchema= formService.getRuntimeFormById(formId);
 //        LinkedHashMap<String,LinkedHashMap<String,Object>> fieldsMap = ValidateFormUtils.getSchema(formResponseSchema.getComponents());
 //        LinkedHashMap<String,Object> modifiedInputData =refineInputData(data,new LinkedHashMap<>());
 //        assert fieldsMap != null;
@@ -1839,8 +1838,8 @@ public class FormDataServiceImpl implements FormDataService
 //            case 9:   throw new InvalidInputException(FORM_DATA_MAX_WORD_CONDITION_EXCEEDED,globalMessageSource.get(FORM_DATA_MAX_WORD_CONDITION_EXCEEDED,key));
 //            default:  return FORM_DATA_MANDATORY_FIELDS_SUCCESS;
 //        }
-        return null;
-    }
+//        return null;
+//    }
 
     @Override
     public AggregationResponse aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation)

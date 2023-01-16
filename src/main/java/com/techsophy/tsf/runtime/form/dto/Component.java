@@ -2,10 +2,7 @@ package com.techsophy.tsf.runtime.form.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-
 import java.util.*;
-
-import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.DATA;
 
 @Data
 public class Component
@@ -14,51 +11,42 @@ public class Component
     String labelPosition;
     String placeholder;
     String description;
-    Boolean enableManualMode;
-    Boolean disableClearIcon;
-    String manualModeViewString;
     String tooltip;
     String prefix;
     String suffix;
-    String size;
-    String inputFormat;
+    Widget widget;
+    String inputMask;
     String displayMask;
-    Boolean dbIndex;
+    Boolean allowMultipleMasks;
     String customClass;
     @JsonProperty("tabindex")
     String tabIndex;
+    String editor;
+    Boolean autoExpand;
     @JsonProperty("autocomplete")
     String autoComplete;
     Boolean hidden;
     Boolean hideLabel;
+    Boolean showWordCount;
+    Boolean showCharCount;
     Boolean mask;
     Boolean autofocus;
-    String errorLabel;
-    String errors;
-    String key;
-    List tags;
-    List addons;
-    List logic;
-    String validateOn;
-    Validate validate;
-    LinkedHashMap<Object,Object> attributes;
-    LinkedHashMap<Object,Object> properties;
+    @JsonProperty("spellcheck")
+    Boolean spellCheck;
     Boolean disabled;
     Boolean tableView;
     Boolean modalEdit;
+    DatePicker datePicker;
+    Boolean enableTime;
+    Boolean enableDate;
     Boolean multiple;
+    Object defaultValue;
+    String defaultDate;
     Boolean persistent;
-    Conditional conditional;
-    String customConditional;
-    Boolean unique;
-    String id;
-    String inputMask;
-    Boolean allowMultipleMasks;
-    Boolean showWordCount;
-    Boolean showCharCount;
-    Boolean spellcheck;
+    Object inputFormat;
     @JsonProperty("protected")
     Boolean isProtected;
+    Boolean dbIndex;
     @JsonProperty("case")
     String caseName;
     Boolean truncateMultipleSpaces;
@@ -69,69 +57,67 @@ public class Component
     String calculateValue;
     Boolean calculateServer;
     Boolean allowCalculateOverride;
+    String validateOn;
+    Validate validate;
+    Boolean enableMinDateInput;
+    Boolean enableMaxDateInput;
+    Boolean unique;
+    String errorLabel;
+    String errors;
+    String key;
+    Conditional conditional;
+    String customConditional;
     Overlay overlay;
     String type;
+    String timezone;
+    Object rows;
+    Boolean wysiwyg;
     Boolean input;
     String refreshOn;
     Boolean dataGridLabel;
     String inputType;
-    Object defaultValue;
-    Boolean delimiter;
+    String inputMode;
+    String datepickerMode;
+    String id;
+    Boolean fixedSize;
+    Boolean enableManualMode;
+    Boolean disableClearIcon;
+    String manualModeViewString;
+    Integer size;
+    String delimiter;
+    Integer maxTags;
+    String storeas;
     Boolean requireDecimal;
     String provider;
     @JsonProperty("kickbox")
     KickBox kickBox;
     Boolean block;
     List<Component> components;
-    LinkedHashMap providerOptions;
     String switchToManualModeLabel;
     Boolean tree;
     Boolean lazyLoad;
-    List<Columns> columns;
-    List<List<Internal>> rows;
     Component valueComponent;
+    List<Columns> columns;
 
-
-//    public String getPrefix(String parentPrefix)
-//    {
-//
-//    }
-
-    public Map<String,Object> getData(Map<String,Object> parentData,String type,String label)
+    public Map<String,Object> getData(Map<String,Object> parentData)
     {
-            if(this.type.equals("container")||this.type.equals("datamap"))
+            if(this.type.equals("container")||this.type.equals("datamap")||this.type.equals("tree"))
             {
                 return (Map<String, Object>) parentData.get(this.label);
             }
             else if(this.type.equals("datagrid")||this.type.equals("editgrid"))
             {
-//               List<Map> mapList= (List<Map>) parentData.get(this.label);
-//               Map<String,Object> requiredMap=new HashMap<>();
-//               for(Map m:mapList)
-//               {
-//                   requiredMap.putAll(m);
-//               }
-//               return requiredMap;
                return parentData;
             }
-            else if(this.type.equals("container"))
-            {
-                return (Map<String, Object>) parentData.get(this.label);
-            }
-            else if(this.type.equals("tree"))
-            {
-              return (Map<String, Object>) parentData.get(DATA);
-            }
-        return parentData;
+            return parentData;
     }
 
-    public boolean isContainer(Component component)
+    public boolean isContainer()
     {
-        if(component.getComponents()!=null||component.getColumns()!=null||
-                component.getRows()!=null||component.getValueComponent()!=null)
+        if(type.equals("textarea")||type.equals("address"))
         {
-            return true;
+            return false;
         }
-        return false;
+        else return getComponents() != null || getColumns() != null || getRows() != null || getValueComponent() != null;
     }
 }

@@ -45,9 +45,9 @@ public interface FormDataController
     @PreAuthorize(DELETE_OR_ALL_ACCESS)
     ApiResponse<Void> deleteFormDataByFormIdAndId(@PathVariable(FORM_ID) String formId, @RequestParam(value=ID) String id);
 
-    @PostMapping(FORM_DATA_VALIDATE_URL)
-    @PreAuthorize(CREATE_OR_ALL_ACCESS)
-    ApiResponse<String> validateFormDataByFormId(@RequestBody @Validated FormDataSchema formDataSchema) throws JsonProcessingException;
+//    @PostMapping(FORM_DATA_VALIDATE_URL)
+//    @PreAuthorize(CREATE_OR_ALL_ACCESS)
+//    ApiResponse<String> validateFormDataByFormId(@RequestBody @Validated FormDataSchema formDataSchema) throws JsonProcessingException;
 
 
     @GetMapping(FORM_DATA_AGGREGATE)
