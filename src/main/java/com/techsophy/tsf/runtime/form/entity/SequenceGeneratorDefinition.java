@@ -1,14 +1,12 @@
 package com.techsophy.tsf.runtime.form.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.With;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.io.Serializable;
 import static com.techsophy.tsf.runtime.form.constants.SequenceGeneratorConstants.TP_SEQUENCE_GENERATOR;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @With
 @NoArgsConstructor

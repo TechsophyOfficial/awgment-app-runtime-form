@@ -70,12 +70,8 @@ class FormDataServiceElasticDisabledExceptionTest
     MongoCollection mockMongoCollection;
     @Mock
     WebClient mockWebClient;
-//    @Mock
-//    ValidationCheckServiceImpl mockValidationCheckServiceImpl;
     @Mock
     FormService mockFormService;
-//    @Mock
-//    ValidateFormUtils mockValidateFormUtils;
     @Mock
     MongoCollection<Document> mockDocument;
     @Mock
@@ -111,6 +107,7 @@ class FormDataServiceElasticDisabledExceptionTest
         list.add(mapData);
     }
 
+
     @Test
     void saveFormDataFormIdNullExceptionTest()
     {
@@ -138,6 +135,7 @@ class FormDataServiceElasticDisabledExceptionTest
         Assertions.assertThrows(InvalidInputException.class, () ->
                 mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
     }
+
 
 //    @Test
 //    void saveFormDataMissingMandatoryFieldsExceptionTest() throws JsonProcessingException

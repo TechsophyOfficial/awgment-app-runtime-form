@@ -181,7 +181,6 @@ public class Component
     Boolean block;
     String leftIcon;
     String rightIcon;
-
     String delimiter;
     Integer maxTags;
     String storeas;
@@ -199,7 +198,6 @@ public class Component
     Component valueComponent;
     Integer rowsInteger;
     List<List<ComponentsListInsideTable>> rowsList;
-
 
     @JsonAnySetter()
     public void setRows(String name, Object value, @Autowired ObjectMapper objectMapper)

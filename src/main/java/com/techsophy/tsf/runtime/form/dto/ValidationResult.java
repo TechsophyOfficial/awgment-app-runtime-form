@@ -1,7 +1,6 @@
 package com.techsophy.tsf.runtime.form.dto;
 
 import lombok.Data;
-
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.List;

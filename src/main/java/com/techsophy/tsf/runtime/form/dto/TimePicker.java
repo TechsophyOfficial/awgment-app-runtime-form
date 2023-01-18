@@ -1,5 +1,8 @@
 package com.techsophy.tsf.runtime.form.dto;
 
+import lombok.Data;
+
+@Data
 public class TimePicker
 {
     Boolean showMeridian;
@@ -8,5 +11,4 @@ public class TimePicker
     Boolean readonlyInput;
     Boolean mousewheel;
     Boolean arrowkeys;
-
 }

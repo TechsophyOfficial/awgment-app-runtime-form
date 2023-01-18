@@ -3,6 +3,7 @@ package com.techsophy.tsf.runtime.form.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import java.util.Date;
+
 @Data
 public class Widget
 {

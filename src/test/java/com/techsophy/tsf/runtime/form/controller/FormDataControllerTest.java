@@ -39,6 +39,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
+import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.FILTER;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.Q;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.TOKEN;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;

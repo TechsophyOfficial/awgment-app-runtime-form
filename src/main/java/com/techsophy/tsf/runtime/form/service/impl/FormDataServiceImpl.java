@@ -50,6 +50,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.regex.Pattern;
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
+import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.SEMICOLON;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 
 @Slf4j
@@ -115,7 +116,7 @@ public class FormDataServiceImpl implements FormDataService
             if(!v.isValid())
             {
               flag=true;
-              completeMessage.append(v.getErrorCode()).append(";").append(v.getKeyPath().replaceFirst(DOT,EMPTY_STRING)).append(";").append(v.getErrors()).append(";");
+              completeMessage.append(v.getErrorCode()).append(SEMICOLON).append(v.getKeyPath().replaceFirst(DOT,EMPTY_STRING)).append(SEMICOLON).append(v.getErrors()).append(SEMICOLON);
             }
         }
         if(flag)
@@ -388,7 +389,6 @@ public class FormDataServiceImpl implements FormDataService
         }
         return new FormDataResponse(formDataSchema.getId(),version);
     }
-
 
     @Override
     public List getAllFormDataByFormId(String formId,String relations,String filter,String sortBy,String sortOrder)

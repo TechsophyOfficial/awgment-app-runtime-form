@@ -7,4 +7,5 @@ public class FormDataConstants
 {
     public static final String CHILDREN="children";
     public static final String DATA="data";
+    public static final String SEMICOLON=";";
 }
