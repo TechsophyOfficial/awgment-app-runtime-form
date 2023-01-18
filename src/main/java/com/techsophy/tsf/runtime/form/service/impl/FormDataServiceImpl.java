@@ -115,7 +115,7 @@ public class FormDataServiceImpl implements FormDataService
             if(!v.isValid())
             {
               flag=true;
-              completeMessage.append(v.getErrorCode()).append(";").append(v.getKeyPath().replaceFirst(".","")).append(";").append(v.getErrors()).append(";");
+              completeMessage.append(v.getErrorCode()).append(";").append(v.getKeyPath().replaceFirst(DOT,EMPTY_STRING)).append(";").append(v.getErrors()).append(";");
             }
         }
         if(flag)
@@ -271,80 +271,8 @@ public class FormDataServiceImpl implements FormDataService
                 }
             }
         }
-//        LinkedHashMap<String,LinkedHashMap<String,Object>> fieldsMap =ValidateFormUtils.getSchema(formResponseSchema.getComponents());
-//        List<FieldsValidation> fieldsMap2 =ValidateFormUtils.getSchema(c1);
-//        Map<String, Object> data = null;
-//        if (formDataSchema.getFormData() != null)
-//        {
-//           data = formDataSchema.getFormData();
-//        }
-//        assert data != null;
-//        LinkedHashMap<String,Object> modifiedInputData =refineInputData(data,new LinkedHashMap<>());
-//        assert fieldsMap != null;
-//        List<ValidationResult> validationResultList=validationCheckServiceImpl.validateInputFormData(fieldsMap2,formData,formId,formDataSchema.getId());
-//        List<String> result= validationCheckServiceImpl.allFieldsValidations(fieldsMap,modifiedInputData,formId,formDataSchema.getId());
-//        String key = EMPTY_STRING;
-//        if(result.get(1)!=null)
-//        {
-//            key=result.get(1);
-//        }
-//        ValidationResult result;
-//        if(!result.isValid()){
-//            throw new InvalidInputException(result.getErrorCode(), globalMessageSource.get())
-//        }
-//        switch (Integer.parseInt(result.get(0)))
-//         {
-//             case 0:   throw new InvalidInputException(FORM_DATA_MISSING_MANDATORY_FIELDS,globalMessageSource.get(FORM_DATA_MISSING_MANDATORY_FIELDS,key));
-//             case 1:   throw new InvalidInputException(FORM_DATA_HAS_DUPLICATE,globalMessageSource.get(FORM_DATA_HAS_DUPLICATE,key));
-//             case 2:   throw new InvalidInputException(FORM_DATA_MIN_LENGTH_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_MIN_LENGTH_CONDITION_FAILED,key));
-//             case 3:   throw new InvalidInputException(FORM_DATA_MAX_LENGTH_CONDITION_VIOLATED_BY_USER,globalMessageSource.get(FORM_DATA_MAX_LENGTH_CONDITION_VIOLATED_BY_USER,key));
-//             case 4:
-//             case 6:   throw new InvalidInputException(FORM_DATA_INTEGER_FIELDS_CANNOT_CONTAIN_ALPHABETS,globalMessageSource.get(FORM_DATA_INTEGER_FIELDS_CANNOT_CONTAIN_ALPHABETS,key));
-//             case 5:   throw new InvalidInputException(FORM_DATA_MIN_VALUE_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_MIN_VALUE_CONDITION_FAILED,key));
-//             case 7:   throw new InvalidInputException(FORM_DATA_MAX_VALUE_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_MAX_VALUE_CONDITION_FAILED,key));
-//             case 8:   throw new InvalidInputException(FORM_DATA_MIN_WORD_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_MIN_WORD_CONDITION_FAILED,key));
-//             case 9:   throw new InvalidInputException(FORM_DATA_MAX_WORD_CONDITION_EXCEEDED,globalMessageSource.get(FORM_DATA_MAX_WORD_CONDITION_EXCEEDED,key));
-//             default:
-//             {
         return new FormDataResponse(String.valueOf(id),version);
     }
-//    public LinkedHashMap<String,Object> refineInputData(Map<String,Object> data,LinkedHashMap<String,Object> modifiedData)
-//    {
-//        for(String key:data.keySet())
-//        {
-//            Object obj=data.get(key);
-//            if((obj instanceof  ArrayList))
-//            {
-//                ArrayList<Object> editGrid=(ArrayList<Object>) obj;
-//                for(int i=0;i<editGrid.size();i++)
-//                {
-//                    Object obj1=editGrid.get(i);
-//                    if(obj1 instanceof  Map)
-//                    {
-//                        LinkedHashMap<String,Object> map= (LinkedHashMap<String, Object>) obj1;
-//                        modifiedData.put(key,editGrid);
-//                        for(String innerKey:map.keySet())
-//                        {
-//                            if(map.get(innerKey) instanceof  List)
-//                            {
-//                                refineInputData(map,modifiedData);
-//                            }
-//                            else
-//                            {
-//                                modifiedData.put(innerKey,map.get(innerKey));
-//                            }
-//                        }
-//                    }
-//                }
-//                modifiedData.put(key,data.get(key));
-//            }
-//            else
-//            {
-//                modifiedData.put(key,data.get(key));
-//            }
-//        }
-//        return modifiedData;
-//    }
 
     @Override
     public FormDataResponse updateFormData(FormDataSchema formDataSchema) throws JsonProcessingException

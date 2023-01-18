@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class RowsList
+public class Attributes
 {
-    List<Internal> internalList;
+    List<Attribute> attributeList;
 }

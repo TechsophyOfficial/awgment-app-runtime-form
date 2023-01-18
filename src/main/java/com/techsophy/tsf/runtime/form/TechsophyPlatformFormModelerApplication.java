@@ -8,7 +8,6 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
-
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.MULTI_TENANCY_PACKAGE_NAME;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.PACKAGE_NAME;
 
