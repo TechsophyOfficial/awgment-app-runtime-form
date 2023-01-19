@@ -5,9 +5,7 @@ import com.techsophy.tsf.runtime.form.config.CustomFilter;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.impl.FormDataControllerImpl;
 import com.techsophy.tsf.runtime.form.dto.FormDataResponse;
-import com.techsophy.tsf.runtime.form.dto.FormDataResponseSchema;
 import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
-import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
 import com.techsophy.tsf.runtime.form.service.FormDataService;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,12 +34,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.InputStream;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
+import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.FILTER;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.Q;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.TOKEN;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
@@ -108,7 +106,6 @@ class FormDataControllerTest
     @Test
     void updateFormData() throws Exception
     {
-        ObjectMapper objectMapperTest = new ObjectMapper();
         LinkedHashMap<String,Object> map = new LinkedHashMap<>();
         map.put(STRING,STRING);
         FormDataSchema formDataSchema = new FormDataSchema("1","1",1,map,map);
@@ -121,8 +118,6 @@ class FormDataControllerTest
     {
         Map<String,Object> map = new HashMap<>();
         map.put(STRING,STRING);
-        PaginationResponsePayload paginationResponsePayload = new PaginationResponsePayload();
-        FormDataResponseSchema formDataResponseSchema = new FormDataResponseSchema("1",map,map, String.valueOf(1),STRING, Instant.now(),"1",Instant.now());
         RequestBuilder requestBuilder = MockMvcRequestBuilders.get(BASE_URL+VERSION_V1+FORM_DATA_URL).param(FORM_ID,"1").with(jwtRead).contentType(MediaType.APPLICATION_JSON);
         RequestBuilder requestBuilder1 = MockMvcRequestBuilders.get(BASE_URL+VERSION_V1+FORM_DATA_URL).param(FORM_ID,"1").param(FILTER,STRING).with(jwtRead).contentType(MediaType.APPLICATION_JSON);
         RequestBuilder requestBuilder3 = MockMvcRequestBuilders.get(BASE_URL+VERSION_V1+FORM_DATA_URL).param(FORM_ID,"1").param(SORT_BY,STRING).param(Q,STRING).with(jwtRead).contentType(MediaType.APPLICATION_JSON);
@@ -161,21 +156,21 @@ class FormDataControllerTest
         assertEquals(200,mvcResult.getResponse().getStatus());
     }
 
-    @Test
-    void validateFormDataByFormIdTest() throws Exception
-    {
-        InputStream inputStreamTest = new ClassPathResource(TEST_RUNTIME_FORM_DATA_1).getInputStream();
-        ObjectMapper objectMapperTest = new ObjectMapper();
-        FormDataSchema formDataSchemaTest = objectMapperTest.readValue(inputStreamTest, FormDataSchema.class);
-        Mockito.when(mockTokenUtils.getIssuerFromToken(TOKEN)).thenReturn(TENANT);
-        Mockito.when(mockFormService.validateFormDataByFormId(formDataSchemaTest)).thenReturn(FORM_DATA_VALIDATED_SUCCESSFULLY);
-        RequestBuilder requestBuilderTest = MockMvcRequestBuilders.post(BASE_URL + VERSION_V1 + FORM_DATA_VALIDATE_URL).header(ACCEPT_LANGUAGE, LOCALE_EN)
-                .content(objectMapperTest.writeValueAsString(formDataSchemaTest))
-                .with(jwtSaveOrUpdate)
-                .contentType(MediaType.APPLICATION_JSON);
-        MvcResult mvcResult = this.mockMvc.perform(requestBuilderTest).andExpect(status().isOk()).andReturn();
-        assertEquals(200, mvcResult.getResponse().getStatus());
-    }
+//    @Test
+//    void validateFormDataByFormIdTest() throws Exception
+//    {
+//        InputStream inputStreamTest = new ClassPathResource(TEST_RUNTIME_FORM_DATA_1).getInputStream();
+//        ObjectMapper objectMapperTest = new ObjectMapper();
+//        FormDataSchema formDataSchemaTest = objectMapperTest.readValue(inputStreamTest, FormDataSchema.class);
+//        Mockito.when(mockTokenUtils.getIssuerFromToken(TOKEN)).thenReturn(TENANT);
+//        Mockito.when(mockFormService.validateFormDataByFormId(formDataSchemaTest)).thenReturn(FORM_DATA_VALIDATED_SUCCESSFULLY);
+//        RequestBuilder requestBuilderTest = MockMvcRequestBuilders.post(BASE_URL + VERSION_V1 + FORM_DATA_VALIDATE_URL).header(ACCEPT_LANGUAGE, LOCALE_EN)
+//                .content(objectMapperTest.writeValueAsString(formDataSchemaTest))
+//                .with(jwtSaveOrUpdate)
+//                .contentType(MediaType.APPLICATION_JSON);
+//        MvcResult mvcResult = this.mockMvc.perform(requestBuilderTest).andExpect(status().isOk()).andReturn();
+//        assertEquals(200, mvcResult.getResponse().getStatus());
+//    }
 
     @Test
     void getFormDataByFormIdAndIdTest() throws Exception {

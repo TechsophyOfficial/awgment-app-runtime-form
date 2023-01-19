@@ -11,13 +11,17 @@ import com.mongodb.client.result.InsertOneResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
+import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
+import com.techsophy.tsf.runtime.form.dto.ValidationResult;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataAuditServiceImpl;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataServiceImpl;
-import com.techsophy.tsf.runtime.form.service.impl.ValidationCheckServiceImpl;
+//import com.techsophy.tsf.runtime.form.service.impl.ValidationCheckServiceImpl;
+import com.techsophy.tsf.runtime.form.service.impl.FormValidationServiceImpl;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import com.techsophy.tsf.runtime.form.utils.WebClientWrapper;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +36,9 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.io.IOException;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
@@ -70,8 +77,6 @@ class FormDataServiceElasticEnabledTest
     @Mock
     IdGeneratorImpl mockIdGeneratorImpl;
     @Mock
-    ValidationCheckServiceImpl mockValidationCheckService;
-    @Mock
     WebClient mockWebClient;
     @Mock
     MongoTemplate mockMongoTemplate;
@@ -89,11 +94,14 @@ class FormDataServiceElasticEnabledTest
     FindIterable<Document> mockDocuments;
     @Mock
     DeleteResult mockDeleteResult;
+    @Mock
+    FormValidationServiceImpl mockFormValidationServiceImpl;
     @InjectMocks
     FormDataServiceImpl mockFormDataServiceImpl;
 
     List<Map<String, Object>> userList = new ArrayList<>();
     Map<String, Object> map = new HashMap<>();
+    List<Map<String,Object>> list=new ArrayList<>();
 
     @BeforeEach
     public void init()
@@ -116,6 +124,367 @@ class FormDataServiceElasticEnabledTest
         map.put(EMAIL_ID, MAIL_ID);
         map.put(DEPARTMENT, NULL);
         userList.add(map);
+    }
+
+    @Test
+    void saveFormDataEmptyUniqueDocumentIdTest() throws IOException
+    {
+        ReflectionTestUtils.setField(mockFormDataServiceImpl, ELASTIC_ENABLE, true);
+        doReturn(userList).when(mockUserDetails).getUserDetails();
+        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
+        Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
+        Map<String, Object> testFormData = new HashMap<>();
+        testFormData.put(NAME, NAME_VALUE);
+        testFormData.put(AGE,AGE_VALUE);
+        testFormData.put(ID,EMPTY_STRING);
+        Map<String, Object> testFormMetaData = new HashMap<>();
+        testFormMetaData.put(FORM_VERSION, 1);
+        FormDataSchema formDataSchemaTest=new FormDataSchema(EMPTY_STRING,TEST_FORM_ID,
+                TEST_VERSION,testFormData,testFormMetaData);
+        ValidationResult validationResult=new ValidationResult("name");
+        List<ValidationResult> validationResultList=new ArrayList<>();
+        validationResultList.add(validationResult);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                TEST_CREATED_ON, TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
+        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
+        Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),any())).thenReturn(validationResultList);
+        String responseTest="{\n" +
+                "    \"data\": {\n" +
+                "        \"id\": \"963403130239434752\",\n" +
+                "        \"version\": 1\n" +
+                "    },\n" +
+                "    \"success\": true,\n" +
+                "    \"message\": \"Form data saved successfully\"\n" +
+                "}";
+        Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),eq(POST),any())).thenReturn(responseTest);
+        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +formDataSchemaTest.getFormId())).thenReturn(true);
+        Map<String, Object> formDataMap = new HashMap<>();
+        formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
+        formDataMap.put(FORM_ID,TEST_FORM_ID);
+        formDataMap.put(VERSION, String.valueOf(1));
+        formDataMap.put(FORM_META_DATA, formDataSchemaTest.getFormMetadata());
+        formDataMap.put(FORM_DATA, formDataSchemaTest.getFormData());
+        formDataMap.put(CREATED_ON, Date.from(Instant.now()));
+        formDataMap.put(CREATED_BY_ID,CREATED_BY_USER_ID);
+        formDataMap.put(CREATED_BY_NAME, CREATED_BY_USER_NAME);
+        formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
+        formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
+        formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
+        Mockito.when(mockMongoTemplate.save(any(),any())).thenReturn(formDataMap);
+        Assertions.assertNotNull(mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
+    }
+
+    @Test
+    void saveFormDataUniqueDocumentIdTest() throws IOException
+    {
+        ReflectionTestUtils.setField(mockFormDataServiceImpl, ELASTIC_ENABLE, true);
+        doReturn(userList).when(mockUserDetails).getUserDetails();
+        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
+        Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
+        Map<String, Object> testFormData = new HashMap<>();
+        testFormData.put(NAME, NAME_VALUE);
+        testFormData.put(AGE,AGE_VALUE);
+        testFormData.put(ID,EMPTY_STRING);
+        Map<String, Object> testFormMetaData = new HashMap<>();
+        testFormMetaData.put(FORM_VERSION, 1);
+        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID_VALUE,TEST_FORM_ID,
+                TEST_VERSION,testFormData,testFormMetaData);
+        ValidationResult validationResult=new ValidationResult("name");
+        List<ValidationResult> validationResultList=new ArrayList<>();
+        validationResultList.add(validationResult);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                TEST_CREATED_ON, TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
+        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
+        Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),any())).thenReturn(validationResultList);
+        String postResponse="{\n" +
+                "    \"data\": {\n" +
+                "        \"id\": \"963403130239434752\",\n" +
+                "        \"version\": 1\n" +
+                "    },\n" +
+                "    \"success\": true,\n" +
+                "    \"message\": \"Form data saved successfully\"\n" +
+                "}";
+        Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),eq(POST),any())).thenReturn(postResponse);
+        String getResponse="{\n" +
+                "    \"data\": [\n" +
+                "        {\n" +
+                "            \"id\": \"945292224435081216\",\n" +
+                "            \"formId\": \"928232634435125248\",\n" +
+                "            \"version\": 2,\n" +
+                "            \"formData\": {\n" +
+                "                \"name\": \"akhil\",\n" +
+                "                \"id\": \"945292224435081216\",\n" +
+                "                \"age\": \"202\"\n" +
+                "            },\n" +
+                "            \"formMetadata\": {\n" +
+                "                \"formVersion\": \"101\"\n" +
+                "            },\n" +
+                "            \"createdById\": \"910797699334508544\",\n" +
+                "            \"createdOn\": \"2022-02-21T12:13:48.985338Z\",\n" +
+                "            \"createdByName\": \"tejaswini kaza\",\n" +
+                "            \"updatedById\": \"910797699334508544\",\n" +
+                "            \"updatedOn\": \"2022-02-21T12:14:01.117149Z\",\n" +
+                "            \"updatedByName\": \"tejaswini kaza\"\n" +
+                "        }\n" +
+                "    ],\n" +
+                "    \"success\": true,\n" +
+                "    \"message\": \"Form data retrieved successfully\"\n" +
+                "}";
+        Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),eq(GET),any())).thenReturn(getResponse);
+        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +formDataSchemaTest.getFormId())).thenReturn(true);
+        Map<String, Object> formDataMap = new HashMap<>();
+        formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
+        formDataMap.put(FORM_ID,TEST_FORM_ID);
+        formDataMap.put(VERSION, String.valueOf(1));
+        formDataMap.put(FORM_META_DATA, formDataSchemaTest.getFormMetadata());
+        formDataMap.put(FORM_DATA, formDataSchemaTest.getFormData());
+        formDataMap.put(CREATED_ON, Date.from(Instant.now()));
+        formDataMap.put(CREATED_BY_ID,CREATED_BY_USER_ID);
+        formDataMap.put(CREATED_BY_NAME, CREATED_BY_USER_NAME);
+        formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
+        formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
+        formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
+        Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
+        Document document = new Document(formDataMap);
+        document.put(UNDERSCORE_ID,TEST_ID_VALUE);
+        FindIterable<Document> iterable = mock(FindIterable.class);
+        MongoCursor cursor = mock(MongoCursor.class);
+        Mockito.when(mockMongoCollection.find()).thenReturn(iterable);
+        Mockito.when(iterable.iterator()).thenReturn(cursor);
+        Mockito.when(cursor.hasNext()).thenReturn(true).thenReturn(false);
+        Mockito.when(cursor.next()).thenReturn(document);
+        Mockito.when(mockMongoCollection.findOneAndReplace((Bson) any(),any(),any())).thenReturn(formDataMap);
+        Map<String,Object> responseMap=new HashMap<>();
+        LinkedHashMap<String,Object> dataMap=new LinkedHashMap<>();
+        dataMap.put("id","963403130239434752");
+        dataMap.put("version",1);
+        responseMap.put("success",true);
+        responseMap.put("message","FormData saved successfully");
+        responseMap.put("data",dataMap);
+        Mockito.when(mockObjectMapper.readValue(getResponse,Map.class)).thenReturn(responseMap);
+        Mockito.when(mockObjectMapper.convertValue(responseMap.get(DATA),LinkedHashMap.class)).thenReturn(dataMap);
+        Assertions.assertNotNull(mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
+    }
+
+    @Test
+    void getAllFormDataByFormIdEmptySortBySortEmptyRelationsTest() throws JsonProcessingException
+    {
+        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
+        ReflectionTestUtils.setField(mockFormDataServiceImpl, ELASTIC_ENABLE, true);
+        String getResponse="{\n" +
+                "    \"data\": {\n" +
+                "        \"content\": [\n" +
+                "            {\n" +
+                "                \"_id\": 994192119303684096,\n" +
+                "                \"formData\": {\n" +
+                "                    \"orderName\": \"order1\"\n" +
+                "                },\n" +
+                "                \"formMetadata\": null,\n" +
+                "                \"version\": \"2\",\n" +
+                "                \"createdOn\": \"2022-07-06T10:44:32.438+00:00\",\n" +
+                "                \"createdById\": \"910797699334508544\",\n" +
+                "                \"createdByName\": \"tejaswini kaza\",\n" +
+                "                \"updatedOn\": \"2022-07-06T10:45:32.665+00:00\",\n" +
+                "                \"updatedById\": \"910797699334508544\",\n" +
+                "                \"updatedByName\": \"tejaswini kaza\",\n" +
+                "                \"tp_runtime_form_data_994102731543871488\": [\n" +
+                "                    {\n" +
+                "                        \"_id\": 994193008575823872,\n" +
+                "                        \"formData\": {\n" +
+                "                            \"customerName\": \"customer1\",\n" +
+                "                            \"orderId\": 994192119303684096\n" +
+                "                        },\n" +
+                "                        \"formMetadata\": null,\n" +
+                "                        \"version\": \"1\",\n" +
+                "                        \"createdOn\": \"2022-07-06T10:48:04.457+00:00\",\n" +
+                "                        \"createdById\": \"910797699334508544\",\n" +
+                "                        \"createdByName\": \"tejaswini kaza\",\n" +
+                "                        \"updatedOn\": \"2022-07-06T10:48:04.457+00:00\",\n" +
+                "                        \"updatedById\": \"910797699334508544\",\n" +
+                "                        \"updatedByName\": \"tejaswini kaza\"\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                        \"_id\": 994249583021703168,\n" +
+                "                        \"formData\": {\n" +
+                "                            \"customerName\": \"customer2\",\n" +
+                "                            \"orderId\": 994192119303684096\n" +
+                "                        },\n" +
+                "                        \"formMetadata\": null,\n" +
+                "                        \"version\": \"1\",\n" +
+                "                        \"createdOn\": \"2022-07-06T14:32:52.856+00:00\",\n" +
+                "                        \"createdById\": \"910797699334508544\",\n" +
+                "                        \"createdByName\": \"tejaswini kaza\",\n" +
+                "                        \"updatedOn\": \"2022-07-06T14:32:52.856+00:00\",\n" +
+                "                        \"updatedById\": \"910797699334508544\",\n" +
+                "                        \"updatedByName\": \"tejaswini kaza\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"tp_runtime_form_data_994122561634369536\": [\n" +
+                "                    {\n" +
+                "                        \"_id\": 994232096431456256,\n" +
+                "                        \"formData\": {\n" +
+                "                            \"parcelName\": \"parcel1\",\n" +
+                "                            \"parcelId\": 994192119303684096\n" +
+                "                        },\n" +
+                "                        \"formMetadata\": null,\n" +
+                "                        \"version\": \"1\",\n" +
+                "                        \"createdOn\": \"2022-07-06T13:23:23.728+00:00\",\n" +
+                "                        \"createdById\": \"910797699334508544\",\n" +
+                "                        \"createdByName\": \"tejaswini kaza\",\n" +
+                "                        \"updatedOn\": \"2022-07-06T13:23:23.728+00:00\",\n" +
+                "                        \"updatedById\": \"910797699334508544\",\n" +
+                "                        \"updatedByName\": \"tejaswini kaza\"\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                        \"_id\": 994239734070296576,\n" +
+                "                        \"formData\": {\n" +
+                "                            \"parcelName\": \"parcel2\",\n" +
+                "                            \"parcelId\": 994192119303684096\n" +
+                "                        },\n" +
+                "                        \"formMetadata\": null,\n" +
+                "                        \"version\": \"1\",\n" +
+                "                        \"createdOn\": \"2022-07-06T13:53:44.683+00:00\",\n" +
+                "                        \"createdById\": \"910797699334508544\",\n" +
+                "                        \"createdByName\": \"tejaswini kaza\",\n" +
+                "                        \"updatedOn\": \"2022-07-06T13:53:44.683+00:00\",\n" +
+                "                        \"updatedById\": \"910797699334508544\",\n" +
+                "                        \"updatedByName\": \"tejaswini kaza\"\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                        \"_id\": 994508534322515968,\n" +
+                "                        \"formData\": {\n" +
+                "                            \"parcelName\": \"parcel3\",\n" +
+                "                            \"parcelId\": 994192119303684096\n" +
+                "                        },\n" +
+                "                        \"formMetadata\": null,\n" +
+                "                        \"version\": \"1\",\n" +
+                "                        \"createdOn\": \"2022-07-07T07:41:51.657+00:00\",\n" +
+                "                        \"createdById\": \"910797699334508544\",\n" +
+                "                        \"createdByName\": \"tejaswini kaza\",\n" +
+                "                        \"updatedOn\": \"2022-07-07T07:41:51.657+00:00\",\n" +
+                "                        \"updatedById\": \"910797699334508544\",\n" +
+                "                        \"updatedByName\": \"tejaswini kaza\"\n" +
+                "                    }\n" +
+                "                ]\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"_id\": 994249123246292992,\n" +
+                "                \"formData\": {\n" +
+                "                    \"orderName\": \"order2\"\n" +
+                "                },\n" +
+                "                \"formMetadata\": null,\n" +
+                "                \"version\": \"1\",\n" +
+                "                \"createdOn\": \"2022-07-06T14:31:03.237+00:00\",\n" +
+                "                \"createdById\": \"910797699334508544\",\n" +
+                "                \"createdByName\": \"tejaswini kaza\",\n" +
+                "                \"updatedOn\": \"2022-07-06T14:31:03.237+00:00\",\n" +
+                "                \"updatedById\": \"910797699334508544\",\n" +
+                "                \"updatedByName\": \"tejaswini kaza\",\n" +
+                "                \"tp_runtime_form_data_994102731543871488\": [\n" +
+                "                    {\n" +
+                "                        \"_id\": 994249903449751552,\n" +
+                "                        \"formData\": {\n" +
+                "                            \"customerName\": \"customer3\",\n" +
+                "                            \"orderId\": 994249123246292992\n" +
+                "                        },\n" +
+                "                        \"formMetadata\": null,\n" +
+                "                        \"version\": \"1\",\n" +
+                "                        \"createdOn\": \"2022-07-06T14:34:09.252+00:00\",\n" +
+                "                        \"createdById\": \"910797699334508544\",\n" +
+                "                        \"createdByName\": \"tejaswini kaza\",\n" +
+                "                        \"updatedOn\": \"2022-07-06T14:34:09.252+00:00\",\n" +
+                "                        \"updatedById\": \"910797699334508544\",\n" +
+                "                        \"updatedByName\": \"tejaswini kaza\"\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                        \"_id\": 994256859321253888,\n" +
+                "                        \"formData\": {\n" +
+                "                            \"customerName\": \"customer4\",\n" +
+                "                            \"orderId\": 994249123246292992\n" +
+                "                        },\n" +
+                "                        \"formMetadata\": null,\n" +
+                "                        \"version\": \"1\",\n" +
+                "                        \"createdOn\": \"2022-07-06T15:01:47.661+00:00\",\n" +
+                "                        \"createdById\": \"910797699334508544\",\n" +
+                "                        \"createdByName\": \"tejaswini kaza\",\n" +
+                "                        \"updatedOn\": \"2022-07-06T15:01:47.661+00:00\",\n" +
+                "                        \"updatedById\": \"910797699334508544\",\n" +
+                "                        \"updatedByName\": \"tejaswini kaza\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"tp_runtime_form_data_994122561634369536\": [\n" +
+                "                    {\n" +
+                "                        \"_id\": 994509203343364096,\n" +
+                "                        \"formData\": {\n" +
+                "                            \"parcelName\": \"parcel4\",\n" +
+                "                            \"parcelId\": 994249123246292992\n" +
+                "                        },\n" +
+                "                        \"formMetadata\": null,\n" +
+                "                        \"version\": \"1\",\n" +
+                "                        \"createdOn\": \"2022-07-07T07:44:31.164+00:00\",\n" +
+                "                        \"createdById\": \"910797699334508544\",\n" +
+                "                        \"createdByName\": \"tejaswini kaza\",\n" +
+                "                        \"updatedOn\": \"2022-07-07T07:44:31.164+00:00\",\n" +
+                "                        \"updatedById\": \"910797699334508544\",\n" +
+                "                        \"updatedByName\": \"tejaswini kaza\"\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                        \"_id\": 994509211807469568,\n" +
+                "                        \"formData\": {\n" +
+                "                            \"parcelName\": \"parcel4\",\n" +
+                "                            \"parcelId\": 994249123246292992\n" +
+                "                        },\n" +
+                "                        \"formMetadata\": null,\n" +
+                "                        \"version\": \"1\",\n" +
+                "                        \"createdOn\": \"2022-07-07T07:44:33.182+00:00\",\n" +
+                "                        \"createdById\": \"910797699334508544\",\n" +
+                "                        \"createdByName\": \"tejaswini kaza\",\n" +
+                "                        \"updatedOn\": \"2022-07-07T07:44:33.182+00:00\",\n" +
+                "                        \"updatedById\": \"910797699334508544\",\n" +
+                "                        \"updatedByName\": \"tejaswini kaza\"\n" +
+                "                    }\n" +
+                "                ]\n" +
+                "            }\n" +
+                "        ],\n" +
+                "        \"totalPages\": 1,\n" +
+                "        \"totalElements\": 2,\n" +
+                "        \"page\": 0,\n" +
+                "        \"size\": 5,\n" +
+                "        \"numberOfElements\": 2\n" +
+                "    },\n" +
+                "    \"success\": true,\n" +
+                "    \"message\": \"Form data retrieved successfully\"\n" +
+                "}";
+        LinkedHashMap<String, Object> testFormData = new LinkedHashMap<>();
+        testFormData.put(NAME, NAME_VALUE);
+        testFormData.put(AGE,AGE_VALUE);
+        Map<String, Object> testFormMetaData = new HashMap<>();
+        testFormMetaData.put(FORM_VERSION, 1);
+        Map<String,Object> responseMap=new HashMap<>();
+        LinkedHashMap<String,Object> dataMap=new LinkedHashMap<>();
+        List<Map<String,Object>> contentListTest=new ArrayList<>();
+        Map<String,Object> singleContentTest=new HashMap<>();
+        singleContentTest.put(FORM_ID,TEST_FORM_ID);
+        singleContentTest.put(ID,TEST_ID);
+        singleContentTest.put(VERSION,TEST_VERSION);
+        singleContentTest.put(FORM_DATA,testFormData);
+        singleContentTest.put(FORM_META_DATA,testFormMetaData);
+        singleContentTest.put(CREATED_BY_NAME,CREATED_BY_USER_NAME);
+        singleContentTest.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
+        singleContentTest.put(CREATED_BY_ID,BIGINTEGER_ID);
+        singleContentTest.put(UPDATED_BY_ID,BIGINTEGER_ID);
+        singleContentTest.put(CREATED_ON,TEST_CREATED_ON);
+        singleContentTest.put(UPDATED_ON,TEST_UPDATED_ON);
+        contentListTest.add(singleContentTest);
+        dataMap.put(CONTENT,contentListTest);
+        responseMap.put(SUCCESS,true);
+        responseMap.put(MESSAGE,ELASTIC_DATA_FETCHED_SUCCESSFULLY);
+        responseMap.put(DATA,dataMap);
+        Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),eq(GET),any())).thenReturn(getResponse);
+        Mockito.when(mockObjectMapper.readValue(getResponse,Map.class)).thenReturn(responseMap);
+        Mockito.when(mockObjectMapper.convertValue(responseMap.get(DATA),Map.class)).thenReturn(dataMap);
+        Mockito.when(mockObjectMapper.convertValue(dataMap.get(CONTENT),List.class)).thenReturn(contentListTest);
+        Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, null, TEST_FILTER, null, null));
     }
 
     @Test

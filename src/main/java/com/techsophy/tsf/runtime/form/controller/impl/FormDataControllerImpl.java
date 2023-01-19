@@ -14,6 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 
 @RestController
@@ -24,7 +26,7 @@ public class FormDataControllerImpl implements FormDataController
     private final FormDataService formDataService;
 
     @Override
-    public ApiResponse<FormDataResponse> saveFormData(FormDataSchema formDataSchema) throws JsonProcessingException
+    public ApiResponse<FormDataResponse> saveFormData(FormDataSchema formDataSchema) throws IOException
     {
         FormDataResponse formDataResponse=formDataService.saveFormData(formDataSchema);
         return new ApiResponse<>(formDataResponse,true,globalMessageSource.get(SAVE_FORM_DATA_SUCCESS));
@@ -84,11 +86,11 @@ public class FormDataControllerImpl implements FormDataController
        return new ApiResponse<>(null,true,globalMessageSource.get(DELETE_FORM_DATA_SUCCESS));
     }
 
-    @Override
-    public ApiResponse<String> validateFormDataByFormId(FormDataSchema formDataSchema) throws JsonProcessingException
-    {
-       return new ApiResponse<>(formDataService.validateFormDataByFormId(formDataSchema),true,globalMessageSource.get(FORM_DATA_VALIDATED_SUCCESSFULLY));
-    }
+//    @Override
+//    public ApiResponse<String> validateFormDataByFormId(FormDataSchema formDataSchema) throws JsonProcessingException
+//    {
+//       return new ApiResponse<>(formDataService.validateFormDataByFormId(formDataSchema),true,globalMessageSource.get(FORM_DATA_VALIDATED_SUCCESSFULLY));
+//    }
 
     @Override
     public ApiResponse aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation)

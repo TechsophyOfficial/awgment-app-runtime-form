@@ -148,6 +148,7 @@ public class RuntimeFormTestConstants {
     //FormDataServiceConstants
     public static final String TEST_SORT_BY = "createdOn";
     public static final String TEST_SORT_ORDER = "desc";
+    public static final String FILTER="name:abc";
     public static final String TEST_FILTER = "id:123,version:1";
     public static final String TEST_GROUP_BY = "formData.name";
     public static final String TEST_OPERATION = "count";
