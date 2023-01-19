@@ -1,16 +1,14 @@
 package com.techsophy.tsf.runtime.form.dto;
 
+import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import lombok.Data;
 import javax.validation.constraints.NotNull;
-import java.util.Arrays;
-import java.util.List;
 
 @Data
 public class ValidationResult
 {
     @NotNull
     String keyPath;
-    List<String> errors;
     String errorCode;
 
     public ValidationResult(String keyPath)
@@ -23,16 +21,14 @@ public class ValidationResult
         return errorCode==null || errorCode.isEmpty();
     }
 
-    public ValidationResult(String keyPath,String errorCodes,String... errors)
+    public ValidationResult(String keyPath,String errorCodes)
     {
         this.keyPath = keyPath;
         this.errorCode=errorCodes;
-        this.errors=Arrays.asList(errors);
     }
 
-    public ValidationResult addPrefix(String prefix)
+    public String getErrorMessage(GlobalMessageSource globalMessageSource)
     {
-        keyPath = prefix+"."+keyPath;
-        return this;
+        return globalMessageSource.get(this.errorCode,this.keyPath);
     }
 }

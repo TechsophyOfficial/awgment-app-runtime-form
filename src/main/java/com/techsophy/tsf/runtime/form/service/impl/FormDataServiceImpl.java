@@ -116,7 +116,7 @@ public class FormDataServiceImpl implements FormDataService
             if(!v.isValid())
             {
               flag=true;
-              completeMessage.append(v.getErrorCode()).append(SEMICOLON).append(v.getKeyPath().replaceFirst(DOT,EMPTY_STRING)).append(SEMICOLON).append(v.getErrors()).append(SEMICOLON);
+              completeMessage.append(v.getErrorCode()).append(SEMICOLON).append(v.getErrorMessage(globalMessageSource)).append(SEMICOLON);
             }
         }
         if(flag)
