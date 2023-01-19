@@ -401,6 +401,78 @@ class FormDataServiceElasticDisabledTest
 //    }
 
     @Test
+    void getAllFormDataByFormIdAggregationEmptySortTest()
+    {
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+        List<Map> aggregateList=new ArrayList<>();
+        Map<String,Object> map=new HashMap<>();
+        map.put(UNDERSCORE_ID,TEST_ID_VALUE);
+        aggregateList.add(map);
+        Document document=new Document();
+        Mockito.when(mockMongoTemplate.aggregate((Aggregation) any(),anyString(),eq(Map.class))).thenReturn( new AggregationResults<>(aggregateList,document));
+        Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,TEST_RELATIONS,FILTER,EMPTY_STRING, EMPTY_STRING));
+    }
+
+    @Test
+    void getAllFormDataByFormIdAggregationSortTest()
+    {
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+        List<Map> aggregateList=new ArrayList<>();
+        Map<String,Object> map=new HashMap<>();
+        map.put(UNDERSCORE_ID,TEST_ID_VALUE);
+        aggregateList.add(map);
+        Document document=new Document();
+        Mockito.when(mockMongoTemplate.aggregate((Aggregation) any(),anyString(),eq(Map.class))).thenReturn( new AggregationResults<>(aggregateList,document));
+        Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,TEST_RELATIONS,FILTER,TEST_SORT_BY, TEST_SORT_ORDER));
+    }
+
+    @Test
+    void getAllFormDataByFormIdPaginationEmptySortTest()
+    {
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+        List<Map> aggregateList=new ArrayList<>();
+        Map<String,Object> map=new HashMap<>();
+        List<Map<String,Object>> dataList=new ArrayList<>();
+        List<Map<String,Object>> metaDataList=new ArrayList<>();
+        Map<String,Object> metaDataMap=new HashMap<>();
+        metaDataMap.put(COUNT,10);
+        metaDataList.add(metaDataMap);
+        Map<String,Object> dataMap=new HashMap<>();
+        dataMap.put(UNDERSCORE_ID,TEST_ID_VALUE);
+        dataList.add(dataMap);
+        map.put(UNDERSCORE_ID,TEST_ID_VALUE);
+        map.put(DATA,dataList);
+        map.put(METADATA,metaDataList);
+        aggregateList.add(map);
+        Document document=new Document();
+        Mockito.when(mockMongoTemplate.aggregate((Aggregation) any(),anyString(),eq(Map.class))).thenReturn( new AggregationResults<>(aggregateList,document));
+        Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,TEST_RELATIONS,FILTER,EMPTY_STRING,EMPTY_STRING, PageRequest.of(1,5)));
+    }
+
+    @Test
+    void getAllFormDataByFormIdPaginationSortTest()
+    {
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+        List<Map> aggregateList=new ArrayList<>();
+        Map<String,Object> map=new HashMap<>();
+        List<Map<String,Object>> dataList=new ArrayList<>();
+        List<Map<String,Object>> metaDataList=new ArrayList<>();
+        Map<String,Object> metaDataMap=new HashMap<>();
+        metaDataMap.put(COUNT,10);
+        metaDataList.add(metaDataMap);
+        Map<String,Object> dataMap=new HashMap<>();
+        dataMap.put(UNDERSCORE_ID,TEST_ID_VALUE);
+        dataList.add(dataMap);
+        map.put(UNDERSCORE_ID,TEST_ID_VALUE);
+        map.put(DATA,dataList);
+        map.put(METADATA,metaDataList);
+        aggregateList.add(map);
+        Document document=new Document();
+        Mockito.when(mockMongoTemplate.aggregate((Aggregation) any(),anyString(),eq(Map.class))).thenReturn( new AggregationResults<>(aggregateList,document));
+        Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,TEST_RELATIONS,FILTER,TEST_SORT_BY,TEST_SORT_ORDER, PageRequest.of(1,5)));
+    }
+
+    @Test
     void getAllFormDataByFormIdFilterAndRelationsTest()
     {
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
