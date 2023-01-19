@@ -1,20 +1,20 @@
 package com.techsophy.tsf.runtime.form.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
-import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
+import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.CONTAINS_ATLEAST_ONE_ALPHABET;
+import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.COUNT_WORDS;
 
 @Data
 @AllArgsConstructor(onConstructor_ = {@Autowired})
@@ -38,7 +38,7 @@ public class Validate
    String step;
    Integer integer;
 
-   public List<ValidationResult> validate(ComponentData compData,GlobalMessageSource globalMessageSource,MongoTemplate mongoTemplate)
+   public List<ValidationResult> validate(ComponentData compData)
    {
       List<ValidationResult> validationResultList=new ArrayList<>();
       Component component=compData.comp;
@@ -46,86 +46,112 @@ public class Validate
       Map<String,Object> dataMap=objectMapper.convertValue(compData.data, Map.class);
       String key=component.getKey();
       String value = String.valueOf(dataMap.get(key)==null?"":dataMap.get(key));
-      String prefix=compData.prefix;
-      String formId=compData.formId;
-      if(this.required&&(!dataMap.containsKey(key)))
-      {
-         validationResultList.add(new ValidationResult(key,FORM_DATA_MISSING_MANDATORY_FIELDS,globalMessageSource.get(FORM_DATA_MISSING_MANDATORY_FIELDS,key)).addPrefix(prefix));
-      }
-      if(this.getMinLength()!=null)
-      {
-         if(String.valueOf(value).length()<this.getMinLength())
-         {
-            validationResultList.add(new ValidationResult(key,FORM_DATA_MIN_LENGTH_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_MIN_LENGTH_CONDITION_FAILED,key)).addPrefix(prefix));
-         }
-      }
-     if(this.getMaxLength()!=null)
-      {
-         if(String.valueOf(value).length()>this.getMaxLength())
-         {
-            validationResultList.add(new ValidationResult(key,FORM_DATA_MAX_LENGTH_CONDITION_VIOLATED_BY_USER,globalMessageSource.get(FORM_DATA_MAX_LENGTH_CONDITION_VIOLATED_BY_USER,key)).addPrefix(prefix));
-         }
-      }
-     if(this.getMin()!=null&&!StringUtils.isEmpty(value))
-      {
-         if(Double.parseDouble(value)<this.getMin())
-         {
-            validationResultList.add(new ValidationResult(key,FORM_DATA_MIN_VALUE_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_MIN_VALUE_CONDITION_FAILED,key)).addPrefix(prefix));
-         }
-      }
-     if(this.getMax()!=null&&!StringUtils.isEmpty(value))
-      {
-         if(Double.parseDouble(value)>this.getMax())
-         {
-            validationResultList.add(new ValidationResult(key,FORM_DATA_MAX_VALUE_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_MAX_VALUE_CONDITION_FAILED,key)).addPrefix(prefix));
-         }
-      }
-      if(this.getMinWords()!=null)
-      {
-         if(Arrays.stream(value.split(COUNT_WORDS)).count()<this.getMinWords())
-         {
-            validationResultList.add(new ValidationResult(key,FORM_DATA_MIN_WORD_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_MIN_WORD_CONDITION_FAILED,key)).addPrefix(prefix));
-         }
-      }
-      if(this.getMaxWords()!=null)
-      {
-         if(Arrays.stream(value.split(COUNT_WORDS)).count()>this.getMaxWords())
-         {
-            validationResultList.add(new ValidationResult(key,FORM_DATA_MAX_WORD_CONDITION_EXCEEDED,globalMessageSource.get(FORM_DATA_MAX_WORD_CONDITION_EXCEEDED,key)).addPrefix(prefix));
-         }
-      }
-      if(this.getPattern()!=null&&!StringUtils.isEmpty(this.getPattern()))
-      {
-          if(!Pattern.compile(component.getValidate().pattern).matcher(value).matches())
-          {
-              validationResultList.add(new ValidationResult(key,FORM_DATA_REGEX_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_REGEX_CONDITION_FAILED,key)).addPrefix(prefix));
-          }
-      }
-      if(this.getUnique())
-      {
-          List<Criteria> criteriaList=new LinkedList<>();
-          criteriaList.add(Criteria.where("formData."+key).is(value));
-          if(mongoTemplate.exists(Query.query(new Criteria().orOperator(criteriaList)), TP_RUNTIME_FORM_DATA_+formId))
-          {
-              validationResultList.add(new ValidationResult(key,FORM_DATA_HAS_DUPLICATE,globalMessageSource.get(FORM_DATA_HAS_DUPLICATE,key)).addPrefix(prefix));
-          }
-      }
-      if(component.getType().equals("number")&&value.contains(CONTAINS_ATLEAST_ONE_ALPHABET))
-      {
-          validationResultList.add(new ValidationResult(key,FORM_DATA_NUMBER_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_NUMBER_CONDITION_FAILED,key)).addPrefix(prefix));
-      }
-       validationResultList.add(new ValidationResult(key).addPrefix(prefix));
+      validateMisssingField(validationResultList, dataMap, key);
+      validateMinLengthCondition(validationResultList, key, value);
+      validateMaxLengthCondition(validationResultList, key, value);
+      validateMinValueCondition(validationResultList, key, value);
+      validateMaxValueCondition(validationResultList, key, value);
+      validateMinWordsCondition(validationResultList, key, value);
+      validateMaxWordsCondition(validationResultList, key, value);
+      validatePatternCondition(validationResultList, component, key, value);
+      validateNumberCondition(validationResultList, component, key, value);
+      validationResultList.add(new ValidationResult(key));
       return validationResultList;
    }
 
-   @AllArgsConstructor
+    private static void validateNumberCondition(List<ValidationResult> validationResultList, Component component, String key, String value) {
+        if(component.getType().equals("number")&& value.contains(CONTAINS_ATLEAST_ONE_ALPHABET))
+        {
+            validationResultList.add(new ValidationResult(key,FORM_DATA_NUMBER_CONDITION_FAILED));
+        }
+    }
+
+    private void validatePatternCondition(List<ValidationResult> validationResultList, Component component, String key, String value)
+    {
+        if(this.getPattern()!=null&&!StringUtils.isEmpty(this.getPattern()))
+       {
+           if(!Pattern.compile(component.getValidate().pattern).matcher(value).matches())
+           {
+               validationResultList.add(new ValidationResult(key,FORM_DATA_REGEX_CONDITION_FAILED));
+           }
+       }
+    }
+
+    private void validateMaxWordsCondition(List<ValidationResult> validationResultList, String key, String value) {
+        if(this.getMaxWords()!=null)
+       {
+          if(Arrays.stream(value.split(COUNT_WORDS)).count()>this.getMaxWords())
+          {
+             validationResultList.add(new ValidationResult(key,FORM_DATA_MAX_WORD_CONDITION_EXCEEDED));
+          }
+       }
+    }
+
+    private void validateMinWordsCondition(List<ValidationResult> validationResultList, String key, String value) {
+        if(this.getMinWords()!=null)
+       {
+          if(Arrays.stream(value.split(COUNT_WORDS)).count()<this.getMinWords())
+          {
+             validationResultList.add(new ValidationResult(key,FORM_DATA_MIN_WORD_CONDITION_FAILED));
+          }
+       }
+    }
+
+    private void validateMaxValueCondition(List<ValidationResult> validationResultList, String key, String value) {
+        if(this.getMax()!=null&&!StringUtils.isEmpty(value))
+       {
+          if(Double.parseDouble(value)>this.getMax())
+          {
+             validationResultList.add(new ValidationResult(key,FORM_DATA_MAX_VALUE_CONDITION_FAILED));
+          }
+       }
+    }
+
+    private void validateMinValueCondition(List<ValidationResult> validationResultList, String key, String value) {
+        if(this.getMin()!=null&&!StringUtils.isEmpty(value))
+       {
+          if(Double.parseDouble(value)<this.getMin())
+          {
+             validationResultList.add(new ValidationResult(key,FORM_DATA_MIN_VALUE_CONDITION_FAILED));
+          }
+       }
+    }
+
+    private void validateMaxLengthCondition(List<ValidationResult> validationResultList, String key, String value) {
+        if(this.getMaxLength()!=null)
+       {
+          if(String.valueOf(value).length()>this.getMaxLength())
+          {
+             validationResultList.add(new ValidationResult(key,FORM_DATA_MAX_LENGTH_CONDITION_VIOLATED_BY_USER));
+          }
+       }
+    }
+
+    private void validateMinLengthCondition(List<ValidationResult> validationResultList, String key, String value) {
+        if(this.getMinLength()!=null)
+       {
+          if(String.valueOf(value).length()<this.getMinLength())
+          {
+             validationResultList.add(new ValidationResult(key,FORM_DATA_MIN_LENGTH_CONDITION_FAILED));
+          }
+       }
+    }
+
+    private void validateMisssingField(List<ValidationResult> validationResultList, Map<String, Object> dataMap, String key)
+    {
+        if(this.required&&(!dataMap.containsKey(key)))
+        {
+           validationResultList.add(new ValidationResult(key,FORM_DATA_MISSING_MANDATORY_FIELDS));
+        }
+    }
+
+    @AllArgsConstructor
    @Setter
    @Getter
    public static class ComponentData
    {
        private Component comp;
        private Object data;
-       private String prefix;
        private String formId;
    }
 }

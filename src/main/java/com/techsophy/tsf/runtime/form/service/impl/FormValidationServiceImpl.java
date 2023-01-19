@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.CHILDREN;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.DATA;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.COMPONENTS;
-import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.EMPTY_STRING;
 
 @Service
 @AllArgsConstructor(onConstructor_ = {@Autowired})
@@ -37,20 +36,20 @@ public class FormValidationServiceImpl
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         componentsList.forEach(x->{
             Component  component=objectMapper.convertValue(x,Component.class);
-            validationResultList.addAll(validateComponent(EMPTY_STRING,component,component.getData(formDataMap),formId));
+            validationResultList.addAll(validateComponent(component,component.getData(formDataMap),formId));
         });
         return validationResultList;
     }
 
-    private void validateInternalComponents(String prefix,List<ValidationResult> validationResultList, List<Component> componentList, Map<String,Object> data, String formId)
+    private void validateInternalComponents(List<ValidationResult> validationResultList, List<Component> componentList, Map<String,Object> data, String formId)
     {
         if(componentList!=null)
         {
-            componentList.forEach(x->validationResultList.addAll(validateComponent(prefix,x,data,formId)));
+            componentList.forEach(x->validationResultList.addAll(validateComponent(x,data,formId)));
         }
     }
 
-    public List<ValidationResult> validateComponent(String prefix,Component component,Map<String,Object> data,String formId)
+    public List<ValidationResult> validateComponent(Component component,Map<String,Object> data,String formId)
     {
         List<ValidationResult> validationResultList=new ArrayList<>();
         if(component!=null)
@@ -69,7 +68,7 @@ public class FormValidationServiceImpl
                             {
                                 List<Component> componentList=new ArrayList<>();
                                 columns.forEach(x->componentList.addAll(x.getComponent()));
-                                validateInternalComponents(prefix,validationResultList,componentList,data,formId);
+                                validateInternalComponents(validationResultList,componentList,data,formId);
                             }
                             break;
                         }
@@ -82,13 +81,13 @@ public class FormValidationServiceImpl
                                         .flatMap(x->x.stream()
                                                 .flatMap(y->y.getComponents().stream()))
                                         .collect(Collectors.toList());
-                                validateInternalComponents(prefix,validationResultList,componentList,data,formId);
+                                validateInternalComponents(validationResultList,componentList,data,formId);
                             }
                             break;
                         }
                         case "datamap":
                         {
-                            validationResultList.addAll(validateComponent(prefix,component.getValueComponent(),data,formId));
+                            validationResultList.addAll(validateComponent(component.getValueComponent(),data,formId));
                             break;
                         }
                         case "datagrid":
@@ -100,7 +99,7 @@ public class FormValidationServiceImpl
                                 List<Component> componentList=component.getComponents();
                                 for(Map m:dataGridList)
                                 {
-                                    validateInternalComponents(prefix,validationResultList,componentList,m,formId);
+                                    validateInternalComponents(validationResultList,componentList,m,formId);
                                 }
                             }
                             break;
@@ -113,11 +112,11 @@ public class FormValidationServiceImpl
                                 List<Component> componentList=component.getComponents();
                                 while (!childrenList.isEmpty())
                                 {
-                                    validateInternalComponents(prefix,validationResultList,componentList, (Map<String, Object>) data.get(DATA),formId);
+                                    validateInternalComponents(validationResultList,componentList, (Map<String, Object>) data.get(DATA),formId);
                                     data=childrenList.get(0);
                                     childrenList= (List<Map<String, Object>>) data.get(CHILDREN);
                                 }
-                                validateInternalComponents(prefix,validationResultList,componentList,data,formId);
+                                validateInternalComponents(validationResultList,componentList,data,formId);
                             }
                             break;
                         }
@@ -126,7 +125,7 @@ public class FormValidationServiceImpl
                             if(component.getComponents()!=null)
                             {
                                 List<Component> componentList=component.getComponents().get(0).getComponents();
-                                validateInternalComponents(prefix,validationResultList,componentList,data,formId);
+                                validateInternalComponents(validationResultList,componentList,data,formId);
                             }
                             break;
                         }
@@ -135,7 +134,7 @@ public class FormValidationServiceImpl
                             List<Component> componentList=component.getComponents();
                             if(componentList!=null)
                             {
-                                validateInternalComponents(prefix,validationResultList,componentList,data,formId);
+                                validateInternalComponents(validationResultList,componentList,data,formId);
                             }
                         }
                     }
@@ -144,7 +143,7 @@ public class FormValidationServiceImpl
                 {
                     if(component.getValidate()!=null)
                     {
-                        return component.getValidate().validate(new Validate.ComponentData(component,data,prefix,formId),globalMessageSource,mongoTemplate);
+                        return component.getValidate().validate(new Validate.ComponentData(component,data,formId));
                     }
                 }
             }
