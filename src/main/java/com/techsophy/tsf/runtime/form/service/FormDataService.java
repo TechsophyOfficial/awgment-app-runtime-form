@@ -29,7 +29,5 @@ public interface FormDataService
 
     void deleteFormDataByFormIdAndId(String formId, String id);
 
-//    String validateFormDataByFormId(FormDataSchema formDataSchema) throws JsonProcessingException;
-
     AggregationResponse aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation);
 }

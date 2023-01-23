@@ -27,10 +27,10 @@ public class FormModelerConstants
     public static final String CONTROLLER_CLASS_PATH = "execution(* com.techsophy.tsf.runtime.form.controller..*(..))";
     public static final String SERVICE_CLASS_PATH= "execution(* com.techsophy.tsf.runtime.form.service..*(..))";
     public static final String EXCEPTION = "ex";
-    public static final String IS_INVOKED_IN_CONTROLLER= "() is invoked in controller ";
-    public static final String IS_INVOKED_IN_SERVICE= "() is invoked in service ";
-    public static final String EXECUTION_IS_COMPLETED_IN_CONTROLLER="() execution is completed  in controller";
-    public static final String EXECUTION_IS_COMPLETED_IN_SERVICE="() execution is completed  in service";
+    public static final String IS_INVOKED_IN_CONTROLLER= "{} () is invoked in controller ";
+    public static final String IS_INVOKED_IN_SERVICE= "{} () is invoked in service ";
+    public static final String EXECUTION_IS_COMPLETED_IN_CONTROLLER="{} () execution is completed  in controller";
+    public static final String EXECUTION_IS_COMPLETED_IN_SERVICE="{} () execution is completed  in service";
     public static final String EXCEPTION_THROWN="An exception has been thrown in ";
     public static final String CAUSE="Cause : ";
     public static final String BRACKETS_IN_CONTROLLER="() in controller";
@@ -409,6 +409,7 @@ public class FormModelerConstants
            "    }\n" +
            "}";
 
+    public static final String SPACE_CHARACTER ="        as: '%s'\n" ;
     public static final String CONTAINS_ATLEAST_ONE_SPECIAL_CHARACTER =".*[!@#$%^&*()_+=]+.*";
 
     //Constants for Requestmapping

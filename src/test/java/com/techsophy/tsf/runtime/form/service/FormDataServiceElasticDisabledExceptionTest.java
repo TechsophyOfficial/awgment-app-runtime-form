@@ -463,8 +463,9 @@ class FormDataServiceElasticDisabledExceptionTest
         FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
         when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
         Mockito.doReturn(aggregationResults).when(mockMongoTemplate).aggregate(Mockito.any(Aggregation.class), Mockito.eq(COLLECTION), Mockito.eq(Map.class));
+        PageRequest pageRequest = PageRequest.of(0,2);
         Assertions.assertThrows(InvalidInputException.class,
-                ()-> mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,null, ABC, CREATED_ON, DESCENDING, PageRequest.of(0,2)));
+                ()-> mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,null, ABC, CREATED_ON, DESCENDING,pageRequest));
     }
 
     @Test
@@ -477,7 +478,8 @@ class FormDataServiceElasticDisabledExceptionTest
             testFormData2.put(AGE, AGE_VALUE);
             FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
             when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formDataSchemaTest.getFormId())).thenReturn(false);
-            Assertions.assertThrows(FormIdNotFoundException.class,()->mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, null, CREATED_ON, null, PageRequest.of(0, 2)));
+            PageRequest pageRequest = PageRequest.of(0, 2);
+            Assertions.assertThrows(FormIdNotFoundException.class,()->mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, null, CREATED_ON, null));
     }
 
     @Test
@@ -531,8 +533,9 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(AGE, AGE_VALUE);
         FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
         when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formDataSchemaTest.getFormId())).thenReturn(false);
+        PageRequest pageRequest = PageRequest.of(1, 5);
         Assertions.assertThrows(FormIdNotFoundException.class, () ->
-                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID, TEST_RELATIONS, EMPTY_STRING, null, null, PageRequest.of(1, 5)));
+                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID, TEST_RELATIONS, EMPTY_STRING, null, null));
     }
 
     @Test
@@ -545,8 +548,9 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(AGE,AGE_VALUE);
         FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
         when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formDataSchemaTest.getFormId())).thenReturn(false);
+        PageRequest pageRequest = PageRequest.of(1, 5);
         Assertions.assertThrows(RuntimeException.class, () ->
-                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID, TEST_RELATIONS, EMPTY_STRING, CREATED_ON, null, PageRequest.of(1, 5)));
+                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID, TEST_RELATIONS, EMPTY_STRING, CREATED_ON, null, pageRequest));
     }
 
     @Test

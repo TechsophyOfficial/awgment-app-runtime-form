@@ -83,10 +83,6 @@ public class FormDataServiceImpl implements FormDataService
     public FormDataResponse saveFormData(FormDataSchema formDataSchema) throws IOException
     {
         String formId=formDataSchema.getFormId();
-        if (StringUtils.isEmpty(formId))
-        {
-            throw new InvalidInputException(FORM_ID_CANNOT_BE_EMPTY, globalMessageSource.get(FORM_ID_CANNOT_BE_EMPTY,formId));
-        }
         boolean documentFlag = false;
         BigInteger id;
         Integer version = null;
@@ -98,33 +94,19 @@ public class FormDataServiceImpl implements FormDataService
         }
         WebClient webClient;
         String token = tokenUtils.getTokenFromContext();
-        if (StringUtils.isNotEmpty(token))
-        {
-            webClient = webClientWrapper.createWebClient(token);
-        }
-        else
-        {
-            throw new InvalidInputException(TOKEN_NOT_NULL,globalMessageSource.get(TOKEN_NOT_NULL, tokenUtils.getLoggedInUserId()));
-        }
+        webClient = webClientWrapper.createWebClient(token);
         BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(String.valueOf(loggedInUserDetails.get(ID))));
         FormResponseSchema formResponseSchema = formService.getRuntimeFormById(formId);
         List<ValidationResult> validationResultList= formValidationServiceImpl.validateData(formResponseSchema,formDataSchema,formId);
         StringBuilder completeMessage= new StringBuilder();
-        boolean flag=false;
         for(ValidationResult v:validationResultList)
         {
             if(!v.isValid())
             {
-              flag=true;
-              completeMessage.append(v.getErrorCode()).append(SEMICOLON).append(v.getErrorMessage(globalMessageSource)).append(SEMICOLON);
+                completeMessage.append(v.getErrorCode()).append(SEMICOLON).append(v.getErrorMessage(globalMessageSource)).append(SEMICOLON);
+                throw new InvalidInputException(String.valueOf(completeMessage),String.valueOf(completeMessage));
             }
         }
-        if(flag)
-        {
-           throw new InvalidInputException(String.valueOf(completeMessage),String.valueOf(completeMessage));
-        }
-        else
-        {
             Map<String, Object> formDataMap = new LinkedHashMap<>();
             id = idGenerator.nextId();
             formDataMap.put(UNDERSCORE_ID,Long.parseLong(String.valueOf(id)));
@@ -156,7 +138,7 @@ public class FormDataServiceImpl implements FormDataService
                 }
                 else
                 {
-                    documents = mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_+formId).find();
+                     documents = mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_+formId).find();
                     for (Document document : documents)
                     {
                         String underscoreId = String.valueOf(document.get(UNDERSCORE_ID));
@@ -271,7 +253,7 @@ public class FormDataServiceImpl implements FormDataService
                     }
                 }
             }
-        }
+
         return new FormDataResponse(String.valueOf(id),version);
     }
 
@@ -416,37 +398,21 @@ public class FormDataServiceImpl implements FormDataService
                 String response;
                 if (sortBy == null && sortOrder == null)
                 {
-                    try
-                    {
                         response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_FILTER+filter+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
                         logger.info(response);
-                    }
-                    catch (Exception e)
-                    {
-                        assert logger != null;
-                        logger.error(e.getMessage());
-                        throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                    }
                 }
                 else
                 {
-                    try
-                    {
+
                         response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+sortBy+AND_SORT_ORDER+sortOrder+AND_FILTER+filter+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
                         logger.info(response);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.error(e.getMessage());
-                        throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                    }
                 }
                 Map<String,Object> responseMap=this.objectMapper.readValue(response,Map.class);
                 Map<String,Object> dataMap=this.objectMapper.convertValue(responseMap.get(DATA),Map.class);
                 contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
                 for (Map<String, Object> contentMap : contentList)
                 {
-                    Map<String,Object> modifiedFormDataResponse = new LinkedHashMap();
+                    Map<String,Object> modifiedFormDataResponse = new LinkedHashMap<>();
                     modifiedFormDataResponse.put(ID,String.valueOf(contentMap.get(ID)));
                     modifiedFormDataResponse.put(FORM_DATA, contentMap.get(FORM_DATA));
                     modifiedFormDataResponse.put(FORM_META_DATA, contentMap.get(FORM_META_DATA));
@@ -462,7 +428,6 @@ public class FormDataServiceImpl implements FormDataService
             }
             catch (Exception e)
             {
-                logger.error(e.getMessage());
                 throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
             }
             return responseList;
@@ -530,8 +495,9 @@ public class FormDataServiceImpl implements FormDataService
             if (StringUtils.isEmpty(sortBy) && StringUtils.isEmpty(sortOrder))
             {
                 aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.DESC,CREATED_ON)));
-                List<Map> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA_+formId,Map.class).getMappedResults();
-                for (Map map : aggregateList)
+                List<Map> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList),
+                        TP_RUNTIME_FORM_DATA_+formId,Map.class).getMappedResults();
+                for (Map<String,Object> map : aggregateList)
                 {
                     map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
                     map.remove(UNDERSCORE_ID);
@@ -541,7 +507,7 @@ public class FormDataServiceImpl implements FormDataService
             }
             aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)));
             List<Map> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA_ + formId, Map.class).getMappedResults();
-            for (Map map : aggregateList)
+            for (Map<String,Object> map : aggregateList)
             {
                 map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
                 map.remove(UNDERSCORE_ID);
@@ -608,37 +574,20 @@ public class FormDataServiceImpl implements FormDataService
                 String response;
                 if (sortBy == null && sortOrder == null)
                 {
-                    try
-                    {
                         response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_FILTER+filter+AND_PAGE+pageable.getPageNumber()+AND_SIZE+pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
                         logger.info(response);
-                    }
-                    catch (Exception e)
-                    {
-                        assert logger != null;
-                        logger.error(e.getMessage());
-                        throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                    }
                 }
                 else
                 {
-                    try
-                    {
                         response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+sortBy+AND_SORT_ORDER+sortOrder+AND_FILTER+filter+AND_PAGE+pageable.getPageNumber()+AND_SIZE+pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
                         logger.info(response);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.error(e.getMessage());
-                        throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                    }
                 }
                 Map<String,Object> responseMap=this.objectMapper.readValue(response,Map.class);
                 Map<String,Object> dataMap=this.objectMapper.convertValue(responseMap.get(DATA),Map.class);
                 contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
                 for (Map<String, Object> contentMap : contentList)
                 {
-                    Map<String,Object> modifiedFormDataResponse = new LinkedHashMap();
+                    Map<String,Object> modifiedFormDataResponse = new LinkedHashMap<>();
                     modifiedFormDataResponse.put(ID,String.valueOf(contentMap.get(ID)));
                     modifiedFormDataResponse.put(FORM_DATA,contentMap.get(FORM_DATA));
                     modifiedFormDataResponse.put(FORM_META_DATA,contentMap.get(FORM_META_DATA));
@@ -660,7 +609,6 @@ public class FormDataServiceImpl implements FormDataService
             }
             catch (Exception e)
             {
-                logger.error(e.getMessage());
                 throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
             }
             return paginationResponsePayload;
@@ -736,7 +684,7 @@ public class FormDataServiceImpl implements FormDataService
                 Map<String,Object> dataMap=aggregateList.get(0);
                 List<Map<String,Object>> metaDataList= (List<Map<String, Object>>) dataMap.get(METADATA);
                 List<Map<String,Object>> dataList= (List<Map<String,Object>>) dataMap.get(DATA);
-                for (Map map : dataList)
+                for (Map<String,Object> map : dataList)
                 {
                     map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
                     map.remove(UNDERSCORE_ID);
@@ -766,7 +714,7 @@ public class FormDataServiceImpl implements FormDataService
             Map<String,Object> dataMap=aggregateList.get(0);
             List<Map<String,Object>> metaDataList= (List<Map<String, Object>>) dataMap.get(METADATA);
             List<Map<String,Object>> dataList= (List<Map<String,Object>>) dataMap.get(DATA);
-            for (Map map : dataList)
+            for (Map<String,Object> map : dataList)
             {
                 map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
                 map.remove(UNDERSCORE_ID);
@@ -871,60 +819,28 @@ public class FormDataServiceImpl implements FormDataService
                 String response = null;
                 if (StringUtils.isEmpty(q) && StringUtils.isBlank(sortBy) && StringUtils.isBlank(sortOrder))
                 {
-                    try
-                    {
-                        response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource, GET, null);
+                       response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource, GET, null);
                         logger.info(response);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.error(e.getMessage());
-                        throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                    }
                 }
                 if (StringUtils.isEmpty(q) && StringUtils.isNotBlank(sortBy) && StringUtils.isNotBlank(sortOrder))
                 {
-                    try
-                    {
                         response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_SORT_BY + sortBy + AND_SORT_ORDER + sortOrder + AND_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource, GET, null);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.error(e.getMessage());
-                        throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                    }
                 }
                 if (StringUtils.isNotEmpty(q) && StringUtils.isBlank(sortBy) && StringUtils.isBlank(sortOrder))
                 {
-                    try
-                    {
                         response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_Q + q + AND_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource, GET, null);
                         logger.info(response);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.error(e.getMessage());
-                        throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                    }
                 }
                 if (StringUtils.isNotEmpty(q) && StringUtils.isNotBlank(sortBy) && StringUtils.isNotBlank(sortOrder))
                 {
-                    try
-                    {
                         response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_SORT_BY + sortBy + AND_SORT_ORDER + sortOrder + AND_Q + q + AND_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource, GET, null);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.error(e.getMessage());
-                        throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                    }
                 }
                 Map<String, Object> responseMap = this.objectMapper.readValue(response, Map.class);
                 Map<String, Object> dataMap = this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
                 contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
                 for (Map<String, Object> contentMap : contentList)
                 {
-                    Map<String,Object> modifiedFormDataResponse = new LinkedHashMap();
+                    Map<String,Object> modifiedFormDataResponse = new LinkedHashMap<>();
                     modifiedFormDataResponse.put(ID,String.valueOf(contentMap.get(ID)));
                     modifiedFormDataResponse.put(FORM_DATA, contentMap.get(FORM_DATA));
                     modifiedFormDataResponse.put(FORM_META_DATA, contentMap.get(FORM_META_DATA));
@@ -940,7 +856,6 @@ public class FormDataServiceImpl implements FormDataService
             }
             catch (Exception e)
             {
-                logger.error(e.getMessage());
                 throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
             }
             return responseList;
@@ -975,7 +890,7 @@ public class FormDataServiceImpl implements FormDataService
             {
                 aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.DESC,CREATED_ON)));
                 List<Map> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA_+formId,Map.class).getMappedResults();
-                for (Map map : aggregateList)
+                for (Map<String,Object> map : aggregateList)
                 {
                     map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
                     map.remove(UNDERSCORE_ID);
@@ -985,7 +900,7 @@ public class FormDataServiceImpl implements FormDataService
             }
             aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)));
             List<Map> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA_ + formId, Map.class).getMappedResults();
-            for (Map map : aggregateList)
+            for (Map<String,Object> map : aggregateList)
             {
                 map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
                 map.remove(UNDERSCORE_ID);
@@ -1080,61 +995,29 @@ public class FormDataServiceImpl implements FormDataService
                 String response = null;
                 if (StringUtils.isEmpty(q) && StringUtils.isBlank(sortBy) && StringUtils.isBlank(sortOrder))
                 {
-                    try
-                    {
                         response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_PAGE+pageable.getPageNumber()+AND_SIZE+pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
                         logger.info(response);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.error(e.getMessage());
-                        throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                    }
                 }
                 if(StringUtils.isEmpty(q)&&StringUtils.isNotBlank(sortBy)&&StringUtils.isNotBlank(sortOrder))
                 {
-                    try
-                    {
-                        response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+sortBy+AND_SORT_ORDER+sortOrder+AND_PAGE+pageable.getPageNumber()+AND_SIZE+pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.error(e.getMessage());
-                        throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                    }
+                    response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+sortBy+AND_SORT_ORDER+sortOrder+AND_PAGE+pageable.getPageNumber()+AND_SIZE+pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
                 }
                 if(StringUtils.isNotEmpty(q)&&StringUtils.isBlank(sortBy)&&StringUtils.isBlank(sortOrder))
                 {
-                    try
-                    {
                         response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_Q+q+AND_PAGE+pageable.getPageNumber()+AND_SIZE+pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
                         logger.info(response);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.error(e.getMessage());
-                        throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                    }
                 }
                 if(StringUtils.isNotEmpty(q)&&StringUtils.isNotBlank(sortBy)&&StringUtils.isNotBlank(sortOrder))
                 {
-                    try
-                    {
-                        response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+sortBy+AND_SORT_ORDER+sortOrder+AND_Q+q+AND_PAGE+pageable.getPageNumber()+AND_SIZE+pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
-                        logger.info(response);
-                    }
-                    catch (Exception e)
-                    {
-                        logger.error(e.getMessage());
-                        throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                    }
+                      response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+sortBy+AND_SORT_ORDER+sortOrder+AND_Q+q+AND_PAGE+pageable.getPageNumber()+AND_SIZE+pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
+                      logger.info(response);
                 }
                 Map<String,Object> responseMap=this.objectMapper.readValue(response,Map.class);
                 Map<String,Object> dataMap=this.objectMapper.convertValue(responseMap.get(DATA),Map.class);
                 contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
                 for (Map<String, Object> contentMap : contentList)
                 {
-                    Map<String,Object> modifiedFormDataResponse = new LinkedHashMap();
+                    Map<String,Object> modifiedFormDataResponse = new LinkedHashMap<>();
                     modifiedFormDataResponse.put(ID,String.valueOf(contentMap.get(ID)));
                     modifiedFormDataResponse.put(FORM_DATA,contentMap.get(FORM_DATA));
                     modifiedFormDataResponse.put(FORM_META_DATA, contentMap.get(FORM_META_DATA));
@@ -1156,7 +1039,6 @@ public class FormDataServiceImpl implements FormDataService
             }
             catch (Exception e)
             {
-                logger.error(e.getMessage());
                 throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage(), formId));
             }
             return paginationResponsePayload;
@@ -1198,7 +1080,7 @@ public class FormDataServiceImpl implements FormDataService
                 Map<String,Object> dataMap=aggregateList.get(0);
                 List<Map<String,Object>> metaDataList= (List<Map<String, Object>>) dataMap.get(METADATA);
                 List<Map<String,Object>> dataList= (List<Map<String,Object>>) dataMap.get(DATA);
-                for (Map map : dataList)
+                for (Map<String,Object> map : dataList)
                 {
                     map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
                     map.remove(UNDERSCORE_ID);
@@ -1228,7 +1110,7 @@ public class FormDataServiceImpl implements FormDataService
             Map<String,Object> dataMap=aggregateList.get(0);
             List<Map<String,Object>> metaDataList= (List<Map<String, Object>>) dataMap.get(METADATA);
             List<Map<String,Object>> dataList= (List<Map<String,Object>>) dataMap.get(DATA);
-            for (Map map : dataList)
+            for (Map<String,Object> map : dataList)
             {
                 map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
                 map.remove(UNDERSCORE_ID);
@@ -1351,23 +1233,14 @@ public class FormDataServiceImpl implements FormDataService
             }
             try
             {
-                String response;
-                try
-                {
-                    response= webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource + AND_PAGE_AND_SIZE + defaultPageLimit, GET, null);
-                    logger.info(response);
-                }
-                catch (Exception e)
-                {
-                    logger.error(e.getMessage());
-                    throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                }
+                String response= webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource + AND_PAGE_AND_SIZE + defaultPageLimit, GET, null);
+                logger.info(response);
                 Map<String, Object> responseMap = this.objectMapper.readValue(response, Map.class);
                 Map<String, Object> dataMap = this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
                 contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
                 for (Map<String, Object> contentMap : contentList)
                 {
-                    Map<String,Object> modifiedFormDataResponse = new LinkedHashMap();
+                    Map<String,Object> modifiedFormDataResponse = new LinkedHashMap<>();
                     modifiedFormDataResponse.put(ID,String.valueOf(contentMap.get(ID)));
                     modifiedFormDataResponse.put(FORM_DATA, contentMap.get(FORM_DATA));
                     modifiedFormDataResponse.put(FORM_META_DATA, contentMap.get(FORM_META_DATA));
@@ -1389,7 +1262,6 @@ public class FormDataServiceImpl implements FormDataService
             }
             catch (Exception e)
             {
-                logger.error(e.getMessage());
                 throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
             }
             return paginationResponsePayload;
@@ -1430,7 +1302,7 @@ public class FormDataServiceImpl implements FormDataService
             Map<String,Object> dataMap=aggregateList.get(0);
             List<Map<String,Object>> metaDataList= (List<Map<String, Object>>) dataMap.get(METADATA);
             List<Map<String,Object>> dataList= (List<Map<String,Object>>) dataMap.get(DATA);
-            for (Map map : dataList)
+            for (Map<String,Object> map : dataList)
             {
                 map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
                 map.remove(UNDERSCORE_ID);
@@ -1490,30 +1362,15 @@ public class FormDataServiceImpl implements FormDataService
             List<Map<String,Object>> responseList=new ArrayList<>();
             WebClient webClient;
             String token = tokenUtils.getTokenFromContext();
-            if (StringUtils.isNotEmpty(token))
-            {
-                webClient = webClientWrapper.createWebClient(token);
-            }
-            else
-            {
-                throw new InvalidInputException(TOKEN_NOT_NULL, globalMessageSource.get(TOKEN_NOT_NULL, tokenUtils.getLoggedInUserId()));
-            }
+            webClient = webClientWrapper.createWebClient(token);
             try
             {
-                String response;
-                try
-                {
-                    response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + id + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId, GET, null);
-                    logger.info(response);
-                }
-                catch (Exception e)
-                {
-                    logger.error(e.getMessage());
-                    throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                }
+
+                String response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + id + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId, GET, null);
+                logger.info(response);
                 Map<String,Object> responseMap = this.objectMapper.readValue(response,Map.class);
                 Map<String,Object> dataMap = this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
-                Map<String,Object> modifiedFormDataResponse = new LinkedHashMap();
+                Map<String,Object> modifiedFormDataResponse = new LinkedHashMap<>();
                 modifiedFormDataResponse.put(ID, dataMap.get(ID));
                 modifiedFormDataResponse.put(FORM_DATA, dataMap.get(FORM_DATA));
                 modifiedFormDataResponse.put(FORM_META_DATA, dataMap.get(FORM_META_DATA));
@@ -1528,7 +1385,6 @@ public class FormDataServiceImpl implements FormDataService
             }
             catch (Exception e)
             {
-                logger.error(e.getMessage());
                 throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
             }
             return responseList;
@@ -1558,7 +1414,7 @@ public class FormDataServiceImpl implements FormDataService
             }
             aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)));
             List<Map> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA_ + formId, Map.class).getMappedResults();
-            for (Map map : aggregateList)
+            for (Map<String,Object> map : aggregateList)
             {
                 map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
                 map.remove(UNDERSCORE_ID);
@@ -1598,7 +1454,6 @@ public class FormDataServiceImpl implements FormDataService
         }
         catch(Exception e)
         {
-            logger.error(e.getMessage());
             throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
         }
         if(!documentFlag)
@@ -1612,7 +1467,6 @@ public class FormDataServiceImpl implements FormDataService
     @Override
     public void deleteAllFormDataByFormId(String formId)
     {
-        boolean flag;
         try
         {
             mongoTemplate.dropCollection(TP_RUNTIME_FORM_DATA_+formId+AUDIT);
@@ -1621,11 +1475,9 @@ public class FormDataServiceImpl implements FormDataService
                 throw new FormIdNotFoundException(FORM_DATA_DOES_NOT_EXISTS_WITH_GIVEN_FORMID,globalMessageSource.get(FORM_DATA_DOES_NOT_EXISTS_WITH_GIVEN_FORMID,formId));
             }
             mongoTemplate.dropCollection(TP_RUNTIME_FORM_DATA_+formId);
-            flag=true;
         }
         catch (Exception e)
         {
-            logger.error(e.getMessage());
             throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
         }
         if(elasticEnable)
@@ -1642,28 +1494,11 @@ public class FormDataServiceImpl implements FormDataService
             }
             try
             {
-                if(flag)
-                {
-                         String response;
-                         try
-                         {
-                             response= webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH+PARAM_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId,DELETE,null);
-                             logger.info(response);
-                         }
-                         catch (Exception e)
-                         {
-                             logger.error(e.getMessage());
-                             throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                         }
-                }
-                else
-                {
-                    throw new EntityIdNotFoundException(UNABLE_TO_DELETE_FORM_DATA_IN_ELASTIC_DB,globalMessageSource.get(UNABLE_TO_DELETE_FORM_DATA_IN_ELASTIC_DB));
-                }
+                    String  response= webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH+PARAM_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId,DELETE,null);
+                    logger.info(response);
             }
             catch (Exception e)
             {
-                logger.error(e.getMessage());
                 throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
             }
         }
@@ -1672,8 +1507,8 @@ public class FormDataServiceImpl implements FormDataService
     @Override
     public void deleteFormDataByFormIdAndId(String formId, String id)
     {
-        boolean flag;
-        long count;
+        boolean flag = false;
+        long count = 0;
         Bson filter= Filters.eq(UNDERSCORE_ID,Long.valueOf(id));
         if(!mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_+formId))
         {
@@ -1690,7 +1525,6 @@ public class FormDataServiceImpl implements FormDataService
         catch(Exception e)
         {
             logger.error(e.getMessage());
-            throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
         }
         if(count==0)
         {
@@ -1712,17 +1546,8 @@ public class FormDataServiceImpl implements FormDataService
             {
                 if(flag)
                 {
-                    String response;
-                    try
-                    {
-                        response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + id + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId, DELETE, null);
+                    String response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + id + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId, DELETE, null);
                         logger.info(response);
-                    }
-                    catch(Exception e)
-                    {
-                        logger.info(e.getMessage());
-                        throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
-                    }
                 }
                 else
                 {
@@ -1732,42 +1557,9 @@ public class FormDataServiceImpl implements FormDataService
             catch (Exception e)
             {
                 logger.error(e.getMessage());
-                throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
             }
         }
     }
-
-//    @Override
-//    public String validateFormDataByFormId(FormDataSchema formDataSchema)
-//    {
-//        String formId=formDataSchema.getFormId();
-//        Map<String,Object> data=formDataSchema.getFormData();
-//        FormResponseSchema formResponseSchema= formService.getRuntimeFormById(formId);
-//        LinkedHashMap<String,LinkedHashMap<String,Object>> fieldsMap = ValidateFormUtils.getSchema(formResponseSchema.getComponents());
-//        LinkedHashMap<String,Object> modifiedInputData =refineInputData(data,new LinkedHashMap<>());
-//        assert fieldsMap != null;
-//        List<String> result= validationCheckServiceImpl.allFieldsValidations(fieldsMap,modifiedInputData,formId,formDataSchema.getId());
-//        String key = EMPTY_STRING;
-//        if(result.get(1)!=null)
-//        {
-//            key=result.get(1);
-//        }
-//        switch (Integer.parseInt(result.get(0)))
-//        {
-//            case 0:   throw new InvalidInputException(FORM_DATA_MISSING_MANDATORY_FIELDS,globalMessageSource.get(FORM_DATA_MISSING_MANDATORY_FIELDS,key));
-//            case 1:   throw new InvalidInputException(FORM_DATA_HAS_DUPLICATE,globalMessageSource.get(FORM_DATA_HAS_DUPLICATE,key));
-//            case 2:   throw new InvalidInputException(FORM_DATA_MIN_LENGTH_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_MIN_LENGTH_CONDITION_FAILED,key));
-//            case 3:   throw new InvalidInputException(FORM_DATA_MAX_LENGTH_CONDITION_VIOLATED_BY_USER,globalMessageSource.get(FORM_DATA_MAX_LENGTH_CONDITION_VIOLATED_BY_USER,key));
-//            case 4:
-//            case 6:   throw new InvalidInputException(FORM_DATA_INTEGER_FIELDS_CANNOT_CONTAIN_ALPHABETS,globalMessageSource.get(FORM_DATA_INTEGER_FIELDS_CANNOT_CONTAIN_ALPHABETS,key));
-//            case 5:   throw new InvalidInputException(FORM_DATA_MIN_VALUE_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_MIN_VALUE_CONDITION_FAILED,key));
-//            case 7:   throw new InvalidInputException(FORM_DATA_MAX_VALUE_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_MAX_VALUE_CONDITION_FAILED,key));
-//            case 8:   throw new InvalidInputException(FORM_DATA_MIN_WORD_CONDITION_FAILED,globalMessageSource.get(FORM_DATA_MIN_WORD_CONDITION_FAILED,key));
-//            case 9:   throw new InvalidInputException(FORM_DATA_MAX_WORD_CONDITION_EXCEEDED,globalMessageSource.get(FORM_DATA_MAX_WORD_CONDITION_EXCEEDED,key));
-//            default:  return FORM_DATA_MANDATORY_FIELDS_SUCCESS;
-//        }
-//        return null;
-//    }
 
     @Override
     public AggregationResponse aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation)
@@ -1781,48 +1573,15 @@ public class FormDataServiceImpl implements FormDataService
         List<AggregationOperation> aggregationOperationsList = new ArrayList<>();
         if(StringUtils.isNotEmpty(filter))
         {
-            ArrayList<String> keysList = new ArrayList<>();
-            ArrayList<String> valuesList = new ArrayList<>();
-            String[] parts = filter.split(COMMA);
-            for (String part : parts)
-            {
-                String[] keyValue = part.split(COLON);
-                keysList.add(keyValue[0].replaceAll(REGEX_PATTERN_1, EMPTY_STRING));
-                valuesList.add(keyValue[1].replaceAll(REGEX_PATTERN_1, EMPTY_STRING));
-            }
-            for (int i = 0; i < keysList.size(); i++)
-            {
-                if(keysList.get(i).equals(ID))
-                {
-                    c1.add(Criteria.where(UNDERSCORE_ID).is(Long.valueOf(valuesList.get(i))));
-                }
-                else
-                {
-                    String searchString = valuesList.get(i);  //if SearchString contains any alphabets or any special character
-                    if(searchString.matches(CONTAINS_ATLEAST_ONE_ALPHABET)||searchString.matches(CONTAINS_ATLEAST_ONE_SPECIAL_CHARACTER))
-                    {
-                        c1.add(new Criteria().orOperator(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
-                    }
-                    else
-                    {
-                        c1.add(new Criteria().orOperator(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                                Criteria.where(keysList.get(i)).is(Long.valueOf(searchString))));
-                    }
-                }
-            }
-            criteria = criteria.andOperator(c1.toArray(new Criteria[0]));
-            aggregationOperationsList.add(Aggregation.match(criteria));
+            createMultipleFilterCriterias(filter, criteria, c1, aggregationOperationsList);
         }
-        switch (operation)
+        if(operation.equals(COUNT))
         {
-            case  COUNT:
-                aggregationOperationsList.add(Aggregation.group(groupBy).count().as(COUNT));
-                break;
-            default:
+            aggregationOperationsList.add(Aggregation.group(groupBy).count().as(COUNT));
         }
-        List<Map> aggregateList= mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA_+formId,Map.class).getMappedResults();
+        FindIterable<Document> aggregateList= (FindIterable<Document>) mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA_+formId,Map.class).getRawResults();
         List<Map<String,String>> responseAggregationList=new ArrayList<>();
-        for(Map map:aggregateList)
+        for(Map<String,Object> map:aggregateList)
         {
            Map<String,String> aggregationMap=new HashMap<>();
            aggregationMap.put(UNDERSCORE_ID,String.valueOf(map.get(UNDERSCORE_ID)));
@@ -1830,5 +1589,39 @@ public class FormDataServiceImpl implements FormDataService
            responseAggregationList.add(aggregationMap);
         }
         return new AggregationResponse(responseAggregationList);
+    }
+
+    private static void createMultipleFilterCriterias(String filter, Criteria criteria, ArrayList<Criteria> c1, List<AggregationOperation> aggregationOperationsList) {
+        ArrayList<String> keysList = new ArrayList<>();
+        ArrayList<String> valuesList = new ArrayList<>();
+        String[] parts = filter.split(COMMA);
+        for (String part : parts)
+        {
+            String[] keyValue = part.split(COLON);
+            keysList.add(keyValue[0].replaceAll(REGEX_PATTERN_1, EMPTY_STRING));
+            valuesList.add(keyValue[1].replaceAll(REGEX_PATTERN_1, EMPTY_STRING));
+        }
+        for (int i = 0; i < keysList.size(); i++)
+        {
+            if(keysList.get(i).equals(ID))
+            {
+                c1.add(Criteria.where(UNDERSCORE_ID).is(Long.valueOf(valuesList.get(i))));
+            }
+            else
+            {
+                String searchString = valuesList.get(i);  //if SearchString contains any alphabets or any special character
+                if(searchString.matches(CONTAINS_ATLEAST_ONE_ALPHABET)||searchString.matches(CONTAINS_ATLEAST_ONE_SPECIAL_CHARACTER))
+                {
+                    c1.add(new Criteria().orOperator(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
+                }
+                else
+                {
+                    c1.add(new Criteria().orOperator(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                            Criteria.where(keysList.get(i)).is(Long.valueOf(searchString))));
+                }
+            }
+        }
+        criteria = criteria.andOperator(c1.toArray(new Criteria[0]));
+        aggregationOperationsList.add(Aggregation.match(criteria));
     }
 }

@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.CHILDREN;
@@ -32,7 +29,7 @@ public class FormValidationServiceImpl
         List<ValidationResult> validationResultList=new ArrayList<>();
         Map<String, Object> components = formResponseSchema.getComponents();
         Map<String, Object> formDataMap = formData.getFormData();
-        List<LinkedHashMap> componentsList= (List<LinkedHashMap>)components.get(COMPONENTS);
+        List<Object> componentsList= Collections.singletonList(components.get(COMPONENTS));
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         componentsList.forEach(x->{
             Component  component=objectMapper.convertValue(x,Component.class);
@@ -97,7 +94,7 @@ public class FormValidationServiceImpl
                             {
                                 List<Map<String,Object>> dataGridList= (List<Map<String, Object>>) data.get(component.getLabel());
                                 List<Component> componentList=component.getComponents();
-                                for(Map m:dataGridList)
+                                for(Map<String,Object> m:dataGridList)
                                 {
                                     validateInternalComponents(validationResultList,componentList,m,formId);
                                 }
