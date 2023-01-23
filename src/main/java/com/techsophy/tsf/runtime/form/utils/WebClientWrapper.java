@@ -1,5 +1,6 @@
 package com.techsophy.tsf.runtime.form.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.exception.ExternalServiceErrorException;
@@ -102,7 +103,7 @@ public class WebClientWrapper {
         }
     }
 
-    public String availableMethod(Exception ex) throws Exception
+    public String availableMethod(Exception ex) throws JsonProcessingException
     {
         String abc = ex.getMessage();
         Map<String, Object> map = this.objectMapper.readValue(abc, Map.class);

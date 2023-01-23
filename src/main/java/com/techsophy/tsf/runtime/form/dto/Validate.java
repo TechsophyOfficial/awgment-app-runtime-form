@@ -68,78 +68,57 @@ public class Validate
 
     private void validatePatternCondition(List<ValidationResult> validationResultList, Component component, String key, String value)
     {
-        if(this.getPattern()!=null&&!StringUtils.isEmpty(this.getPattern()))
+        if(this.getPattern()!=null&&!StringUtils.isEmpty(this.getPattern()) && !Pattern.compile(component.getValidate().pattern).matcher(value).matches() )
        {
-           if(!Pattern.compile(component.getValidate().pattern).matcher(value).matches())
-           {
-               validationResultList.add(new ValidationResult(key,FORM_DATA_REGEX_CONDITION_FAILED));
-           }
+           validationResultList.add(new ValidationResult(key,FORM_DATA_REGEX_CONDITION_FAILED));
        }
     }
 
     private void validateMaxWordsCondition(List<ValidationResult> validationResultList, String key, String value) {
-        if(this.getMaxWords()!=null)
+        if(this.getMaxWords()!=null && Arrays.stream(value.split(COUNT_WORDS)).count()>this.getMaxWords())
        {
-          if(Arrays.stream(value.split(COUNT_WORDS)).count()>this.getMaxWords())
-          {
              validationResultList.add(new ValidationResult(key,FORM_DATA_MAX_WORD_CONDITION_EXCEEDED));
-          }
        }
     }
 
     private void validateMinWordsCondition(List<ValidationResult> validationResultList, String key, String value) {
-        if(this.getMinWords()!=null)
+        if(this.getMinWords()!=null && Arrays.stream(value.split(COUNT_WORDS)).count()<this.getMinWords() )
        {
-          if(Arrays.stream(value.split(COUNT_WORDS)).count()<this.getMinWords())
-          {
              validationResultList.add(new ValidationResult(key,FORM_DATA_MIN_WORD_CONDITION_FAILED));
-          }
        }
     }
 
     private void validateMaxValueCondition(List<ValidationResult> validationResultList, String key, String value) {
-        if(this.getMax()!=null&&!StringUtils.isEmpty(value))
+        if(this.getMax()!=null&&!StringUtils.isEmpty(value) && Double.parseDouble(value)>this.getMax())
        {
-          if(Double.parseDouble(value)>this.getMax())
-          {
-             validationResultList.add(new ValidationResult(key,FORM_DATA_MAX_VALUE_CONDITION_FAILED));
-          }
+            validationResultList.add(new ValidationResult(key,FORM_DATA_MAX_VALUE_CONDITION_FAILED));
        }
     }
 
     private void validateMinValueCondition(List<ValidationResult> validationResultList, String key, String value) {
-        if(this.getMin()!=null&&!StringUtils.isEmpty(value))
+        if(this.getMin()!=null&&!StringUtils.isEmpty(value) && Double.parseDouble(value)<this.getMin() )
        {
-          if(Double.parseDouble(value)<this.getMin())
-          {
              validationResultList.add(new ValidationResult(key,FORM_DATA_MIN_VALUE_CONDITION_FAILED));
-          }
        }
     }
 
     private void validateMaxLengthCondition(List<ValidationResult> validationResultList, String key, String value) {
-        if(this.getMaxLength()!=null)
+        if(this.getMaxLength()!=null&& String.valueOf(value).length()>this.getMaxLength())
        {
-          if(String.valueOf(value).length()>this.getMaxLength())
-          {
-             validationResultList.add(new ValidationResult(key,FORM_DATA_MAX_LENGTH_CONDITION_VIOLATED_BY_USER));
-          }
+           validationResultList.add(new ValidationResult(key,FORM_DATA_MAX_LENGTH_CONDITION_VIOLATED_BY_USER));
        }
     }
 
     private void validateMinLengthCondition(List<ValidationResult> validationResultList, String key, String value) {
-        if(this.getMinLength()!=null)
+        if(this.getMinLength()!=null && String.valueOf(value).length()<this.getMinLength())
        {
-          if(String.valueOf(value).length()<this.getMinLength())
-          {
-             validationResultList.add(new ValidationResult(key,FORM_DATA_MIN_LENGTH_CONDITION_FAILED));
-          }
+           validationResultList.add(new ValidationResult(key,FORM_DATA_MIN_LENGTH_CONDITION_FAILED));
        }
     }
 
     private void validateMisssingField(List<ValidationResult> validationResultList, Map<String, Object> dataMap, String key)
     {
-        if(this.required&&(!dataMap.containsKey(key)))
+        if(Boolean.TRUE.equals(required)&&(!dataMap.containsKey(key)))
         {
            validationResultList.add(new ValidationResult(key,FORM_DATA_MISSING_MANDATORY_FIELDS));
         }
