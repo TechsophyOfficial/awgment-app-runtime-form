@@ -495,7 +495,8 @@ public class FormDataServiceImpl implements FormDataService
             if (StringUtils.isEmpty(sortBy) && StringUtils.isEmpty(sortOrder))
             {
                 aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.DESC,CREATED_ON)));
-                List<Map> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA_+formId,Map.class).getMappedResults();
+                List<Map> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList),
+                        TP_RUNTIME_FORM_DATA_+formId,Map.class).getMappedResults();
                 for (Map<String,Object> map : aggregateList)
                 {
                     map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
@@ -1578,7 +1579,7 @@ public class FormDataServiceImpl implements FormDataService
         {
             aggregationOperationsList.add(Aggregation.group(groupBy).count().as(COUNT));
         }
-        List<Map> aggregateList= mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA_+formId,Map.class).getMappedResults();
+        FindIterable<Document> aggregateList= (FindIterable<Document>) mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA_+formId,Map.class).getRawResults();
         List<Map<String,String>> responseAggregationList=new ArrayList<>();
         for(Map<String,Object> map:aggregateList)
         {
