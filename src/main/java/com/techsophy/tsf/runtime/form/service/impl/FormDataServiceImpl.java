@@ -798,67 +798,7 @@ public class FormDataServiceImpl implements FormDataService
     {
         if (elasticEnable&&relations==null)
         {
-            List<Map<String,Object>> contentList;
-            List<Map<String,Object>> responseList=new ArrayList<>();
-            if (StringUtils.isEmpty(sortBy) && !StringUtils.isEmpty(sortOrder) || !StringUtils.isEmpty(sortBy) && StringUtils.isEmpty(sortOrder))
-            {
-                throw new InvalidInputException(SORTBY_AND_SORTORDER_BOTH_SHOULD_BE_GIVEN, globalMessageSource.get(SORTBY_AND_SORTORDER_BOTH_SHOULD_BE_GIVEN));
-            }
-            WebClient webClient;
-            String token = tokenUtils.getTokenFromContext();
-            if (StringUtils.isNotEmpty(token))
-            {
-                webClient = webClientWrapper.createWebClient(token);
-            }
-            else
-            {
-                throw new InvalidInputException(TOKEN_NOT_NULL, globalMessageSource.get(TOKEN_NOT_NULL, tokenUtils.getLoggedInUserId()));
-            }
-            try
-            {
-                String response = null;
-                if (StringUtils.isEmpty(q) && StringUtils.isBlank(sortBy) && StringUtils.isBlank(sortOrder))
-                {
-                       response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource, GET, null);
-                        logger.info(response);
-                }
-                if (StringUtils.isEmpty(q) && StringUtils.isNotBlank(sortBy) && StringUtils.isNotBlank(sortOrder))
-                {
-                        response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_SORT_BY + sortBy + AND_SORT_ORDER + sortOrder + AND_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource, GET, null);
-                }
-                if (StringUtils.isNotEmpty(q) && StringUtils.isBlank(sortBy) && StringUtils.isBlank(sortOrder))
-                {
-                        response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_Q + q + AND_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource, GET, null);
-                        logger.info(response);
-                }
-                if (StringUtils.isNotEmpty(q) && StringUtils.isNotBlank(sortBy) && StringUtils.isNotBlank(sortOrder))
-                {
-                        response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_SORT_BY + sortBy + AND_SORT_ORDER + sortOrder + AND_Q + q + AND_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource, GET, null);
-                }
-                Map<String, Object> responseMap = this.objectMapper.readValue(response, Map.class);
-                Map<String, Object> dataMap = this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
-                contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
-                for (Map<String, Object> contentMap : contentList)
-                {
-                    Map<String,Object> modifiedFormDataResponse = new LinkedHashMap<>();
-                    modifiedFormDataResponse.put(ID,String.valueOf(contentMap.get(ID)));
-                    modifiedFormDataResponse.put(FORM_DATA, contentMap.get(FORM_DATA));
-                    modifiedFormDataResponse.put(FORM_META_DATA, contentMap.get(FORM_META_DATA));
-                    modifiedFormDataResponse.put(VERSION,String.valueOf(contentMap.get(VERSION)));
-                    modifiedFormDataResponse.put(CREATED_BY_ID,String.valueOf(contentMap.get(CREATED_BY_ID)));
-                    modifiedFormDataResponse.put(CREATED_ON,contentMap.get(CREATED_ON));
-                    modifiedFormDataResponse.put(CREATED_BY_NAME,String.valueOf(contentMap.get(CREATED_BY_NAME)));
-                    modifiedFormDataResponse.put(UPDATED_BY_ID,String.valueOf(contentMap.get(UPDATED_BY_ID)));
-                    modifiedFormDataResponse.put(UPDATED_ON, contentMap.get(UPDATED_ON));
-                    modifiedFormDataResponse.put(UPDATED_BY_NAME,String.valueOf(contentMap.get(UPDATED_BY_NAME)));
-                    responseList.add(modifiedFormDataResponse);
-                }
-            }
-            catch (Exception e)
-            {
-                throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
-            }
-            return responseList;
+            return getMaps(formId, q, sortBy, sortOrder);
         }
         if (!mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_+formId))
         {
@@ -968,80 +908,80 @@ public class FormDataServiceImpl implements FormDataService
         return formDataResponseSchemasList;
     }
 
+    private List<Map<String, Object>> getMaps(String formId, String q, String sortBy, String sortOrder) {
+        List<Map<String,Object>> responseList=new ArrayList<>();
+        if (StringUtils.isEmpty(sortBy) && !StringUtils.isEmpty(sortOrder) || !StringUtils.isEmpty(sortBy) && StringUtils.isEmpty(sortOrder))
+        {
+            throw new InvalidInputException(SORTBY_AND_SORTORDER_BOTH_SHOULD_BE_GIVEN, globalMessageSource.get(SORTBY_AND_SORTORDER_BOTH_SHOULD_BE_GIVEN));
+        }
+        WebClient webClient;
+        String token = tokenUtils.getTokenFromContext();
+        if (StringUtils.isNotEmpty(token))
+        {
+            webClient = webClientWrapper.createWebClient(token);
+        }
+        else
+        {
+            throw new InvalidInputException(TOKEN_NOT_NULL, globalMessageSource.get(TOKEN_NOT_NULL, tokenUtils.getLoggedInUserId()));
+        }
+        try
+        {
+            extracted(formId, q, sortBy, sortOrder, responseList, webClient);
+        }
+        catch (Exception e)
+        {
+            throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
+        }
+        return responseList;
+    }
+    private void extracted(String formId, String q, String sortBy, String sortOrder, List<Map<String, Object>> responseList, WebClient webClient) throws JsonProcessingException {
+        List<Map<String, Object>> contentList;
+        String response = null;
+        if (StringUtils.isEmpty(q) && StringUtils.isBlank(sortBy) && StringUtils.isBlank(sortOrder))
+        {
+               response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource, GET, null);
+                logger.info(response);
+        }
+        if (StringUtils.isEmpty(q) && StringUtils.isNotBlank(sortBy) && StringUtils.isNotBlank(sortOrder))
+        {
+                response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_SORT_BY + sortBy + AND_SORT_ORDER + sortOrder + AND_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource, GET, null);
+        }
+        if (StringUtils.isNotEmpty(q) && StringUtils.isBlank(sortBy) && StringUtils.isBlank(sortOrder))
+        {
+                response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_Q + q + AND_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource, GET, null);
+                logger.info(response);
+        }
+        if (StringUtils.isNotEmpty(q) && StringUtils.isNotBlank(sortBy) && StringUtils.isNotBlank(sortOrder))
+        {
+                response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_SORT_BY + sortBy + AND_SORT_ORDER + sortOrder + AND_Q + q + AND_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource, GET, null);
+        }
+        Map<String, Object> responseMap = this.objectMapper.readValue(response, Map.class);
+        Map<String, Object> dataMap = this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
+        contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
+        for (Map<String, Object> contentMap : contentList)
+        {
+            Map<String,Object> modifiedFormDataResponse = new LinkedHashMap<>();
+            modifiedFormDataResponse.put(ID,String.valueOf(contentMap.get(ID)));
+            modifiedFormDataResponse.put(FORM_DATA, contentMap.get(FORM_DATA));
+            modifiedFormDataResponse.put(FORM_META_DATA, contentMap.get(FORM_META_DATA));
+            modifiedFormDataResponse.put(VERSION,String.valueOf(contentMap.get(VERSION)));
+            modifiedFormDataResponse.put(CREATED_BY_ID,String.valueOf(contentMap.get(CREATED_BY_ID)));
+            modifiedFormDataResponse.put(CREATED_ON,contentMap.get(CREATED_ON));
+            modifiedFormDataResponse.put(CREATED_BY_NAME,String.valueOf(contentMap.get(CREATED_BY_NAME)));
+            modifiedFormDataResponse.put(UPDATED_BY_ID,String.valueOf(contentMap.get(UPDATED_BY_ID)));
+            modifiedFormDataResponse.put(UPDATED_ON, contentMap.get(UPDATED_ON));
+            modifiedFormDataResponse.put(UPDATED_BY_NAME,String.valueOf(contentMap.get(UPDATED_BY_NAME)));
+            responseList.add(modifiedFormDataResponse);
+        }
+    }
+
     @Override
     public PaginationResponsePayload getAllFormDataByFormIdAndQ(String formId, String relations, String q, String sortBy, String sortOrder, Pageable pageable)
     {
         PaginationResponsePayload paginationResponsePayload = new PaginationResponsePayload();
         if (elasticEnable&&relations==null)
         {
-            List<Map<String,Object>> contentList;
-            List<Map<String,Object>> responseList=new ArrayList<>();
-            if (StringUtils.isEmpty(sortBy) && !StringUtils.isEmpty(sortOrder) || !StringUtils.isEmpty(sortBy) && StringUtils.isEmpty(sortOrder))
-            {
-                throw new InvalidInputException(FILTER_SHOULD_BE_GIVEN_ALONG_WITH_SORT_BY_SORT_ORDER_PAGINATION, globalMessageSource.get(FILTER_SHOULD_BE_GIVEN_ALONG_WITH_SORT_BY_SORT_ORDER_PAGINATION));
-            }
-            WebClient webClient;
-            String token = tokenUtils.getTokenFromContext();
-            if (StringUtils.isNotEmpty(token))
-            {
-                webClient = webClientWrapper.createWebClient(token);
-            }
-            else
-            {
-                throw new InvalidInputException(TOKEN_NOT_NULL, globalMessageSource.get(TOKEN_NOT_NULL, tokenUtils.getLoggedInUserId()));
-            }
-            try
-            {
-                String response = null;
-                if (StringUtils.isEmpty(q) && StringUtils.isBlank(sortBy) && StringUtils.isBlank(sortOrder))
-                {
-                        response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_PAGE+pageable.getPageNumber()+AND_SIZE+pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
-                        logger.info(response);
-                }
-                if(StringUtils.isEmpty(q)&&StringUtils.isNotBlank(sortBy)&&StringUtils.isNotBlank(sortOrder))
-                {
-                    response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+sortBy+AND_SORT_ORDER+sortOrder+AND_PAGE+pageable.getPageNumber()+AND_SIZE+pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
-                }
-                if(StringUtils.isNotEmpty(q)&&StringUtils.isBlank(sortBy)&&StringUtils.isBlank(sortOrder))
-                {
-                        response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_Q+q+AND_PAGE+pageable.getPageNumber()+AND_SIZE+pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
-                        logger.info(response);
-                }
-                if(StringUtils.isNotEmpty(q)&&StringUtils.isNotBlank(sortBy)&&StringUtils.isNotBlank(sortOrder))
-                {
-                      response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+sortBy+AND_SORT_ORDER+sortOrder+AND_Q+q+AND_PAGE+pageable.getPageNumber()+AND_SIZE+pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+formId+AND_SOURCE+elasticSource,GET,null);
-                      logger.info(response);
-                }
-                Map<String,Object> responseMap=this.objectMapper.readValue(response,Map.class);
-                Map<String,Object> dataMap=this.objectMapper.convertValue(responseMap.get(DATA),Map.class);
-                contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
-                for (Map<String, Object> contentMap : contentList)
-                {
-                    Map<String,Object> modifiedFormDataResponse = new LinkedHashMap<>();
-                    modifiedFormDataResponse.put(ID,String.valueOf(contentMap.get(ID)));
-                    modifiedFormDataResponse.put(FORM_DATA,contentMap.get(FORM_DATA));
-                    modifiedFormDataResponse.put(FORM_META_DATA, contentMap.get(FORM_META_DATA));
-                    modifiedFormDataResponse.put(VERSION,String.valueOf(contentMap.get(VERSION)));
-                    modifiedFormDataResponse.put(CREATED_BY_ID,String.valueOf(contentMap.get(CREATED_BY_ID)));
-                    modifiedFormDataResponse.put(CREATED_ON,contentMap.get(CREATED_ON));
-                    modifiedFormDataResponse.put(CREATED_BY_NAME,String.valueOf(contentMap.get(CREATED_BY_NAME)));
-                    modifiedFormDataResponse.put(UPDATED_BY_ID,String.valueOf(contentMap.get(UPDATED_BY_ID)));
-                    modifiedFormDataResponse.put(UPDATED_ON,contentMap.get(UPDATED_ON));
-                    modifiedFormDataResponse.put(UPDATED_BY_NAME,String.valueOf(contentMap.get(UPDATED_BY_NAME)));
-                    responseList.add(modifiedFormDataResponse);
-                }
-                paginationResponsePayload.setContent(responseList);
-                paginationResponsePayload.setPage(Integer.parseInt(String.valueOf(dataMap.get(PAGE))));
-                paginationResponsePayload.setSize(Integer.parseInt(String.valueOf(dataMap.get(SIZE))));
-                paginationResponsePayload.setTotalPages(Integer.parseInt(String.valueOf(dataMap.get(TOTAL_PAGES))));
-                paginationResponsePayload.setTotalElements(Long.parseLong(String.valueOf(dataMap.get(TOTAL_ELEMENTS))));
-                paginationResponsePayload.setNumberOfElements(Integer.parseInt(String.valueOf(dataMap.get(NUMBER_OF_ELEMENTS))));
-            }
-            catch (Exception e)
-            {
-                throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage(), formId));
-            }
-            return paginationResponsePayload;
+            return getPaginationResponsePayload(formId, q, sortBy, sortOrder, pageable, paginationResponsePayload);
         }
         if (!mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ + formId))
         {
@@ -1214,57 +1154,88 @@ public class FormDataServiceImpl implements FormDataService
         return paginationResponsePayload;
     }
 
+    private PaginationResponsePayload getPaginationResponsePayload(String formId, String q, String sortBy, String sortOrder, Pageable pageable, PaginationResponsePayload paginationResponsePayload) {
+        List<Map<String,Object>> contentList;
+        List<Map<String,Object>> responseList=new ArrayList<>();
+        if (StringUtils.isEmpty(sortBy) && !StringUtils.isEmpty(sortOrder) || !StringUtils.isEmpty(sortBy) && StringUtils.isEmpty(sortOrder))
+        {
+            throw new InvalidInputException(FILTER_SHOULD_BE_GIVEN_ALONG_WITH_SORT_BY_SORT_ORDER_PAGINATION, globalMessageSource.get(FILTER_SHOULD_BE_GIVEN_ALONG_WITH_SORT_BY_SORT_ORDER_PAGINATION));
+        }
+        WebClient webClient;
+        String token = tokenUtils.getTokenFromContext();
+        if (StringUtils.isNotEmpty(token))
+        {
+            webClient = webClientWrapper.createWebClient(token);
+        }
+        else
+        {
+            throw new InvalidInputException(TOKEN_NOT_NULL, globalMessageSource.get(TOKEN_NOT_NULL, tokenUtils.getLoggedInUserId()));
+        }
+        try
+        {
+            String response = null;
+            response = getString(formId, q, sortBy, sortOrder, pageable, webClient, response);
+            Map<String,Object> responseMap=this.objectMapper.readValue(response,Map.class);
+            Map<String,Object> dataMap=this.objectMapper.convertValue(responseMap.get(DATA),Map.class);
+            contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
+            for (Map<String, Object> contentMap : contentList)
+            {
+                Map<String,Object> modifiedFormDataResponse = new LinkedHashMap<>();
+                modifiedFormDataResponse.put(ID,String.valueOf(contentMap.get(ID)));
+                modifiedFormDataResponse.put(FORM_DATA,contentMap.get(FORM_DATA));
+                modifiedFormDataResponse.put(FORM_META_DATA, contentMap.get(FORM_META_DATA));
+                modifiedFormDataResponse.put(VERSION,String.valueOf(contentMap.get(VERSION)));
+                modifiedFormDataResponse.put(CREATED_BY_ID,String.valueOf(contentMap.get(CREATED_BY_ID)));
+                modifiedFormDataResponse.put(CREATED_ON,contentMap.get(CREATED_ON));
+                modifiedFormDataResponse.put(CREATED_BY_NAME,String.valueOf(contentMap.get(CREATED_BY_NAME)));
+                modifiedFormDataResponse.put(UPDATED_BY_ID,String.valueOf(contentMap.get(UPDATED_BY_ID)));
+                modifiedFormDataResponse.put(UPDATED_ON,contentMap.get(UPDATED_ON));
+                modifiedFormDataResponse.put(UPDATED_BY_NAME,String.valueOf(contentMap.get(UPDATED_BY_NAME)));
+                responseList.add(modifiedFormDataResponse);
+            }
+            paginationResponsePayload.setContent(responseList);
+            paginationResponsePayload.setPage(Integer.parseInt(String.valueOf(dataMap.get(PAGE))));
+            paginationResponsePayload.setSize(Integer.parseInt(String.valueOf(dataMap.get(SIZE))));
+            paginationResponsePayload.setTotalPages(Integer.parseInt(String.valueOf(dataMap.get(TOTAL_PAGES))));
+            paginationResponsePayload.setTotalElements(Long.parseLong(String.valueOf(dataMap.get(TOTAL_ELEMENTS))));
+            paginationResponsePayload.setNumberOfElements(Integer.parseInt(String.valueOf(dataMap.get(NUMBER_OF_ELEMENTS))));
+        }
+        catch (Exception e)
+        {
+            throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage(), formId));
+        }
+        return paginationResponsePayload;
+    }
+
+    private String getString(String formId, String q, String sortBy, String sortOrder, Pageable pageable, WebClient webClient, String response) {
+        if (StringUtils.isEmpty(q) && StringUtils.isBlank(sortBy) && StringUtils.isBlank(sortOrder))
+        {
+                response =webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_PAGE+ pageable.getPageNumber()+AND_SIZE+ pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+ formId +AND_SOURCE+elasticSource,GET,null);
+                logger.info(response);
+        }
+        if(StringUtils.isEmpty(q)&&StringUtils.isNotBlank(sortBy)&&StringUtils.isNotBlank(sortOrder))
+        {
+            response =webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+ sortBy +AND_SORT_ORDER+ sortOrder +AND_PAGE+ pageable.getPageNumber()+AND_SIZE+ pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+ formId +AND_SOURCE+elasticSource,GET,null);
+        }
+        if(StringUtils.isNotEmpty(q)&&StringUtils.isBlank(sortBy)&&StringUtils.isBlank(sortOrder))
+        {
+                response =webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_Q+ q +AND_PAGE+ pageable.getPageNumber()+AND_SIZE+ pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+ formId +AND_SOURCE+elasticSource,GET,null);
+                logger.info(response);
+        }
+        if(StringUtils.isNotEmpty(q)&&StringUtils.isNotBlank(sortBy)&&StringUtils.isNotBlank(sortOrder))
+        {
+              response =webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+ sortBy +AND_SORT_ORDER+ sortOrder +AND_Q+ q +AND_PAGE+ pageable.getPageNumber()+AND_SIZE+ pageable.getPageSize()+AND_INDEX_NAME+TP_RUNTIME_FORM_DATA_+ formId +AND_SOURCE+elasticSource,GET,null);
+              logger.info(response);
+        }
+        return response;
+    }
+
     public PaginationResponsePayload getAllFormDataByFormId(String formId,String relations)
     {
         PaginationResponsePayload paginationResponsePayload = new PaginationResponsePayload();
         if (elasticEnable&&relations==null)
         {
-            List<Map<String,Object>> contentList;
-            List<Map<String,Object>> responseList=new ArrayList<>();
-            WebClient webClient;
-            String token = tokenUtils.getTokenFromContext();
-            if (StringUtils.isNotEmpty(token))
-            {
-                webClient = webClientWrapper.createWebClient(token);
-            }
-            else
-            {
-                throw new InvalidInputException(TOKEN_NOT_NULL, globalMessageSource.get(TOKEN_NOT_NULL, tokenUtils.getLoggedInUserId()));
-            }
-            try
-            {
-                String response= webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource + AND_PAGE_AND_SIZE + defaultPageLimit, GET, null);
-                logger.info(response);
-                Map<String, Object> responseMap = this.objectMapper.readValue(response, Map.class);
-                Map<String, Object> dataMap = this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
-                contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
-                for (Map<String, Object> contentMap : contentList)
-                {
-                    Map<String,Object> modifiedFormDataResponse = new LinkedHashMap<>();
-                    modifiedFormDataResponse.put(ID,String.valueOf(contentMap.get(ID)));
-                    modifiedFormDataResponse.put(FORM_DATA, contentMap.get(FORM_DATA));
-                    modifiedFormDataResponse.put(FORM_META_DATA, contentMap.get(FORM_META_DATA));
-                    modifiedFormDataResponse.put(VERSION, contentMap.get(VERSION));
-                    modifiedFormDataResponse.put(CREATED_BY_ID, contentMap.get(CREATED_BY_ID));
-                    modifiedFormDataResponse.put(CREATED_ON, contentMap.get(CREATED_ON));
-                    modifiedFormDataResponse.put(CREATED_BY_NAME, contentMap.get(CREATED_BY_NAME));
-                    modifiedFormDataResponse.put(UPDATED_BY_ID, contentMap.get(UPDATED_BY_ID));
-                    modifiedFormDataResponse.put(UPDATED_ON, contentMap.get(UPDATED_ON));
-                    modifiedFormDataResponse.put(UPDATED_BY_NAME, contentMap.get(UPDATED_BY_NAME));
-                    responseList.add(modifiedFormDataResponse);
-                }
-                paginationResponsePayload.setContent(responseList);
-                paginationResponsePayload.setPage(Integer.parseInt(String.valueOf(dataMap.get(PAGE))));
-                paginationResponsePayload.setSize(Integer.parseInt(String.valueOf(dataMap.get(SIZE))));
-                paginationResponsePayload.setTotalPages(Integer.parseInt(String.valueOf(dataMap.get(TOTAL_PAGES))));
-                paginationResponsePayload.setTotalElements(Long.parseLong(String.valueOf(dataMap.get(TOTAL_ELEMENTS))));
-                paginationResponsePayload.setNumberOfElements(Integer.parseInt(String.valueOf(dataMap.get(NUMBER_OF_ELEMENTS))));
-            }
-            catch (Exception e)
-            {
-                throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
-            }
-            return paginationResponsePayload;
+            return getPaginationResponsePayload(formId, paginationResponsePayload);
         }
         if (!mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +formId))
         {
@@ -1354,6 +1325,55 @@ public class FormDataServiceImpl implements FormDataService
         return paginationResponsePayload;
     }
 
+    private PaginationResponsePayload getPaginationResponsePayload(String formId, PaginationResponsePayload paginationResponsePayload) {
+        List<Map<String,Object>> contentList;
+        List<Map<String,Object>> responseList=new ArrayList<>();
+        WebClient webClient;
+        String token = tokenUtils.getTokenFromContext();
+        if (StringUtils.isNotEmpty(token))
+        {
+            webClient = webClientWrapper.createWebClient(token);
+        }
+        else
+        {
+            throw new InvalidInputException(TOKEN_NOT_NULL, globalMessageSource.get(TOKEN_NOT_NULL, tokenUtils.getLoggedInUserId()));
+        }
+        try
+        {
+            String response= webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA_ + formId + AND_SOURCE + elasticSource + AND_PAGE_AND_SIZE + defaultPageLimit, GET, null);
+            logger.info(response);
+            Map<String, Object> responseMap = this.objectMapper.readValue(response, Map.class);
+            Map<String, Object> dataMap = this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
+            contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
+            for (Map<String, Object> contentMap : contentList)
+            {
+                Map<String,Object> modifiedFormDataResponse = new LinkedHashMap<>();
+                modifiedFormDataResponse.put(ID,String.valueOf(contentMap.get(ID)));
+                modifiedFormDataResponse.put(FORM_DATA, contentMap.get(FORM_DATA));
+                modifiedFormDataResponse.put(FORM_META_DATA, contentMap.get(FORM_META_DATA));
+                modifiedFormDataResponse.put(VERSION, contentMap.get(VERSION));
+                modifiedFormDataResponse.put(CREATED_BY_ID, contentMap.get(CREATED_BY_ID));
+                modifiedFormDataResponse.put(CREATED_ON, contentMap.get(CREATED_ON));
+                modifiedFormDataResponse.put(CREATED_BY_NAME, contentMap.get(CREATED_BY_NAME));
+                modifiedFormDataResponse.put(UPDATED_BY_ID, contentMap.get(UPDATED_BY_ID));
+                modifiedFormDataResponse.put(UPDATED_ON, contentMap.get(UPDATED_ON));
+                modifiedFormDataResponse.put(UPDATED_BY_NAME, contentMap.get(UPDATED_BY_NAME));
+                responseList.add(modifiedFormDataResponse);
+            }
+            paginationResponsePayload.setContent(responseList);
+            paginationResponsePayload.setPage(Integer.parseInt(String.valueOf(dataMap.get(PAGE))));
+            paginationResponsePayload.setSize(Integer.parseInt(String.valueOf(dataMap.get(SIZE))));
+            paginationResponsePayload.setTotalPages(Integer.parseInt(String.valueOf(dataMap.get(TOTAL_PAGES))));
+            paginationResponsePayload.setTotalElements(Long.parseLong(String.valueOf(dataMap.get(TOTAL_ELEMENTS))));
+            paginationResponsePayload.setNumberOfElements(Integer.parseInt(String.valueOf(dataMap.get(NUMBER_OF_ELEMENTS))));
+        }
+        catch (Exception e)
+        {
+            throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
+        }
+        return paginationResponsePayload;
+    }
+
     @Override
     public List getFormDataByFormIdAndId(String formId, String id,String relations)
     {
@@ -1391,36 +1411,7 @@ public class FormDataServiceImpl implements FormDataService
         }
         if (StringUtils.isNotEmpty(relations))
         {
-            ArrayList<String> mappedArrayOfDocumentsName=new ArrayList<>();
-            String[] relationsList = relations.split(COMMA);
-            ArrayList<String> relationKeysList = new ArrayList<>();
-            ArrayList<String> relationValuesList = new ArrayList<>();
-            for (String relation : relationsList)
-            {
-                String[] keyValuePair = relation.split(COLON);
-                mappedArrayOfDocumentsName.add(keyValuePair[0]);
-                keyValuePair[0] = TP_RUNTIME_FORM_DATA_ + keyValuePair[0];
-                keyValuePair[1] = FORM_DATA + DOT + keyValuePair[1];
-                relationKeysList.add(keyValuePair[0].replaceAll(REGEX_PATTERN_1, EMPTY_STRING));
-                relationValuesList.add(keyValuePair[1].replaceAll(REGEX_PATTERN_1, EMPTY_STRING));
-            }
-            List<Map<String, Object>> relationalMapList = new ArrayList<>();
-            List<AggregationOperation> aggregationOperationsList = new ArrayList<>();
-            aggregationOperationsList.add(Aggregation.match(Criteria.where(UNDERSCORE_ID).is(Long.valueOf(id))));
-            for(int j=0;j<relationKeysList.size();j++)
-            {
-                DocumentAggregationOperation documentAggregationOperation=new DocumentAggregationOperation(String.format(MONGO_AGGREGATION_STAGE_PIPELINE_6,relationKeysList.get(j),relationValuesList.get(j),relationValuesList.get(j),mappedArrayOfDocumentsName.get(j)));
-                aggregationOperationsList.add(documentAggregationOperation);
-            }
-            aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)));
-            List<Map> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA_ + formId, Map.class).getMappedResults();
-            for (Map<String,Object> map : aggregateList)
-            {
-                map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
-                map.remove(UNDERSCORE_ID);
-                relationalMapList.add(map);
-            }
-            return relationalMapList;
+            return getMaps(formId, id, relations);
         }
         boolean documentFlag = false;
         Map<String, Object> formData;
@@ -1462,6 +1453,39 @@ public class FormDataServiceImpl implements FormDataService
         }
         assert formDataResponseSchema != null;
         return  List.of(formDataResponseSchema);
+    }
+
+    private List<Map<String, Object>> getMaps(String formId, String id, String relations) {
+        ArrayList<String> mappedArrayOfDocumentsName=new ArrayList<>();
+        String[] relationsList = relations.split(COMMA);
+        ArrayList<String> relationKeysList = new ArrayList<>();
+        ArrayList<String> relationValuesList = new ArrayList<>();
+        for (String relation : relationsList)
+        {
+            String[] keyValuePair = relation.split(COLON);
+            mappedArrayOfDocumentsName.add(keyValuePair[0]);
+            keyValuePair[0] = TP_RUNTIME_FORM_DATA_ + keyValuePair[0];
+            keyValuePair[1] = FORM_DATA + DOT + keyValuePair[1];
+            relationKeysList.add(keyValuePair[0].replaceAll(REGEX_PATTERN_1, EMPTY_STRING));
+            relationValuesList.add(keyValuePair[1].replaceAll(REGEX_PATTERN_1, EMPTY_STRING));
+        }
+        List<Map<String, Object>> relationalMapList = new ArrayList<>();
+        List<AggregationOperation> aggregationOperationsList = new ArrayList<>();
+        aggregationOperationsList.add(Aggregation.match(Criteria.where(UNDERSCORE_ID).is(Long.valueOf(id))));
+        for(int j=0;j<relationKeysList.size();j++)
+        {
+            DocumentAggregationOperation documentAggregationOperation=new DocumentAggregationOperation(String.format(MONGO_AGGREGATION_STAGE_PIPELINE_6,relationKeysList.get(j),relationValuesList.get(j),relationValuesList.get(j),mappedArrayOfDocumentsName.get(j)));
+            aggregationOperationsList.add(documentAggregationOperation);
+        }
+        aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)));
+        List<Map> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA_ + formId, Map.class).getMappedResults();
+        for (Map<String,Object> map : aggregateList)
+        {
+            map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
+            map.remove(UNDERSCORE_ID);
+            relationalMapList.add(map);
+        }
+        return relationalMapList;
     }
 
     @Override
