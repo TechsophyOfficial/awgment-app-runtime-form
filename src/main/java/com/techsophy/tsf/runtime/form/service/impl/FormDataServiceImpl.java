@@ -798,7 +798,7 @@ public class FormDataServiceImpl implements FormDataService
     {
         if (elasticEnable&&relations==null)
         {
-            return getMaps(formId, q, sortBy, sortOrder);
+            return getFormDataList(formId, q, sortBy, sortOrder);
         }
         if (!mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_+formId))
         {
@@ -908,7 +908,7 @@ public class FormDataServiceImpl implements FormDataService
         return formDataResponseSchemasList;
     }
 
-    private List<Map<String, Object>> getMaps(String formId, String q, String sortBy, String sortOrder) {
+    private List<Map<String, Object>> getFormDataList(String formId, String q, String sortBy, String sortOrder) {
         List<Map<String,Object>> responseList=new ArrayList<>();
         if (StringUtils.isEmpty(sortBy) && !StringUtils.isEmpty(sortOrder) || !StringUtils.isEmpty(sortBy) && StringUtils.isEmpty(sortOrder))
         {
@@ -926,7 +926,7 @@ public class FormDataServiceImpl implements FormDataService
         }
         try
         {
-            extracted(formId, q, sortBy, sortOrder, responseList, webClient);
+            extractFromElastic(formId, q, sortBy, sortOrder, responseList, webClient);
         }
         catch (Exception e)
         {
@@ -934,7 +934,7 @@ public class FormDataServiceImpl implements FormDataService
         }
         return responseList;
     }
-    private void extracted(String formId, String q, String sortBy, String sortOrder, List<Map<String, Object>> responseList, WebClient webClient) throws JsonProcessingException {
+    private void extractFromElastic(String formId, String q, String sortBy, String sortOrder, List<Map<String, Object>> responseList, WebClient webClient) throws JsonProcessingException {
         List<Map<String, Object>> contentList;
         String response = null;
         if (StringUtils.isEmpty(q) && StringUtils.isBlank(sortBy) && StringUtils.isBlank(sortOrder))
@@ -1411,7 +1411,7 @@ public class FormDataServiceImpl implements FormDataService
         }
         if (StringUtils.isNotEmpty(relations))
         {
-            return getMaps(formId, id, relations);
+            return getFormDataList(formId, id, relations);
         }
         boolean documentFlag = false;
         Map<String, Object> formData;
@@ -1455,7 +1455,7 @@ public class FormDataServiceImpl implements FormDataService
         return  List.of(formDataResponseSchema);
     }
 
-    private List<Map<String, Object>> getMaps(String formId, String id, String relations) {
+    private List<Map<String, Object>> getFormDataList(String formId, String id, String relations) {
         ArrayList<String> mappedArrayOfDocumentsName=new ArrayList<>();
         String[] relationsList = relations.split(COMMA);
         ArrayList<String> relationKeysList = new ArrayList<>();
@@ -1603,10 +1603,10 @@ public class FormDataServiceImpl implements FormDataService
         {
             aggregationOperationsList.add(Aggregation.group(groupBy).count().as(COUNT));
         }
-       List<Document> x= Collections.singletonList(mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList),
+       List<Document> aggregateList = Collections.singletonList(mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList),
                TP_RUNTIME_FORM_DATA_ + formId, Document.class).getRawResults());
         List<Map<String,String>> responseAggregationList=new ArrayList<>();
-        for(Map<String,Object> map:x)
+        for(Map<String,Object> map: aggregateList)
         {
            Map<String,String> aggregationMap=new HashMap<>();
            aggregationMap.put(UNDERSCORE_ID,String.valueOf(map.get(UNDERSCORE_ID)));
