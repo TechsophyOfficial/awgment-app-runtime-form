@@ -5,6 +5,7 @@ import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.FormDataController;
 import com.techsophy.tsf.runtime.form.dto.AggregationResponse;
 import com.techsophy.tsf.runtime.form.dto.FormDataResponse;
+import com.techsophy.tsf.runtime.form.dto.FormDataResponseSchema;
 import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
 import com.techsophy.tsf.runtime.form.model.ApiResponse;
 import com.techsophy.tsf.runtime.form.service.FormDataService;
@@ -15,6 +16,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.List;
 
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 
@@ -40,7 +42,7 @@ public class FormDataControllerImpl implements FormDataController
     }
 
     @Override
-    public ApiResponse getAllFormDataByFormId(String formId, String relations, Integer page, Integer pageSize, String sortBy, String sortOrder, String filter, String q)
+    public ApiResponse<Object> getAllFormDataByFormId(String formId, String relations, Integer page, Integer pageSize, String sortBy, String sortOrder, String filter, String q)
     {
         if (StringUtils.hasText(filter))
         {
@@ -68,7 +70,7 @@ public class FormDataControllerImpl implements FormDataController
     }
 
     @Override
-    public ApiResponse getFormDataByFormIdAndId(String formId, String id, String relations)
+    public ApiResponse<List<FormDataResponseSchema>> getFormDataByFormIdAndId(String formId, String id, String relations)
     {
         return new ApiResponse<>(formDataService.getFormDataByFormIdAndId(formId, id, relations), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
     }
@@ -86,14 +88,8 @@ public class FormDataControllerImpl implements FormDataController
        return new ApiResponse<>(null,true,globalMessageSource.get(DELETE_FORM_DATA_SUCCESS));
     }
 
-//    @Override
-//    public ApiResponse<String> validateFormDataByFormId(FormDataSchema formDataSchema) throws JsonProcessingException
-//    {
-//       return new ApiResponse<>(formDataService.validateFormDataByFormId(formDataSchema),true,globalMessageSource.get(FORM_DATA_VALIDATED_SUCCESSFULLY));
-//    }
-
     @Override
-    public ApiResponse aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation)
+    public ApiResponse<AggregationResponse> aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation)
     {
         AggregationResponse aggregationResponse=formDataService.aggregateByFormIdFilterGroupBy(formId,filter,groupBy,operation);
         return new ApiResponse<>(aggregationResponse,true,globalMessageSource.get(GET_FORM_DATA_SUCCESS));

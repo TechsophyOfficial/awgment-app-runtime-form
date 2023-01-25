@@ -234,15 +234,16 @@ class FormDataServiceElasticEnabledExceptionTest
     @Test
     void getAllFormDataByFormIdPaginationEmptySortExceptionTest()
     {
-        Assertions.assertThrows(InvalidInputException.class, () ->mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,null, TEST_ID, CREATED_ON, EMPTY_STRING,
-                PageRequest.of(0, 5)));
+        PageRequest pageRequest = PageRequest.of(0, 5);
+        Assertions.assertThrows(InvalidInputException.class, () ->mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,null, TEST_ID, CREATED_ON, EMPTY_STRING));
     }
 
     @Test
     void getAllFormDataByFormIdPaginationEmptyTokenTest()
     {
         Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(EMPTY_STRING);
-        Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, null, TEST_ID, CREATED_ON, DESCENDING, PageRequest.of(0, 5)));
+        PageRequest pageRequest = PageRequest.of(0, 5);
+        Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, null, TEST_ID, CREATED_ON, DESCENDING));
     }
 
     @Test
@@ -256,7 +257,8 @@ class FormDataServiceElasticEnabledExceptionTest
         responseMapTest.put(SUCCESS,true);
         responseMapTest.put(MESSAGE,ELASTIC_DATA_FETCHED_SUCCESSFULLY);
         Mockito.when(mockObjectMapper.readValue(responseTest, Map.class)).thenReturn(responseMapTest);
-        Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,null, TEST_ID, CREATED_ON, DESCENDING, PageRequest.of(0, 5)));
+        PageRequest pageRequest = PageRequest.of(0, 5);
+        Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,null, TEST_ID, CREATED_ON, DESCENDING));
     }
 
     @Test
@@ -328,14 +330,16 @@ class FormDataServiceElasticEnabledExceptionTest
     @Test
     void getAllFormDataByFormIdAndQPaginationEmptySortTest()
     {
-        Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,null, TEST_ID, CREATED_ON, EMPTY_STRING, PageRequest.of(0, 5)));
+        PageRequest pageRequest = PageRequest.of(0, 5);
+        Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,null, TEST_ID, CREATED_ON, EMPTY_STRING));
     }
 
     @Test
     void getAllFormDataByFormIdAndQPaginationEmptyTokenTest()
     {
         Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(EMPTY_STRING);
-        Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,null, TEST_ID, CREATED_ON, DESCENDING, PageRequest.of(0, 5)));
+        PageRequest pageRequest = PageRequest.of(0, 5);
+        Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,null, TEST_ID, CREATED_ON, DESCENDING,pageRequest ));
     }
 
     @Test
@@ -349,7 +353,8 @@ class FormDataServiceElasticEnabledExceptionTest
         responseMapTest.put(SUCCESS,true);
         responseMapTest.put(MESSAGE,ELASTIC_DATA_FETCHED_SUCCESSFULLY);
         Mockito.when(mockObjectMapper.readValue(responseTest, Map.class)).thenReturn(responseMapTest);
-        Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,null, TEST_ID, CREATED_ON, DESCENDING, PageRequest.of(0, 5)));
+        PageRequest pageRequest = PageRequest.of(0, 5);
+        Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,null, TEST_ID, CREATED_ON, DESCENDING,pageRequest ));
     }
 
     @Test

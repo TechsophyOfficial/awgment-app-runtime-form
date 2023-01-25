@@ -129,7 +129,6 @@ public class TokenUtils
     @SneakyThrows
     public Map<String, Object> string2JSONMap(String json)
     {
-        ObjectMapper objectMapper = new ObjectMapper();
         // convert JSON string to Map
         return objectMapper.readValue(json, new TypeReference<>(){});
     }

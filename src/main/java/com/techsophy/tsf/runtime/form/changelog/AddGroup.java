@@ -23,7 +23,6 @@ public class AddGroup {
 
     private  final MongoTemplate template;
     private final ObjectMapper objectMapper;
-    public static    int count =0;
     @Execution
     public void changeSetFormDefinition() throws IOException
     {

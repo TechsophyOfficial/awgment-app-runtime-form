@@ -1,8 +1,9 @@
 package com.techsophy.tsf.runtime.form.constants;
 
+import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FormDataConstants
 {
     public static final String CHILDREN="children";

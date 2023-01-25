@@ -3,7 +3,6 @@ package com.techsophy.tsf.runtime.form.entity;
 import lombok.*;
 import org.springframework.data.annotation.*;
 import org.springframework.data.mongodb.core.mapping.Document;
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +14,7 @@ import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.TP_F
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = TP_FORM_DEFINITION_COLLECTION)
-public class FormDefinition extends Auditable implements Serializable
+public class FormDefinition extends Auditable
 {
     private static final long serialVersionUID = 1L;
     @Id
