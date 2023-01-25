@@ -38,6 +38,7 @@ public class FormValidationServiceImpl
                 validationResultList.addAll(validateComponent(component,component.getData(formDataMap),formId));
             }
         });
+
         return validationResultList;
     }
 
