@@ -1603,9 +1603,10 @@ public class FormDataServiceImpl implements FormDataService
         {
             aggregationOperationsList.add(Aggregation.group(groupBy).count().as(COUNT));
         }
-        FindIterable<Document> aggregateList= (FindIterable<Document>) mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA_+formId,Map.class).getRawResults();
+       List<Document> x= Collections.singletonList(mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList),
+               TP_RUNTIME_FORM_DATA_ + formId, Document.class).getRawResults());
         List<Map<String,String>> responseAggregationList=new ArrayList<>();
-        for(Map<String,Object> map:aggregateList)
+        for(Map<String,Object> map:x)
         {
            Map<String,String> aggregationMap=new HashMap<>();
            aggregationMap.put(UNDERSCORE_ID,String.valueOf(map.get(UNDERSCORE_ID)));

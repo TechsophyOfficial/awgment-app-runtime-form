@@ -29,11 +29,14 @@ public class FormValidationServiceImpl
         List<ValidationResult> validationResultList=new ArrayList<>();
         Map<String, Object> components = formResponseSchema.getComponents();
         Map<String, Object> formDataMap = formData.getFormData();
-        List<Object> componentsList= Collections.singletonList(components.get(COMPONENTS));
+        List<LinkedHashMap> componentsList= (List<LinkedHashMap>) components.get(COMPONENTS);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         componentsList.forEach(x->{
             Component  component=objectMapper.convertValue(x,Component.class);
-            validationResultList.addAll(validateComponent(component,component.getData(formDataMap),formId));
+            if(component!=null)
+            {
+                validationResultList.addAll(validateComponent(component,component.getData(formDataMap),formId));
+            }
         });
         return validationResultList;
     }
