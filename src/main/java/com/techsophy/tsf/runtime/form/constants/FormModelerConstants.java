@@ -409,7 +409,6 @@ public class FormModelerConstants
            "    }\n" +
            "}";
 
-    public static final String SPACE_CHARACTER ="        as: '%s'\n" ;
     public static final String CONTAINS_ATLEAST_ONE_SPECIAL_CHARACTER =".*[!@#$%^&*()_+=]+.*";
 
     //Constants for Requestmapping
