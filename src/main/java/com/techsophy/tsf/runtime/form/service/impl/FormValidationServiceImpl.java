@@ -8,10 +8,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 import java.util.stream.Collectors;
-
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.CHILDREN;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.DATA;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.COMPONENTS;
@@ -38,7 +36,6 @@ public class FormValidationServiceImpl
                 validationResultList.addAll(validateComponent(component,component.getData(formDataMap),formId));
             }
         });
-
         return validationResultList;
     }
 
@@ -58,7 +55,8 @@ public class FormValidationServiceImpl
         return validationResultList;
     }
 
-    private boolean checkIfComponentIsNotNull(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+    private boolean checkIfComponentIsNotNull(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList)
+    {
         if(component !=null)
         {
             String compType= component.getType();
@@ -76,7 +74,7 @@ public class FormValidationServiceImpl
                         }
                         case "table":
                         {
-                            checRowsListsInTable(component, data, formId, validationResultList);
+                            checkRowsListsInTable(component, data, formId, validationResultList);
                             break;
                         }
                         case "datamap":
@@ -119,7 +117,8 @@ public class FormValidationServiceImpl
         return false;
     }
 
-    private void validateColumnsList(Map<String, Object> data, String formId, List<ValidationResult> validationResultList, List<Columns> columns) {
+    private void validateColumnsList(Map<String, Object> data, String formId, List<ValidationResult> validationResultList, List<Columns> columns)
+    {
         if(columns !=null)
         {
             List<Component> componentList=new ArrayList<>();
@@ -128,7 +127,8 @@ public class FormValidationServiceImpl
         }
     }
 
-    private void checRowsListsInTable(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+    private void checkRowsListsInTable(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList)
+    {
         if(component.getRowsList()!=null)
         {
             List<Component> componentList= component.getRowsList()
@@ -140,7 +140,8 @@ public class FormValidationServiceImpl
         }
     }
 
-    private void checkIfDataContainsComponents(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+    private void checkIfDataContainsComponents(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList)
+    {
         if(data.get(component.getLabel())!=null)
         {
             List<Map<String,Object>> dataGridList= (List<Map<String, Object>>) data.get(component.getLabel());
@@ -149,14 +150,16 @@ public class FormValidationServiceImpl
         }
     }
 
-    private void iterateDataGridList(String formId, List<ValidationResult> validationResultList, List<Map<String, Object>> dataGridList, List<Component> componentList) {
+    private void iterateDataGridList(String formId, List<ValidationResult> validationResultList, List<Map<String, Object>> dataGridList, List<Component> componentList)
+    {
         for(Map<String,Object> m: dataGridList)
         {
             validateInternalComponents(validationResultList, componentList,m, formId);
         }
     }
 
-    private void checkIfChildrenExists(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+    private void checkIfChildrenExists(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList)
+    {
         if(data.get(CHILDREN)!=null)
         {
             List<Map<String,Object>> childrenList= (List<Map<String, Object>>) data.get(CHILDREN);
@@ -166,7 +169,8 @@ public class FormValidationServiceImpl
         }
     }
 
-    private Map<String, Object> iterateChildrenComponents(Map<String, Object> data, String formId, List<ValidationResult> validationResultList, List<Map<String, Object>> childrenList, List<Component> componentList) {
+    private Map<String, Object> iterateChildrenComponents(Map<String, Object> data, String formId, List<ValidationResult> validationResultList, List<Map<String, Object>> childrenList, List<Component> componentList)
+    {
         while (!childrenList.isEmpty())
         {
             validateInternalComponents(validationResultList, componentList, (Map<String, Object>) data.get(DATA), formId);
@@ -176,7 +180,8 @@ public class FormValidationServiceImpl
         return data;
     }
 
-    private void validateTabsComponents(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+    private void validateTabsComponents(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList)
+    {
         if(component.getComponents()!=null)
         {
             List<Component> componentList= component.getComponents().get(0).getComponents();
@@ -184,7 +189,8 @@ public class FormValidationServiceImpl
         }
     }
 
-    private void validateInternalComponents(Map<String, Object> data, String formId, List<ValidationResult> validationResultList, List<Component> componentList) {
+    private void validateInternalComponents(Map<String, Object> data, String formId, List<ValidationResult> validationResultList, List<Component> componentList)
+    {
         if(componentList !=null)
         {
             validateInternalComponents(validationResultList, componentList, data, formId);

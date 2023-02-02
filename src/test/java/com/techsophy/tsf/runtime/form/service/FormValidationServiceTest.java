@@ -2,10 +2,7 @@ package com.techsophy.tsf.runtime.form.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.assertions.Assertions;
-import com.techsophy.tsf.runtime.form.dto.Component;
-import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
-import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
-import com.techsophy.tsf.runtime.form.dto.Validate;
+import com.techsophy.tsf.runtime.form.dto.*;
 import com.techsophy.tsf.runtime.form.service.impl.FormValidationServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,6 +63,26 @@ class FormValidationServiceTest
         component.setType("textField");
         component.setValidate(new Validate(true,"a-z",
         null,null,null,null,1.0,10.0,1,100,
+                null,null,null,2,100,null,null));
+        Map<String,Object> dataMap=new HashMap<>();
+        Assertions.assertNotNull(formValidationService.validateComponent(component,dataMap,TEST_FORM_ID));
+    }
+
+    @Test
+    void checkComponentColumnsTest()
+    {
+        Component component=new Component();
+        component.setType("columns");
+        List<Component> componentList=new ArrayList<>();
+        componentList.add(new Component());
+        component.setComponents(componentList);
+        List<Columns> columnsList=new ArrayList<>();
+        Columns columns=new Columns();
+        columns.setComponent(componentList);
+        columnsList.add(columns);
+        component.setColumns(columnsList);
+        component.setValidate(new Validate(true,"a-z",
+                null,null,null,null,1.0,10.0,1,100,
                 null,null,null,2,100,null,null));
         Map<String,Object> dataMap=new HashMap<>();
         Assertions.assertNotNull(formValidationService.validateComponent(component,dataMap,TEST_FORM_ID));
