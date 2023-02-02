@@ -65,7 +65,7 @@ public class FormDataAuditServiceImpl implements FormDataAuditService
         formDataAuditDefinition.put(CREATED_ON, Instant.now());
         formDataAuditDefinition.put(CREATED_BY_NAME,loggedInUserDetails.get(USER_DEFINITION_FIRST_NAME) + SPACE + loggedInUserDetails.get(USER_DEFINITION_LAST_NAME));
         Document newDocument = new Document(formDataAuditDefinition);
-        mongoTemplate.save(newDocument,TP_RUNTIME_FORM_DATA_+formDataAuditSchema.getFormId()+AUDIT);
+        mongoTemplate.save(newDocument, TP_RUNTIME_FORM_DATA +formDataAuditSchema.getFormId()+AUDIT);
         return new FormDataAuditResponse(formDataAuditSchema.getId(), formDataAuditSchema.getVersion());
     }
 
@@ -78,13 +78,13 @@ public class FormDataAuditServiceImpl implements FormDataAuditService
         List<FormDataAuditResponseSchema> formDataAuditResponseSchemasList=new ArrayList<>();
         Bson filter= Filters.eq(FORM_DATA_ID,Long.valueOf(formDataId));
         MongoCursor<Document> cursor;
-        if(!mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_+formId+AUDIT))
+        if(!mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formId+AUDIT))
         {
             throw new FormIdNotFoundException(FORM_DATA_DOES_NOT_EXISTS_WITH_GIVEN_FORMID,globalMessageSource.get(FORM_DATA_DOES_NOT_EXISTS_WITH_GIVEN_FORMID,formId));
         }
         try
        {
-           MongoCollection<Document> collection=mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_+formId+AUDIT);
+           MongoCollection<Document> collection=mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId+AUDIT);
            FindIterable<Document> documents=collection.find(filter);
            cursor=documents.iterator();
            while(cursor.hasNext())

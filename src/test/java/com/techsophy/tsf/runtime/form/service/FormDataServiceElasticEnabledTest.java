@@ -157,7 +157,7 @@ class FormDataServiceElasticEnabledTest
                 "    \"message\": \"Form data saved successfully\"\n" +
                 "}";
         Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),eq(POST),any())).thenReturn(responseTest);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +formDataSchemaTest.getFormId())).thenReturn(true);
+        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
         Map<String, Object> formDataMap = new HashMap<>();
         formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
         formDataMap.put(FORM_ID,TEST_FORM_ID);
@@ -231,7 +231,7 @@ class FormDataServiceElasticEnabledTest
                 "    \"message\": \"Form data retrieved successfully\"\n" +
                 "}";
         Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),eq(GET),any())).thenReturn(getResponse);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +formDataSchemaTest.getFormId())).thenReturn(true);
+        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
         Map<String, Object> formDataMap = new HashMap<>();
         formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
         formDataMap.put(FORM_ID,TEST_FORM_ID);
@@ -1848,8 +1848,11 @@ class FormDataServiceElasticEnabledTest
         responseMapTest.put(DATA, dataMapTest);
         responseMapTest.put(SUCCESS,true);
         responseMapTest.put(MESSAGE,ELASTIC_DATA_FETCHED_SUCCESSFULLY);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +TEST_FORM_ID)).thenReturn(true);
-        Mockito.doReturn(aggregationResults).when(mockMongoTemplate).aggregate(Mockito.any(Aggregation.class), Mockito.eq(COLLECTION), Mockito.eq(Map.class));
+        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +TEST_FORM_ID)).thenReturn(true);
+        Document document=new Document(responseMapTest);
+        List<Document> documentList=new ArrayList<>();
+        documentList.add(document);
+        Mockito.when(mockMongoTemplate.aggregate((Aggregation) any(),anyString(),eq(Document.class))).thenReturn( new AggregationResults<>(documentList,document));
         Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, TEST_FILTER, null, null));
     }
 
@@ -2217,7 +2220,7 @@ class FormDataServiceElasticEnabledTest
         dataMapTest.put(UPDATED_ON,TEST_UPDATED_ON);
         responseMapTest.put(DATA, dataMapTest);
         responseMapTest.put(SUCCESS,true);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +TEST_FORM_ID)).thenReturn(true);
+        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +TEST_FORM_ID)).thenReturn(true);
         mockFormDataServiceImpl.deleteAllFormDataByFormId(TEST_FORM_ID);
         verify(mockWebClientWrapper,times(1)).webclientRequest(any(),any(),any(),any());
     }
@@ -2250,7 +2253,7 @@ class FormDataServiceElasticEnabledTest
         dataMapTest.put(UPDATED_ON,TEST_UPDATED_ON);
         responseMapTest.put(DATA, dataMapTest);
         responseMapTest.put(SUCCESS,true);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +TEST_FORM_ID)).thenReturn(true);
+        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +TEST_FORM_ID)).thenReturn(true);
         Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
         Mockito.when(mockMongoCollection.deleteMany(any())).thenReturn(mockDeleteResult);
         Mockito.when(mockDeleteResult.getDeletedCount()).thenReturn(Long.valueOf(1));

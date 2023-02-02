@@ -29,7 +29,7 @@ public class FormValidationServiceImpl
         List<ValidationResult> validationResultList=new ArrayList<>();
         Map<String, Object> components = formResponseSchema.getComponents();
         Map<String, Object> formDataMap = formData.getFormData();
-        List<LinkedHashMap> componentsList= (List<LinkedHashMap>) components.get(COMPONENTS);
+        List<LinkedHashMap<String,Object>> componentsList= (List<LinkedHashMap<String,Object>>) components.get(COMPONENTS);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         componentsList.forEach(x->{
             Component  component=objectMapper.convertValue(x,Component.class);
@@ -53,9 +53,15 @@ public class FormValidationServiceImpl
     public List<ValidationResult> validateComponent(Component component,Map<String,Object> data,String formId)
     {
         List<ValidationResult> validationResultList=new ArrayList<>();
-        if(component!=null)
+        if (checkIfComponentIsNotNull(component, data, formId, validationResultList))
+            return component.getValidate().validate(new Validate.ComponentData(component, data, formId));
+        return validationResultList;
+    }
+
+    private boolean checkIfComponentIsNotNull(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+        if(component !=null)
         {
-            String compType=component.getType();
+            String compType= component.getType();
             if(compType!=null)
             {
                 if(component.isContainer())
@@ -64,79 +70,40 @@ public class FormValidationServiceImpl
                     {
                         case "columns":
                         {
-                            List<Columns> columns=component.getColumns();
-                            if(columns!=null)
-                            {
-                                List<Component> componentList=new ArrayList<>();
-                                columns.forEach(x->componentList.addAll(x.getComponent()));
-                                validateInternalComponents(validationResultList,componentList,data,formId);
-                            }
+                            List<Columns> columns= component.getColumns();
+                            validateColumnsList(data, formId, validationResultList, columns);
                             break;
                         }
                         case "table":
                         {
-                            if(component.getRowsList()!=null)
-                            {
-                                List<Component> componentList= component.getRowsList()
-                                        .stream()
-                                        .flatMap(x->x.stream()
-                                                .flatMap(y->y.getComponents().stream()))
-                                        .collect(Collectors.toList());
-                                validateInternalComponents(validationResultList,componentList,data,formId);
-                            }
+                            checRowsListsInTable(component, data, formId, validationResultList);
                             break;
                         }
                         case "datamap":
                         {
-                            validationResultList.addAll(validateComponent(component.getValueComponent(),data,formId));
+                            validationResultList.addAll(validateComponent(component.getValueComponent(), data, formId));
                             break;
                         }
                         case "datagrid":
                         case "editgrid":
                         {
-                            if(data.get(component.getLabel())!=null)
-                            {
-                                List<Map<String,Object>> dataGridList= (List<Map<String, Object>>) data.get(component.getLabel());
-                                List<Component> componentList=component.getComponents();
-                                for(Map<String,Object> m:dataGridList)
-                                {
-                                    validateInternalComponents(validationResultList,componentList,m,formId);
-                                }
-                            }
+                            checkIfDataContainsComponents(component, data, formId, validationResultList);
                             break;
                         }
                         case "tree":
                         {
-                            if(data.get(CHILDREN)!=null)
-                            {
-                                List<Map<String,Object>> childrenList= (List<Map<String, Object>>) data.get(CHILDREN);
-                                List<Component> componentList=component.getComponents();
-                                while (!childrenList.isEmpty())
-                                {
-                                    validateInternalComponents(validationResultList,componentList, (Map<String, Object>) data.get(DATA),formId);
-                                    data=childrenList.get(0);
-                                    childrenList= (List<Map<String, Object>>) data.get(CHILDREN);
-                                }
-                                validateInternalComponents(validationResultList,componentList,data,formId);
-                            }
+                            checkIfChildrenExists(component, data, formId, validationResultList);
                             break;
                         }
                         case "tabs":
                         {
-                            if(component.getComponents()!=null)
-                            {
-                                List<Component> componentList=component.getComponents().get(0).getComponents();
-                                validateInternalComponents(validationResultList,componentList,data,formId);
-                            }
+                            validateTabsComponents(component, data, formId, validationResultList);
                             break;
                         }
                         default:
                         {
-                            List<Component> componentList=component.getComponents();
-                            if(componentList!=null)
-                            {
-                                validateInternalComponents(validationResultList,componentList,data,formId);
-                            }
+                            List<Component> componentList= component.getComponents();
+                            validateInternalComponents(data, formId, validationResultList, componentList);
                         }
                     }
                 }
@@ -144,11 +111,83 @@ public class FormValidationServiceImpl
                 {
                     if(component.getValidate()!=null)
                     {
-                        return component.getValidate().validate(new Validate.ComponentData(component,data,formId));
+                        return true;
                     }
                 }
             }
         }
-        return validationResultList;
+        return false;
+    }
+
+    private void validateColumnsList(Map<String, Object> data, String formId, List<ValidationResult> validationResultList, List<Columns> columns) {
+        if(columns !=null)
+        {
+            List<Component> componentList=new ArrayList<>();
+            columns.forEach(x->componentList.addAll(x.getComponent()));
+            validateInternalComponents(validationResultList,componentList, data, formId);
+        }
+    }
+
+    private void checRowsListsInTable(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+        if(component.getRowsList()!=null)
+        {
+            List<Component> componentList= component.getRowsList()
+                    .stream()
+                    .flatMap(x->x.stream()
+                            .flatMap(y->y.getComponents().stream()))
+                    .collect(Collectors.toList());
+            validateInternalComponents(validationResultList,componentList, data, formId);
+        }
+    }
+
+    private void checkIfDataContainsComponents(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+        if(data.get(component.getLabel())!=null)
+        {
+            List<Map<String,Object>> dataGridList= (List<Map<String, Object>>) data.get(component.getLabel());
+            List<Component> componentList= component.getComponents();
+            iterateDataGridList(formId, validationResultList, dataGridList, componentList);
+        }
+    }
+
+    private void iterateDataGridList(String formId, List<ValidationResult> validationResultList, List<Map<String, Object>> dataGridList, List<Component> componentList) {
+        for(Map<String,Object> m: dataGridList)
+        {
+            validateInternalComponents(validationResultList, componentList,m, formId);
+        }
+    }
+
+    private void checkIfChildrenExists(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+        if(data.get(CHILDREN)!=null)
+        {
+            List<Map<String,Object>> childrenList= (List<Map<String, Object>>) data.get(CHILDREN);
+            List<Component> componentList= component.getComponents();
+            data = iterateChildrenComponents(data, formId, validationResultList, childrenList, componentList);
+            validateInternalComponents(validationResultList,componentList, data, formId);
+        }
+    }
+
+    private Map<String, Object> iterateChildrenComponents(Map<String, Object> data, String formId, List<ValidationResult> validationResultList, List<Map<String, Object>> childrenList, List<Component> componentList) {
+        while (!childrenList.isEmpty())
+        {
+            validateInternalComponents(validationResultList, componentList, (Map<String, Object>) data.get(DATA), formId);
+            data = childrenList.get(0);
+            childrenList = (List<Map<String, Object>>) data.get(CHILDREN);
+        }
+        return data;
+    }
+
+    private void validateTabsComponents(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+        if(component.getComponents()!=null)
+        {
+            List<Component> componentList= component.getComponents().get(0).getComponents();
+            validateInternalComponents(validationResultList,componentList, data, formId);
+        }
+    }
+
+    private void validateInternalComponents(Map<String, Object> data, String formId, List<ValidationResult> validationResultList, List<Component> componentList) {
+        if(componentList !=null)
+        {
+            validateInternalComponents(validationResultList, componentList, data, formId);
+        }
     }
 }

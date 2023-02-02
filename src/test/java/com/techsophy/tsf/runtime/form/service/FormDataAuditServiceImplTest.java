@@ -195,8 +195,8 @@ class FormDataAuditServiceImplTest
         formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
         formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
         Document document = new Document(formDataMap);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(true);
-        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_+formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(mockMongoCollection);
+        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(true);
+        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(mockMongoCollection);
         FindIterable iterable = mock(FindIterable.class);
         MongoCursor cursor = mock(MongoCursor.class);
         Bson filter= Filters.eq(FORM_DATA_ID,Long.valueOf(TEST_FORM_DATA_ID_VALUE));
