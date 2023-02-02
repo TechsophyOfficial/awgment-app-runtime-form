@@ -266,7 +266,8 @@ public class FormDataServiceImpl implements FormDataService
         }
     }
 
-    private String checkFormDataId(FormDataSchema formDataSchema, String uniqueDocumentId) {
+    private String checkFormDataId(FormDataSchema formDataSchema, String uniqueDocumentId)
+    {
         if (formDataSchema.getFormData().get(ID) != null || formDataSchema.getId()!= null)
         {
             uniqueDocumentId = formDataSchema.getId();
@@ -276,7 +277,8 @@ public class FormDataServiceImpl implements FormDataService
         return uniqueDocumentId;
     }
 
-    private void checkDocumentFlag(boolean documentFlag, String uniqueDocumentId) {
+    private void checkDocumentFlag(boolean documentFlag, String uniqueDocumentId)
+    {
         if (!documentFlag)
         {
             throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC, uniqueDocumentId));
@@ -519,7 +521,8 @@ public class FormDataServiceImpl implements FormDataService
         return Collections.emptyList();
     }
 
-    private static void prepareDocumentAggregateList(ArrayList<String> mappedArrayOfDocumentsName, ArrayList<String> relationKeysList, ArrayList<String> relationValuesList, List<AggregationOperation> aggregationOperationsList) {
+    private static void prepareDocumentAggregateList(ArrayList<String> mappedArrayOfDocumentsName, ArrayList<String> relationKeysList, ArrayList<String> relationValuesList, List<AggregationOperation> aggregationOperationsList)
+    {
         for(int j = 0; j< relationKeysList.size(); j++)
         {
             DocumentAggregationOperation documentAggregationOperation=new DocumentAggregationOperation(String.format(MONGO_AGGREGATION_STAGE_PIPELINE_1, relationKeysList.get(j), relationValuesList.get(j), relationValuesList.get(j), mappedArrayOfDocumentsName.get(j)));
@@ -655,7 +658,7 @@ public class FormDataServiceImpl implements FormDataService
             ArrayList<String> relationValuesList = new ArrayList<>();
             prepareRelationList(mappedArrayOfDocumentsName, relationsList, relationKeysList, relationValuesList);
             aggregationOperationsList.add(Aggregation.match(criteria));
-            documentAggregation(mappedArrayOfDocumentsName, aggregationOperationsList, relationKeysList, relationValuesList);
+            prepareDocumentAggregateList(mappedArrayOfDocumentsName,  relationKeysList, relationValuesList,aggregationOperationsList);
             PaginationResponsePayload paginationResponsePayload1 = getPaginationWithMongoAndEmptySort(formId, sortBy, sortOrder, pageable, paginationResponsePayload, content, aggregationOperationsList);
             if (isCheckPaginationResponse(paginationResponsePayload1)) return paginationResponsePayload1;
             FacetOperation facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA).and(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)),
@@ -758,11 +761,13 @@ public class FormDataServiceImpl implements FormDataService
         return totalMatchedRecords;
     }
 
-    private static boolean isCheckPaginationResponse(PaginationResponsePayload paginationResponsePayload1) {
+    private static boolean isCheckPaginationResponse(PaginationResponsePayload paginationResponsePayload1)
+    {
         return checkPaginationResponse(paginationResponsePayload1);
     }
 
-    private static boolean checkPaginationResponse(PaginationResponsePayload paginationResponsePayload1) {
+    private static boolean checkPaginationResponse(PaginationResponsePayload paginationResponsePayload1)
+    {
         return paginationResponsePayload1 != null;
     }
 
@@ -784,14 +789,6 @@ public class FormDataServiceImpl implements FormDataService
             map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
             map.remove(UNDERSCORE_ID);
             content.add(map);
-        }
-    }
-
-    private static void documentAggregation(ArrayList<String> mappedArrayOfDocumentsName, List<AggregationOperation> aggregationOperationsList, ArrayList<String> relationKeysList, ArrayList<String> relationValuesList) {
-        for(int j = 0; j< relationKeysList.size(); j++)
-        {
-            DocumentAggregationOperation documentAggregationOperation=new DocumentAggregationOperation(String.format(MONGO_AGGREGATION_STAGE_PIPELINE_2, relationKeysList.get(j), relationValuesList.get(j), relationValuesList.get(j), mappedArrayOfDocumentsName.get(j)));
-            aggregationOperationsList.add(documentAggregationOperation);
         }
     }
 
@@ -862,7 +859,7 @@ public class FormDataServiceImpl implements FormDataService
             prepareRelationList(mappedArrayOfDocumentsName, relationsList, relationKeysList, relationValuesList);
             List<Map<String, Object>> relationalMapList = new ArrayList<>();
             List<AggregationOperation> aggregationOperationsList = new ArrayList<>();
-            prepareDocumentAggregationList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList, aggregationOperationsList);
+            prepareDocumentAggregateList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList, aggregationOperationsList);
             List<Map<String, Object>> relationalMapList1 = getMapsEmptySort(formId, sortBy, sortOrder, relationalMapList, aggregationOperationsList);
             if (relationalMapList1 != null&&!relationalMapList1.isEmpty()) return relationalMapList1;
             aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)));
@@ -873,7 +870,8 @@ public class FormDataServiceImpl implements FormDataService
         return Collections.emptyList();
     }
 
-    private static boolean checkFormDataList(List<Map<String, Object>> formDataList) {
+    private static boolean checkFormDataList(List<Map<String, Object>> formDataList)
+    {
         return formDataList != null && !formDataList.isEmpty();
     }
 
@@ -895,14 +893,6 @@ public class FormDataServiceImpl implements FormDataService
             map.put(ID,String.valueOf(map.get(UNDERSCORE_ID)));
             map.remove(UNDERSCORE_ID);
             relationalMapList.add(map);
-        }
-    }
-
-    private static void prepareDocumentAggregationList(ArrayList<String> mappedArrayOfDocumentsName, ArrayList<String> relationKeysList, ArrayList<String> relationValuesList, List<AggregationOperation> aggregationOperationsList) {
-        for(int j = 0; j< relationKeysList.size(); j++)
-        {
-            DocumentAggregationOperation documentAggregationOperation=new DocumentAggregationOperation(String.format(MONGO_AGGREGATION_STAGE_PIPELINE_3, relationKeysList.get(j), relationValuesList.get(j), relationValuesList.get(j), mappedArrayOfDocumentsName.get(j)));
-            aggregationOperationsList.add(documentAggregationOperation);
         }
     }
 
@@ -1048,11 +1038,7 @@ public class FormDataServiceImpl implements FormDataService
             ArrayList<String> relationValuesList = new ArrayList<>();
             prepareRelationList(mappedArrayOfDocumentsName, relationsList, relationKeysList, relationValuesList);
             List<AggregationOperation> aggregationOperationsList = new ArrayList<>();
-            for(int j=0;j<relationKeysList.size();j++)
-            {
-                DocumentAggregationOperation documentAggregationOperation=new DocumentAggregationOperation(String.format(MONGO_AGGREGATION_STAGE_PIPELINE_4,relationKeysList.get(j),relationValuesList.get(j),relationValuesList.get(j),mappedArrayOfDocumentsName.get(j)));
-                aggregationOperationsList.add(documentAggregationOperation);
-            }
+            prepareDocumentAggregateList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList, aggregationOperationsList);
             PaginationResponsePayload paginationResponsePayload1 = getPaginationWithMongoAndEmptySort(formId, sortBy, sortOrder, pageable, paginationResponsePayload, content, aggregationOperationsList);
             if (isCheckPaginationResponse(paginationResponsePayload1)) return paginationResponsePayload1;
             FacetOperation facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA).and(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)),
@@ -1201,11 +1187,7 @@ public class FormDataServiceImpl implements FormDataService
             ArrayList<String> relationValuesList = new ArrayList<>();
             prepareRelationList(mappedArrayOfDocumentsName, relationsList, relationKeysList, relationValuesList);
             List<AggregationOperation> aggregationOperationsList = new ArrayList<>();
-            for(int j=0;j<relationKeysList.size();j++)
-            {
-                DocumentAggregationOperation documentAggregationOperation=new DocumentAggregationOperation(String.format(MONGO_AGGREGATION_STAGE_PIPELINE_5,relationKeysList.get(j),relationValuesList.get(j),relationValuesList.get(j),mappedArrayOfDocumentsName.get(j)));
-                aggregationOperationsList.add(documentAggregationOperation);
-            }
+            prepareDocumentAggregateList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList, aggregationOperationsList);
             FacetOperation facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA).and(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)),
                     Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
             aggregationOperationsList.add(facetOperation);
@@ -1378,11 +1360,7 @@ public class FormDataServiceImpl implements FormDataService
         List<Map<String, Object>> relationalMapList = new ArrayList<>();
         List<AggregationOperation> aggregationOperationsList = new ArrayList<>();
         aggregationOperationsList.add(Aggregation.match(Criteria.where(UNDERSCORE_ID).is(Long.valueOf(id))));
-        for(int j=0;j<relationKeysList.size();j++)
-        {
-            DocumentAggregationOperation documentAggregationOperation=new DocumentAggregationOperation(String.format(MONGO_AGGREGATION_STAGE_PIPELINE_6,relationKeysList.get(j),relationValuesList.get(j),relationValuesList.get(j),mappedArrayOfDocumentsName.get(j)));
-            aggregationOperationsList.add(documentAggregationOperation);
-        }
+        prepareDocumentAggregateList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList, aggregationOperationsList);
         aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)));
         List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
         prepareRelationsMap(relationalMapList, aggregateList);
