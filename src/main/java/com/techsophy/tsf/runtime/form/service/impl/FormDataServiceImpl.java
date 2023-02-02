@@ -584,9 +584,9 @@ public class FormDataServiceImpl implements FormDataService
         ArrayList<Criteria> c1 = new ArrayList<>();
         prepareCriteriaList(keysList, valuesList, c1);
         criteria = criteria.andOperator(c1.toArray(new Criteria[0]));
-        PaginationResponsePayload paginationResponsePayload11 = getPaginationResponsePayloadIfReltionsExists(formId, relations, sortBy+";"+sortOrder, pageable, paginationResponsePayload, content, criteria);
-        if (paginationResponsePayload11 != null) return paginationResponsePayload11;
-        PaginationResponsePayload paginationResponsePayload1 = sortByAndSortOrderIsEmpty(formId, sortBy, sortOrder, pageable, paginationResponsePayload, content, criteria);
+        PaginationResponsePayload paginationResponsePayload1 = getPaginationResponsePayloadIfReltionsExists(formId, relations, sortBy+";"+sortOrder, pageable, paginationResponsePayload, content, criteria);
+        if (paginationResponsePayload1 != null) return paginationResponsePayload1;
+        paginationResponsePayload1 = sortByAndSortOrderIsEmpty(formId, sortBy, sortOrder, pageable, paginationResponsePayload, content, criteria);
         if (paginationResponsePayload1 != null) return paginationResponsePayload1;
         checkIfBothSortByAndSortOrderGivenAsInput(sortBy, sortOrder);
         query.addCriteria(criteria);
