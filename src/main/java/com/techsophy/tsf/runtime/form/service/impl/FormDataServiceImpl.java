@@ -669,7 +669,7 @@ public class FormDataServiceImpl implements FormDataService
             List<Map<String,Object>> metaDataList= (List<Map<String, Object>>) dataMap.get(METADATA);
             List<Map<String,Object>> dataList= (List<Map<String,Object>>) dataMap.get(DATA);
             prepareDataMap(content, dataList);
-            Map<String,Object> metaData = null;
+            Map<String,Object> metaData = new HashMap<>();
             metaData = getStringObjectMap(metaDataList, metaData);
             long totalMatchedRecords = 0L;
             totalMatchedRecords = extractCountOfMatchedRecords(metaData, totalMatchedRecords);
@@ -792,7 +792,8 @@ public class FormDataServiceImpl implements FormDataService
         }
     }
 
-    private static Map<String, Object> getStringObjectMap(List<Map<String, Object>> metaDataList, Map<String, Object> metaData) {
+    private static Map<String, Object> getStringObjectMap(List<Map<String, Object>> metaDataList, Map<String, Object> metaData)
+    {
         if(!metaDataList.isEmpty())
         {
             metaData = metaDataList.get(0);
@@ -1049,7 +1050,7 @@ public class FormDataServiceImpl implements FormDataService
             List<Map<String,Object>> metaDataList= (List<Map<String, Object>>) dataMap.get(METADATA);
             List<Map<String,Object>> dataList= (List<Map<String,Object>>) dataMap.get(DATA);
             prepareDataMap(content, dataList);
-            Map<String,Object> metaData = null;
+            Map<String,Object> metaData = new HashMap<>();
             metaData = getStringObjectMap(metaDataList, metaData);
             long totalMatchedRecords = 0L;
             totalMatchedRecords = extractCountOfMatchedRecords(metaData, totalMatchedRecords);
@@ -1074,7 +1075,7 @@ public class FormDataServiceImpl implements FormDataService
             List<Map<String,Object>> metaDataList= (List<Map<String, Object>>) dataMap.get(METADATA);
             List<Map<String,Object>> dataList= (List<Map<String,Object>>) dataMap.get(DATA);
             prepareDataMap(content, dataList);
-            Map<String,Object> metaData = null;
+            Map<String,Object> metaData = new HashMap<>();
             metaData = getStringObjectMap(metaDataList, metaData);
             long totalMatchedRecords = 0L;
             totalMatchedRecords = extractCountOfMatchedRecords(metaData, totalMatchedRecords);
@@ -1123,7 +1124,7 @@ public class FormDataServiceImpl implements FormDataService
         }
         try
         {
-            String response = null;
+            String response = EMPTY_STRING;
             response = getString(formId, q, sortBy, sortOrder, pageable, webClient, response);
             Map<String,Object> responseMap=this.objectMapper.readValue(response,Map.class);
             Map<String,Object> dataMap=this.objectMapper.convertValue(responseMap.get(DATA),Map.class);
@@ -1196,7 +1197,7 @@ public class FormDataServiceImpl implements FormDataService
             List<Map<String,Object>> metaDataList= (List<Map<String, Object>>) dataMap.get(METADATA);
             List<Map<String,Object>> dataList= (List<Map<String,Object>>) dataMap.get(DATA);
             prepareDataMap(content, dataList);
-            Map<String,Object> metaData = null;
+            Map<String,Object> metaData = new HashMap<>();
             metaData = getStringObjectMap(metaDataList, metaData);
             long totalMatchedRecords = 0L;
             totalMatchedRecords = extractCountOfMatchedRecords(metaData, totalMatchedRecords);
@@ -1284,7 +1285,6 @@ public class FormDataServiceImpl implements FormDataService
             webClient = webClientWrapper.createWebClient(token);
             try
             {
-
                 String response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + id + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId, GET, null);
                 logger.info(response);
                 Map<String,Object> responseMap = this.objectMapper.readValue(response,Map.class);
@@ -1351,7 +1351,8 @@ public class FormDataServiceImpl implements FormDataService
         return  List.of(formDataResponseSchema);
     }
 
-    private List<Map<String, Object>> getFormDataList(String formId, String id, String relations) {
+    private List<Map<String, Object>> getFormDataList(String formId, String id, String relations)
+    {
         ArrayList<String> mappedArrayOfDocumentsName=new ArrayList<>();
         String[] relationsList = relations.split(COMMA);
         ArrayList<String> relationKeysList = new ArrayList<>();
@@ -1486,7 +1487,8 @@ public class FormDataServiceImpl implements FormDataService
         return new AggregationResponse(responseAggregationList);
     }
 
-    private static void createMultipleFilterCriterias(String filter, Criteria criteria, ArrayList<Criteria> c1, List<AggregationOperation> aggregationOperationsList) {
+    private static void createMultipleFilterCriterias(String filter, Criteria criteria, ArrayList<Criteria> c1, List<AggregationOperation> aggregationOperationsList)
+    {
         ArrayList<String> keysList = new ArrayList<>();
         ArrayList<String> valuesList = new ArrayList<>();
         String[] parts = filter.split(COMMA);
