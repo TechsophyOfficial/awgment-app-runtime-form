@@ -13,6 +13,7 @@ import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
 import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
 import com.techsophy.tsf.runtime.form.dto.ValidationResult;
+import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataAuditServiceImpl;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataServiceImpl;
 import com.techsophy.tsf.runtime.form.service.impl.FormValidationServiceImpl;
@@ -145,7 +146,7 @@ class FormDataServiceElasticEnabledTest
         List<ValidationResult> validationResultList=new ArrayList<>();
         validationResultList.add(validationResult);
         FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                TEST_CREATED_ON, TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
         Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
         Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),any())).thenReturn(validationResultList);
         String responseTest="{\n" +
@@ -157,6 +158,41 @@ class FormDataServiceElasticEnabledTest
                 "    \"message\": \"Form data saved successfully\"\n" +
                 "}";
         Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),eq(POST),any())).thenReturn(responseTest);
+        String getResponse="{\n" +
+                "    \"data\": [\n" +
+                "        {\n" +
+                "            \"id\": \"945292224435081216\",\n" +
+                "            \"formId\": \"928232634435125248\",\n" +
+                "            \"version\": 2,\n" +
+                "            \"formData\": {\n" +
+                "                \"name\": \"akhil\",\n" +
+                "                \"id\": \"945292224435081216\",\n" +
+                "                \"age\": \"202\"\n" +
+                "            },\n" +
+                "            \"formMetadata\": {\n" +
+                "                \"formVersion\": \"101\"\n" +
+                "            },\n" +
+                "            \"createdById\": \"910797699334508544\",\n" +
+                "            \"createdOn\": \"2022-02-21T12:13:48.985338Z\",\n" +
+                "            \"createdByName\": \"tejaswini kaza\",\n" +
+                "            \"updatedById\": \"910797699334508544\",\n" +
+                "            \"updatedOn\": \"2022-02-21T12:14:01.117149Z\",\n" +
+                "            \"updatedByName\": \"tejaswini kaza\"\n" +
+                "        }\n" +
+                "    ],\n" +
+                "    \"success\": true,\n" +
+                "    \"message\": \"Form data retrieved successfully\"\n" +
+                "}";
+        Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),eq(GET),any())).thenReturn(getResponse);
+        Map<String,Object> responseMap=new HashMap<>();
+        LinkedHashMap<String,Object> dataMap=new LinkedHashMap<>();
+        dataMap.put("id","963403130239434752");
+        dataMap.put("version",1);
+        responseMap.put("success",true);
+        responseMap.put("message","FormData saved successfully");
+        responseMap.put("data",dataMap);
+        Mockito.when(mockObjectMapper.readValue(getResponse,Map.class)).thenReturn(responseMap);
+        Mockito.when(mockObjectMapper.convertValue(responseMap.get(DATA),LinkedHashMap.class)).thenReturn(dataMap);
         Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
         Map<String, Object> formDataMap = new HashMap<>();
         formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
@@ -170,7 +206,16 @@ class FormDataServiceElasticEnabledTest
         formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
         formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
         formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        Mockito.when(mockMongoTemplate.save(any(),any())).thenReturn(formDataMap);
+//        Mockito.when(mockMongoTemplate.save(any(),any())).thenReturn(formDataMap);
+        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
+//        Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
+        FindIterable<Document> iterable = mock(FindIterable.class);
+        MongoCursor cursor = mock(MongoCursor.class);
+//        Mockito.when(mockMongoCollection.find((Bson) any())).thenReturn(iterable);
+//        Mockito.when(iterable.iterator()).thenReturn(cursor);
+        Document document = new Document();
+        document.put(VERSION,1);
+//        Mockito.when(cursor.next()).thenReturn(document);
         Assertions.assertNotNull(mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
     }
 
@@ -193,7 +238,7 @@ class FormDataServiceElasticEnabledTest
         List<ValidationResult> validationResultList=new ArrayList<>();
         validationResultList.add(validationResult);
         FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                TEST_CREATED_ON, TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON));
         Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
         Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),any())).thenReturn(validationResultList);
         String postResponse="{\n" +
@@ -245,15 +290,16 @@ class FormDataServiceElasticEnabledTest
         formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
         formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
         Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
-        Document document = new Document(formDataMap);
+        Document document = new Document();
+        document.append("version",1);
         document.put(UNDERSCORE_ID,TEST_ID_VALUE);
         FindIterable<Document> iterable = mock(FindIterable.class);
         MongoCursor cursor = mock(MongoCursor.class);
-        Mockito.when(mockMongoCollection.find()).thenReturn(iterable);
+//        Mockito.when(mockMongoCollection.find()).thenReturn(iterable);
         Mockito.when(iterable.iterator()).thenReturn(cursor);
-        Mockito.when(cursor.hasNext()).thenReturn(true).thenReturn(false);
+//        Mockito.when(cursor.hasNext()).thenReturn(true).thenReturn(false);
         Mockito.when(cursor.next()).thenReturn(document);
-        Mockito.when(mockMongoCollection.findOneAndReplace((Bson) any(),any(),any())).thenReturn(formDataMap);
+//        Mockito.when(mockMongoCollection.findOneAndReplace((Bson) any(),any(),any())).thenReturn(formDataMap);
         Map<String,Object> responseMap=new HashMap<>();
         LinkedHashMap<String,Object> dataMap=new LinkedHashMap<>();
         dataMap.put("id","963403130239434752");
@@ -263,6 +309,10 @@ class FormDataServiceElasticEnabledTest
         responseMap.put("data",dataMap);
         Mockito.when(mockObjectMapper.readValue(getResponse,Map.class)).thenReturn(responseMap);
         Mockito.when(mockObjectMapper.convertValue(responseMap.get(DATA),LinkedHashMap.class)).thenReturn(dataMap);
+        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
+        Mockito.when(mockMongoCollection.find((Bson) any())).thenReturn(iterable);
+        Mockito.when(iterable.iterator()).thenReturn(cursor);
+        Mockito.when(cursor.next()).thenReturn(document);
         Assertions.assertNotNull(mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
     }
 

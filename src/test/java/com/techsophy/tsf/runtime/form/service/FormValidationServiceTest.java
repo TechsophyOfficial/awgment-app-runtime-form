@@ -42,7 +42,7 @@ class FormValidationServiceTest
         components.put("display","form");
         components.put("components",componentList);
         FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME,components, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                TEST_CREATED_ON, TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
         FormDataSchema formDataSchemaTest=new FormDataSchema(EMPTY_STRING,TEST_FORM_ID,
                 TEST_VERSION,testFormData,testFormMetaData);
         Assertions.assertNotNull(formValidationService.validateData(formResponseSchemaTest,formDataSchemaTest,TEST_FORM_ID));

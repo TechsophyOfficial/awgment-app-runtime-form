@@ -32,8 +32,8 @@ class SequenceGeneratorServiceImplTest
     void generateSequence()
     {
         SequenceGeneratorDefinition sequenceGeneratorDefinition=new SequenceGeneratorDefinition(1L,1,STRING,1L);
-        sequenceGeneratorDefinition.setCreatedOn(Instant.now());
-        sequenceGeneratorDefinition.setUpdatedOn(Instant.now());
+        sequenceGeneratorDefinition.setCreatedOn(String.valueOf(Instant.now()));
+        sequenceGeneratorDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         SequenceGeneratorDTO sequenceGeneratorDTO = new SequenceGeneratorDTO();
         sequenceGeneratorDTO.setSequenceName(STRING);
         sequenceGeneratorDTO.setLength("1");

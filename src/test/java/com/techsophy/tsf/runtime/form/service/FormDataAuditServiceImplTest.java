@@ -9,6 +9,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.InsertOneResult;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormDataAuditSchema;
+import com.techsophy.tsf.runtime.form.entity.FormDataAuditDefinition;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataAuditServiceImpl;
@@ -108,6 +109,7 @@ class FormDataAuditServiceImplTest
         formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
         Document document = new Document(formDataMap);
         Mockito.when(mockMongoTemplate.save(any(),any())).thenReturn(document);
+        Mockito.when(mockObjectMapper.convertValue(any(), eq(FormDataAuditDefinition.class))).thenReturn(new FormDataAuditDefinition());
         mockFormDataAuditServiceImpl.saveFormDataAudit(formDataAuditSchemaTest);
         verify(mockMongoTemplate,times(1)).save(any(),any());
     }
@@ -167,6 +169,7 @@ class FormDataAuditServiceImplTest
         formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
         Document document = new Document(formDataMap);
         Mockito.when(mockMongoTemplate.save(any(),any())).thenReturn(document);
+        Mockito.when(mockObjectMapper.convertValue(any(), eq(FormDataAuditDefinition.class))).thenReturn(new FormDataAuditDefinition());
         mockFormDataAuditServiceImpl.saveFormDataAudit(formDataAuditSchemaTest);
         verify(mockMongoTemplate,times(1)).save(any(),any());
     }

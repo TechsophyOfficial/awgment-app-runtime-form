@@ -10,6 +10,7 @@ import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormDataAuditResponse;
 import com.techsophy.tsf.runtime.form.dto.FormDataAuditResponseSchema;
 import com.techsophy.tsf.runtime.form.dto.FormDataAuditSchema;
+import com.techsophy.tsf.runtime.form.entity.FormDataAuditDefinition;
 import com.techsophy.tsf.runtime.form.exception.FormIdNotFoundException;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
@@ -45,9 +46,8 @@ public class FormDataAuditServiceImpl implements FormDataAuditService
     @Override
     public FormDataAuditResponse saveFormDataAudit(FormDataAuditSchema formDataAuditSchema) throws JsonProcessingException
     {
-        Map<String,Object> formDataAuditDefinition=new LinkedHashMap<>();
         Map<String, Object> loggedInUserDetails = userDetails.getUserDetails().get(0);
-        if (StringUtils.isEmpty(loggedInUserDetails.get(ID).toString()))
+        if (StringUtils.isEmpty(String.valueOf(loggedInUserDetails.get(ID))))
         {
             throw new UserDetailsIdNotFoundException(LOGGED_IN_USER_ID_NOT_FOUND,globalMessageSource.get(LOGGED_IN_USER_ID_NOT_FOUND, loggedInUserDetails.get(ID).toString()));
         }
@@ -56,16 +56,10 @@ public class FormDataAuditServiceImpl implements FormDataAuditService
             throw new InvalidInputException(FORM_ID_CANNOT_BE_EMPTY,globalMessageSource.get(FORM_ID_CANNOT_BE_EMPTY,formDataAuditSchema.getFormId()));
         }
         BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(loggedInUserDetails.get(ID).toString()));
-        formDataAuditDefinition.put(UNDERSCORE_ID,Long.parseLong(formDataAuditSchema.getId()));
-        formDataAuditDefinition.put(FORM_DATA_ID,Long.parseLong(formDataAuditSchema.getFormDataId()));
-        formDataAuditDefinition.put(FORM_DATA,formDataAuditSchema.getFormData());
-        formDataAuditDefinition.put(FORM_META_DATA,formDataAuditSchema.getFormMetadata());
-        formDataAuditDefinition.put(VERSION,Long.parseLong(String.valueOf(formDataAuditSchema.getVersion())));
-        formDataAuditDefinition.put(CREATED_BY_ID,String.valueOf(loggedInUserId));
-        formDataAuditDefinition.put(CREATED_ON, Instant.now());
-        formDataAuditDefinition.put(CREATED_BY_NAME,loggedInUserDetails.get(USER_DEFINITION_FIRST_NAME) + SPACE + loggedInUserDetails.get(USER_DEFINITION_LAST_NAME));
-        Document newDocument = new Document(formDataAuditDefinition);
-        mongoTemplate.save(newDocument, TP_RUNTIME_FORM_DATA +formDataAuditSchema.getFormId()+AUDIT);
+        FormDataAuditDefinition formDataAuditDefinition=objectMapper.convertValue(formDataAuditSchema,FormDataAuditDefinition.class);
+        formDataAuditDefinition.setCreatedById(String.valueOf(loggedInUserId));
+        formDataAuditDefinition.setCreatedOn(String.valueOf(Date.from(Instant.now())));
+        mongoTemplate.save(formDataAuditDefinition, TP_RUNTIME_FORM_DATA +formDataAuditSchema.getFormId()+AUDIT);
         return new FormDataAuditResponse(formDataAuditSchema.getId(), formDataAuditSchema.getVersion());
     }
 
@@ -97,7 +91,7 @@ public class FormDataAuditServiceImpl implements FormDataAuditService
                    formDataAuditResponseSchema=new FormDataAuditResponseSchema
                            (document.get(UNDERSCORE_ID).toString(),document.get(FORM_DATA_ID).toString(),document.get(FORM_ID).toString(),
                                    Integer.valueOf(String.valueOf(document.get(VERSION))),formData,formMetaData,
-                                   document.get(CREATED_BY_ID).toString(),((Date)document.get(CREATED_ON)).toInstant());
+                                   document.get(CREATED_BY_ID).toString(),String.valueOf(document.get(CREATED_ON)));
                    formDataAuditResponseSchemasList.add(formDataAuditResponseSchema);
                }
            }

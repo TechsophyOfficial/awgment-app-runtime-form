@@ -8,7 +8,6 @@ import com.techsophy.tsf.runtime.form.repository.SequenceGeneratorRepository;
 import com.techsophy.tsf.runtime.form.service.SequenceGeneratorService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
 import static com.techsophy.tsf.runtime.form.constants.SequenceGeneratorConstants.*;
@@ -27,7 +26,7 @@ public class SequenceGeneratorServiceImpl implements SequenceGeneratorService
         int length= Integer.parseInt((idGeneratorDTO.getLength()));
         SequenceGeneratorDefinition existingDefinition;
         SequenceGeneratorDefinition sequenceGeneratorDefinition=new SequenceGeneratorDefinition();
-        sequenceGeneratorDefinition.setUpdatedOn(Instant.now());
+        sequenceGeneratorDefinition.setUpdatedOn(String.valueOf(Date.from(Instant.now())));
         if(sequenceGeneratorRepository.existsBySequenceNameAndLength(sequenceName,length))
         {
            existingDefinition = sequenceGeneratorRepository.findBySequenceNameAndLength(sequenceName,length);
@@ -53,15 +52,13 @@ public class SequenceGeneratorServiceImpl implements SequenceGeneratorService
             sequenceGeneratorDefinition.setLength(length);
             sequenceGeneratorDefinition.setLastValue(1L);
             sequenceGeneratorDefinition.setSequenceName(sequenceName);
-            sequenceGeneratorDefinition.setCreatedOn(Instant.now());
+            sequenceGeneratorDefinition.setCreatedOn(String.valueOf(Date.from(Instant.now())));
             sequenceGeneratorRepository.save(sequenceGeneratorDefinition);
         }
         String format=PERCENTAGE_ZERO+sequenceGeneratorDefinition.getLength()+D;
         String formattedValue= String.format(format,sequenceGeneratorDefinition.getLastValue());
-        Date createdOn=Date.from(sequenceGeneratorDefinition.getCreatedOn());
-        Date updatedOn=Date.from(sequenceGeneratorDefinition.getUpdatedOn());
-        String formattedCreatedOn=new SimpleDateFormat(DATE_FORMAT).format(createdOn);
-        String formattedUpdatedOn=new SimpleDateFormat(DATE_FORMAT).format(updatedOn);
+        String formattedCreatedOn=sequenceGeneratorDefinition.getCreatedOn();
+        String formattedUpdatedOn=sequenceGeneratorDefinition.getUpdatedOn();
         return new SequenceGeneratorResponse(sequenceGeneratorDefinition.getLength(),sequenceGeneratorDefinition.getSequenceName(),formattedValue,formattedCreatedOn,formattedUpdatedOn);
     }
 }
