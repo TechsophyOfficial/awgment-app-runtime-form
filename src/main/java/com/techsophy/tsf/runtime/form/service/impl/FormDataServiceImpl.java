@@ -118,10 +118,10 @@ public class FormDataServiceImpl implements FormDataService
                 else
                 {
                     Bson filter=Filters.eq(UNDERSCORE_ID,uniqueDocumentId);
-                    version= (int) mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).find(filter).iterator().next().get("version");
+                    version= (int) mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).find(filter).iterator().next().get(VERSION);
                     version=version+1;
                     mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).updateOne(filter,Updates.combine(
-                            Updates.set("formData",formDataDefinition.getFormData()),Updates.set("version",version)));
+                            Updates.set("formData",formDataDefinition.getFormData()),Updates.set(VERSION,version)));
                     FormDataAuditSchema formDataAuditSchema = new FormDataAuditSchema(String.valueOf(idGenerator.nextId()),String.valueOf(formDataDefinition.getId()),formId,1,
                                   formDataDefinition.getFormData(),formDataDefinition.getFormMetadata());
                             this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
@@ -160,7 +160,7 @@ public class FormDataServiceImpl implements FormDataService
         if(uniqueDocumentId!=null)
         {
             String response = fetchResponseFromElasticDB(formDataDefinition.getFormId(), webClient, uniqueDocumentId);
-            Map<String,Object> responseMap=this.objectMapper.readValue(response,Map.class);
+            Map<String,Object> responseMap= getResponseMap(response);
             checkResponseMapData(uniqueDocumentId, responseMap);
             Map<String,Object> dataMap=this.objectMapper.convertValue(responseMap.get(DATA),LinkedHashMap.class);
             int version= Integer.parseInt(String.valueOf(dataMap.get(VERSION)));
@@ -171,6 +171,10 @@ public class FormDataServiceImpl implements FormDataService
             formDataDefinition.setCreatedOn(String.valueOf(dataMap.get(CREATED_ON)));
             updateElasticDocument(webClient,formDataDefinition, responseMap);
         }
+    }
+
+    private Map getResponseMap(String response) throws JsonProcessingException {
+        return this.objectMapper.readValue(response, Map.class);
     }
 
     private void saveFormDataToElastic(FormDataDefinition formDataDefinition,WebClient webClient,String uniqueDocumentId)
@@ -232,7 +236,6 @@ public class FormDataServiceImpl implements FormDataService
         try
         {
            response= postWebClientResponse(webClient,formDataDefinition);
-//            response=webClientWrapper.webclientRequest(webClient,gatewayApi+ELASTIC_VERSION1+SLASH+ TP_RUNTIME_FORM_DATA + formDataDefinition.getFormId() +PARAM_SOURCE+elasticSource,POST, formDataDefinition);
             logger.info(response);
         }
         catch (Exception e)
@@ -298,7 +301,6 @@ public class FormDataServiceImpl implements FormDataService
             try
             {
                 response=postWebClientResponse(webClient,formDataDefinition);
-//                response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + TP_RUNTIME_FORM_DATA + formId+ PARAM_SOURCE + elasticSource, POST, formDataDefinition);
                 logger.info(response);
             }
             catch (Exception e)
@@ -351,9 +353,9 @@ public class FormDataServiceImpl implements FormDataService
                     response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+sortBy+AND_SORT_ORDER+sortOrder+AND_FILTER+filter+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA +formId+AND_SOURCE+elasticSource,GET,null);
                     logger.info(response);
                 }
-                Map<String,Object> responseMap=this.objectMapper.readValue(response,Map.class);
-                Map<String,Object> dataMap=this.objectMapper.convertValue(responseMap.get(DATA),Map.class);
-                contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
+                Map<String,Object> responseMap= getResponseMap(response);
+                Map<String,Object> dataMap= getDataMap(responseMap);
+                contentList = getContentList(dataMap);
                 prepareResponseList(contentList, responseList);
             }
             catch (Exception e)
@@ -399,6 +401,16 @@ public class FormDataServiceImpl implements FormDataService
         List<FormDataResponseSchema> formDataResponseSchemasList = new ArrayList<>();
         prepareFormDataResponseSchemaList(formDataResponseSchemasList, formDataDefinitionsList);
         return formDataResponseSchemasList;
+    }
+
+    private List getContentList(Map<String, Object> dataMap)
+    {
+        return this.objectMapper.convertValue(dataMap.get(CONTENT), List.class);
+    }
+
+    private Map getDataMap(Map<String, Object> responseMap)
+    {
+        return this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
     }
 
     private List<FormDataResponseSchema> getFormDataResponseSchemasEmptySort(String formId, String sortBy, String sortOrder, Query query)
@@ -474,9 +486,9 @@ public class FormDataServiceImpl implements FormDataService
             try
             {
                 String response=checkSortByAndSortOrder(formId, filter, sortBy, sortOrder, pageable, webClient);
-                Map<String,Object> responseMap=this.objectMapper.readValue(response,Map.class);
-                Map<String,Object> dataMap=this.objectMapper.convertValue(responseMap.get(DATA),Map.class);
-                contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
+                Map<String,Object> responseMap= getResponseMap(response);
+                Map<String,Object> dataMap= getDataMap(responseMap);
+                contentList = getContentList(dataMap);
                 prepareResponseList(contentList, responseList);
                 paginationResponsePayload.setContent(responseList);
                 paginationResponsePayload.setPage(Integer.parseInt(String.valueOf(dataMap.get(PAGE))));
@@ -573,8 +585,8 @@ public class FormDataServiceImpl implements FormDataService
             aggregationOperationsList.add(facetOperation);
             List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
             Map<String,Object> dataMap=aggregateList.get(0);
-            List<Map<String,Object>> metaDataList= (List<Map<String, Object>>) dataMap.get(METADATA);
-            List<Map<String,Object>> dataList= (List<Map<String,Object>>) dataMap.get(DATA);
+            List<Map<String,Object>> metaDataList= getMetaDataList(dataMap);
+            List<Map<String,Object>> dataList= getDataList(dataMap);
             prepareContentListFromData(content, dataList);
             Map<String,Object> metaData = new HashMap<>();
             metaData = getMetaDataMap(metaDataList, metaData);
@@ -588,6 +600,10 @@ public class FormDataServiceImpl implements FormDataService
             return paginationResponsePayload;
         }
         return null;
+    }
+
+    private static List<Map<String, Object>> getDataList(Map<String, Object> dataMap) {
+        return (List<Map<String, Object>>) dataMap.get(DATA);
     }
 
     private String checkSortByAndSortOrder(String formId, String filter, String sortBy, String sortOrder, Pageable pageable, WebClient webClient)
@@ -871,9 +887,9 @@ public class FormDataServiceImpl implements FormDataService
         {
                 response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_SORT_BY + sortBy + AND_SORT_ORDER + sortOrder + AND_Q + q + AND_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId + AND_SOURCE + elasticSource, GET, null);
         }
-        Map<String, Object> responseMap = this.objectMapper.readValue(response, Map.class);
-        Map<String, Object> dataMap = this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
-        contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
+        Map<String, Object> responseMap = getResponseMap(response);
+        Map<String, Object> dataMap = getDataMap(responseMap);
+        contentList = getContentList(dataMap);
         prepareResponseList(contentList, responseList);
     }
 
@@ -948,8 +964,8 @@ public class FormDataServiceImpl implements FormDataService
             aggregationOperationsList.add(facetOperation);
             List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
             Map<String,Object> dataMap=aggregateList.get(0);
-            List<Map<String,Object>> metaDataList= (List<Map<String, Object>>) dataMap.get(METADATA);
-            List<Map<String,Object>> dataList= (List<Map<String,Object>>) dataMap.get(DATA);
+            List<Map<String,Object>> metaDataList= getMetaDataList(dataMap);
+            List<Map<String,Object>> dataList= getDataList(dataMap);
             prepareContentListFromData(content, dataList);
             Map<String,Object> metaData = new HashMap<>();
             metaData = getMetaDataMap(metaDataList, metaData);
@@ -965,6 +981,10 @@ public class FormDataServiceImpl implements FormDataService
         return null;
     }
 
+    private static List<Map<String, Object>> getMetaDataList(Map<String, Object> dataMap) {
+        return (List<Map<String, Object>>) dataMap.get(METADATA);
+    }
+
     private PaginationResponsePayload getPaginationWithMongoAndEmptySort(String formId, String sortBy, String sortOrder, Pageable pageable, PaginationResponsePayload paginationResponsePayload, List<Map<String, Object>> content, List<AggregationOperation> aggregationOperationsList)
     {
         if (StringUtils.isEmpty(sortBy) && StringUtils.isEmpty(sortOrder))
@@ -974,8 +994,8 @@ public class FormDataServiceImpl implements FormDataService
             aggregationOperationsList.add(facetOperation);
             List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
             Map<String,Object> dataMap=aggregateList.get(0);
-            List<Map<String,Object>> metaDataList= (List<Map<String, Object>>) dataMap.get(METADATA);
-            List<Map<String,Object>> dataList= (List<Map<String,Object>>) dataMap.get(DATA);
+            List<Map<String,Object>> metaDataList= getMetaDataList(dataMap);
+            List<Map<String,Object>> dataList= getDataList(dataMap);
             prepareContentListFromData(content, dataList);
             Map<String,Object> metaData = new HashMap<>();
             metaData = getMetaDataMap(metaDataList, metaData);
@@ -1019,9 +1039,9 @@ public class FormDataServiceImpl implements FormDataService
         {
             String response = EMPTY_STRING;
             response = getString(formId, q, sortBy, sortOrder, pageable, webClient, response);
-            Map<String,Object> responseMap=this.objectMapper.readValue(response,Map.class);
-            Map<String,Object> dataMap=this.objectMapper.convertValue(responseMap.get(DATA),Map.class);
-            contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
+            Map<String,Object> responseMap= getResponseMap(response);
+            Map<String,Object> dataMap= getDataMap(responseMap);
+            contentList = getContentList(dataMap);
             prepareResponseList(contentList, responseList);
             paginationResponsePayload.setContent(responseList);
             paginationResponsePayload.setPage(Integer.parseInt(String.valueOf(dataMap.get(PAGE))));
@@ -1087,8 +1107,8 @@ public class FormDataServiceImpl implements FormDataService
             aggregationOperationsList.add(facetOperation);
             List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
             Map<String,Object> dataMap=aggregateList.get(0);
-            List<Map<String,Object>> metaDataList= (List<Map<String, Object>>) dataMap.get(METADATA);
-            List<Map<String,Object>> dataList= (List<Map<String,Object>>) dataMap.get(DATA);
+            List<Map<String,Object>> metaDataList= getMetaDataList(dataMap);
+            List<Map<String,Object>> dataList= getDataList(dataMap);
             prepareContentListFromData(content, dataList);
             Map<String,Object> metaData = new HashMap<>();
             metaData = getMetaDataMap(metaDataList, metaData);
@@ -1128,9 +1148,9 @@ public class FormDataServiceImpl implements FormDataService
         {
             String response= webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId + AND_SOURCE + elasticSource + AND_PAGE_AND_SIZE + defaultPageLimit, GET, null);
             logger.info(response);
-            Map<String, Object> responseMap = this.objectMapper.readValue(response, Map.class);
-            Map<String, Object> dataMap = this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
-            contentList = this.objectMapper.convertValue(dataMap.get(CONTENT),List.class);
+            Map<String, Object> responseMap = getResponseMap(response);
+            Map<String, Object> dataMap = getDataMap(responseMap);
+            contentList = getContentList(dataMap);
             prepareResponseList(contentList,responseList);
             paginationResponsePayload.setContent(responseList);
             paginationResponsePayload.setPage(Integer.parseInt(String.valueOf(dataMap.get(PAGE))));
@@ -1157,11 +1177,10 @@ public class FormDataServiceImpl implements FormDataService
             webClient =checkEmptyToken(token);
             try
             {
-                String response = getWebClientResponse(formId,webClient,id);
-//                 webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + id + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId, GET, null);
+                String response= webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + id + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId, GET, null);
                 logger.info(response);
-                Map<String,Object> responseMap = this.objectMapper.readValue(response,Map.class);
-                Map<String,Object> dataMap = this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
+                Map<String,Object> responseMap = getResponseMap(response);
+                Map<String,Object> dataMap = getDataMap(responseMap);
                 Map<String,Object> modifiedFormDataResponse = new LinkedHashMap<>();
                 modifiedFormDataResponse.put(ID, dataMap.get(ID));
                 modifiedFormDataResponse.put(FORM_DATA, dataMap.get(FORM_DATA));
