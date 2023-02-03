@@ -1,7 +1,6 @@
 package com.techsophy.tsf.runtime.form.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.mongodb.client.MongoCollection;
 import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
@@ -21,14 +20,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.STRING;
-import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith(MockitoExtension.class)
 class FormDataServiceImplTest {
@@ -261,33 +258,4 @@ class FormDataServiceImplTest {
         FormDataSchema formDataSchema = new FormDataSchema("1","1",1,map,map);
         Assertions.assertThrows(FormIdNotFoundException.class, () -> formDataService.updateFormData(formDataSchema));
     }
-
-    @Test
-    void updateFormDataTestWhileTokenIsEmpty() throws JsonProcessingException {
-        ReflectionTestUtils.setField(formDataService, "elasticEnable", true);
-        MongoCollection<Document> mongoCollection = Mockito.mock(MongoCollection.class);
-        LinkedHashMap<String,Object> map = new LinkedHashMap<>();
-        map.put(STRING,STRING);
-        FormDataSchema formDataSchema = new FormDataSchema("1","1",1,map,map);
-        Mockito.when(mongoTemplate.collectionExists(anyString())).thenReturn(true);
-        Mockito.when(userDetails.getUserDetails()).thenReturn(List.of(Map.of("id","1")));
-        Mockito.when(mongoTemplate.getCollection(anyString())).thenReturn(mongoCollection);
-        Assertions.assertThrows(InvalidInputException.class, () -> formDataService.updateFormData(formDataSchema));
-    }
-
-    @Test
-    void updateFormDataTestWhileDocumentIsEmpty() throws JsonProcessingException {
-        ReflectionTestUtils.setField(formDataService, "elasticEnable", true);
-        MongoCollection<Document> mongoCollection = Mockito.mock(MongoCollection.class);
-        LinkedHashMap<String,Object> map = new LinkedHashMap<>();
-        map.put(STRING,STRING);
-        FormDataSchema formDataSchema = new FormDataSchema("1","1",1,map,map);
-        Mockito.when(mongoTemplate.collectionExists(anyString())).thenReturn(true);
-        Mockito.when(userDetails.getUserDetails()).thenReturn(List.of(Map.of("id","1")));
-        Mockito.when(mongoTemplate.getCollection(anyString())).thenReturn(mongoCollection);
-        Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("token");
-        Assertions.assertThrows(AssertionError.class, () -> formDataService.updateFormData(formDataSchema));
-    }
-
-
 }

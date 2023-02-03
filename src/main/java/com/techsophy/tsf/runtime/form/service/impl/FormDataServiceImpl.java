@@ -43,7 +43,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
@@ -51,7 +50,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 import java.util.regex.Pattern;
-
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.SEMICOLON;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
@@ -88,8 +86,8 @@ public class FormDataServiceImpl implements FormDataService
         String formId=formDataSchema.getFormId();
         BigInteger id=null;
         int version;
+        checkUserDetailsPresentOrNot(userDetails);
         Map<String, Object> loggedInUserDetails = userDetails.getUserDetails().get(0);
-        checkUserDetailsPresentOrNot(loggedInUserDetails);
         BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(String.valueOf(loggedInUserDetails.get(ID))));
         FormResponseSchema formResponseSchema = formService.getRuntimeFormById(formId);
         List<ValidationResult> validationResultList= formValidationServiceImpl.validateData(formResponseSchema,formDataSchema,formId);
@@ -174,6 +172,7 @@ public class FormDataServiceImpl implements FormDataService
             updateElasticDocument(webClient,formDataDefinition, responseMap);
         }
     }
+
     private void saveFormDataToElastic(FormDataDefinition formDataDefinition,WebClient webClient,String uniqueDocumentId)
     {
         if (uniqueDocumentId==null)
@@ -187,7 +186,7 @@ public class FormDataServiceImpl implements FormDataService
         String response;
         try
         {
-            response=webClientWrapper.webclientRequest(webClient,gatewayApi+ELASTIC_VERSION1+SLASH+ TP_RUNTIME_FORM_DATA + formDataDefinition.getFormId() +PARAM_SOURCE+elasticSource,POST, formDataDefinition);
+            response = postWebClientResponse(webClient, formDataDefinition);
             logger.info(response);
         }
         catch (Exception e)
@@ -201,12 +200,17 @@ public class FormDataServiceImpl implements FormDataService
         }
     }
 
+    private String postWebClientResponse(WebClient webClient, FormDataDefinition formDataDefinition)
+    {
+        return webClientWrapper.webclientRequest(webClient,gatewayApi+ELASTIC_VERSION1+SLASH+ TP_RUNTIME_FORM_DATA + formDataDefinition.getFormId() +PARAM_SOURCE+elasticSource,POST, formDataDefinition);
+    }
+
     private String fetchResponseFromElasticDB(String formId, WebClient webClient, String uniqueDocumentId)
     {
         String response;
         try
         {
-            response=webClientWrapper.webclientRequest(webClient,gatewayApi+ELASTIC_VERSION1+SLASH+ uniqueDocumentId +PARAM_INDEX_NAME+ TP_RUNTIME_FORM_DATA + formId,GET,null);
+            response = getWebClientResponse(formId, webClient, uniqueDocumentId);
             logger.info(response);
         }
         catch (Exception e)
@@ -217,12 +221,18 @@ public class FormDataServiceImpl implements FormDataService
         return response;
     }
 
+    private String getWebClientResponse(String formId, WebClient webClient, String uniqueDocumentId)
+    {
+        return webClientWrapper.webclientRequest(webClient,gatewayApi+ELASTIC_VERSION1+SLASH+ uniqueDocumentId +PARAM_INDEX_NAME+ TP_RUNTIME_FORM_DATA + formId,GET,null);
+    }
+
     private void emptyIdSaveToElasticDB(WebClient webClient,FormDataDefinition formDataDefinition)
     {
         String response;
         try
         {
-            response=webClientWrapper.webclientRequest(webClient,gatewayApi+ELASTIC_VERSION1+SLASH+ TP_RUNTIME_FORM_DATA + formDataDefinition.getFormId() +PARAM_SOURCE+elasticSource,POST, formDataDefinition);
+           response= postWebClientResponse(webClient,formDataDefinition);
+//            response=webClientWrapper.webclientRequest(webClient,gatewayApi+ELASTIC_VERSION1+SLASH+ TP_RUNTIME_FORM_DATA + formDataDefinition.getFormId() +PARAM_SOURCE+elasticSource,POST, formDataDefinition);
             logger.info(response);
         }
         catch (Exception e)
@@ -252,8 +262,9 @@ public class FormDataServiceImpl implements FormDataService
         return uniqueDocumentId;
     }
 
-    private void checkUserDetailsPresentOrNot(Map<String, Object> loggedInUserDetails)
+    private void checkUserDetailsPresentOrNot(UserDetails userDetails) throws JsonProcessingException
     {
+        Map<String, Object> loggedInUserDetails=userDetails.getUserDetails().get(0);
         if (StringUtils.isEmpty(String.valueOf(loggedInUserDetails.get(ID))))
         {
             throw new UserDetailsIdNotFoundException(LOGGED_IN_USER_ID_NOT_FOUND,globalMessageSource.get(LOGGED_IN_USER_ID_NOT_FOUND,String.valueOf(loggedInUserDetails.get(ID))));
@@ -267,53 +278,15 @@ public class FormDataServiceImpl implements FormDataService
         checkIfFormIdIsEmpty(formDataSchema, formId);
         checkIfIdIsEmpty(formDataSchema);
         checkMongoCollectionIfExistsOrNot(formDataSchema.getFormId());
+        checkUserDetailsPresentOrNot(userDetails);
         Map<String, Object> loggedInUserDetails = userDetails.getUserDetails().get(0);
-        checkUserDetailsPresentOrNot(loggedInUserDetails);
         BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(String.valueOf(loggedInUserDetails.get(ID))));
-        MongoCursor<Document> cursor;
-        Map<String, Object> formDataMap = new LinkedHashMap<>();
-        Map<String,Object> updatedFormData=new LinkedHashMap<>();
-        Map<String,Object> updatedFormMetaData=new HashMap<>();
-        Bson filter = Filters.eq(UNDERSCORE_ID, Long.valueOf(formDataSchema.getId()));
-        int version = 2;
-        Document document = null;
-        FindOneAndReplaceOptions findOneAndReplaceOptions = new FindOneAndReplaceOptions();
-        findOneAndReplaceOptions.returnDocument(ReturnDocument.AFTER);
-        try
-        {
-            MongoCollection<Document> collection = mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId);
-            FindIterable<Document> documents = collection.find(filter);
-            cursor = documents.iterator();
-            while (cursor.hasNext())
-            {
-                 document = cursor.next();
-                if (!document.isEmpty())
-                {
-                    version=Integer.parseInt(String.valueOf(document.get(VERSION)))+ 1;
-                    Map<String,Object> documentFormData=objectMapper.convertValue(document.get(FORM_DATA),LinkedHashMap.class);
-                    Map<String,Object> documentFormMetaData=objectMapper.convertValue(document.get(FORM_META_DATA), Map.class);
-                    extractDocumentFormMetaData(updatedFormData, documentFormData);
-                    extractDocumentFormMetaData(updatedFormData, formDataSchema.getFormData());
-                    extractDocumentFormMetaData(updatedFormMetaData, documentFormMetaData);
-                    extractDocumentFormMetaData( updatedFormMetaData,formDataSchema.getFormMetadata());
-                    formDataMap.put(UNDERSCORE_ID, Long.valueOf(String.valueOf(document.get(UNDERSCORE_ID))));
-                    formDataMap.put(FORM_DATA, updatedFormData);
-                    formDataMap.put(FORM_META_DATA, updatedFormMetaData);
-                    formDataMap.put(VERSION, String.valueOf(version));
-                    formDataMap.put(CREATED_BY_ID, String.valueOf(document.get(CREATED_BY_ID)));
-                    formDataMap.put(CREATED_ON, ((Date) document.get(CREATED_ON)).toInstant());
-                    formDataMap.put(CREATED_BY_NAME, String.valueOf(document.get(CREATED_BY_NAME)));
-                    formDataMap.put(UPDATED_BY_ID, String.valueOf(loggedInUserId));
-                    formDataMap.put(UPDATED_ON, Instant.now());
-                    formDataMap.put(UPDATED_BY_NAME, loggedInUserDetails.get(USER_DEFINITION_FIRST_NAME) + SPACE + loggedInUserDetails.get(USER_DEFINITION_LAST_NAME));
-                }
-            }
-        } catch (Exception e)
-        {
-            logger.error(e.getMessage());
-        }
-        Document updatedDocument = new Document(formDataMap);
-        mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).findOneAndReplace(filter, updatedDocument,findOneAndReplaceOptions);
+        Bson filter=Filters.eq(UNDERSCORE_ID,formDataSchema.getId());
+        int version= (int) mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).find(filter).iterator().next().get("version");
+        version=version+1;
+        FormDataDefinition formDataDefinition=objectMapper.convertValue(formDataSchema,FormDataDefinition.class);
+        mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).updateOne(filter,Updates.combine(
+                Updates.set("formData",formDataDefinition.getFormData()),Updates.set("version",version)));
         if (elasticEnable)
         {
             String token = tokenUtils.getTokenFromContext();
@@ -322,33 +295,21 @@ public class FormDataServiceImpl implements FormDataService
             WebClient webClient= checkEmptyToken(token);
             String response;
             log.info(GATEWAY+gatewayApi);
-            formDataMap.remove(UNDERSCORE_ID);
-            assert document != null;
-            formDataMap.put(ID, String.valueOf(document.get(UNDERSCORE_ID)));
-            formDataMap.put(CREATED_ON, String.valueOf(formDataMap.get(CREATED_ON)));
-            formDataMap.put(UPDATED_ON, String.valueOf(formDataMap.get(UPDATED_ON)));
             try
             {
-                response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + TP_RUNTIME_FORM_DATA + formId+ PARAM_SOURCE + elasticSource, POST, formDataMap);
+                response=postWebClientResponse(webClient,formDataDefinition);
+//                response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + TP_RUNTIME_FORM_DATA + formId+ PARAM_SOURCE + elasticSource, POST, formDataDefinition);
                 logger.info(response);
             }
             catch (Exception e)
             {
                 logger.error(e.getMessage());
-                filter = Filters.eq(UNDERSCORE_ID, Long.valueOf(String.valueOf(formDataSchema.getId())));
-                mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).findOneAndReplace(filter, document, findOneAndReplaceOptions);
-                throw new RecordUnableToSaveException(UNABLE_TO_UPDATE_IN_MONGODB_AND_ELASTIC_DB, globalMessageSource.get(UNABLE_TO_UPDATE_IN_MONGODB_AND_ELASTIC_DB));
+                filter= Filters.eq(UNDERSCORE_ID,Long.valueOf(String.valueOf(formDataDefinition.getId())));
+                mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA + formDataDefinition.getFormId()).deleteMany(filter);
+                throw new RecordUnableToSaveException(UNABLE_TO_SAVE_IN_ELASTIC_AND_DB,globalMessageSource.get(UNABLE_TO_SAVE_IN_ELASTIC_AND_DB));
             }
         }
         return new FormDataResponse(formDataSchema.getId(),version);
-    }
-
-    private static void extractDocumentFormMetaData(Map<String, Object> updatedFormMetaData, Map<String, Object> documentFormMetaData)
-    {
-        if (documentFormMetaData != null)
-        {
-            updatedFormMetaData.putAll(documentFormMetaData);
-        }
     }
 
     private void checkIfIdIsEmpty(FormDataSchema formDataSchema)
@@ -382,13 +343,13 @@ public class FormDataServiceImpl implements FormDataService
                 String response;
                 if (sortBy == null && sortOrder == null)
                 {
-                        response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_FILTER+filter+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA +formId+AND_SOURCE+elasticSource,GET,null);
-                        logger.info(response);
+                    response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_FILTER+filter+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA +formId+AND_SOURCE+elasticSource,GET,null);
+                    logger.info(response);
                 }
                 else
                 {
-                        response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+sortBy+AND_SORT_ORDER+sortOrder+AND_FILTER+filter+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA +formId+AND_SOURCE+elasticSource,GET,null);
-                        logger.info(response);
+                    response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+sortBy+AND_SORT_ORDER+sortOrder+AND_FILTER+filter+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA +formId+AND_SOURCE+elasticSource,GET,null);
+                    logger.info(response);
                 }
                 Map<String,Object> responseMap=this.objectMapper.readValue(response,Map.class);
                 Map<String,Object> dataMap=this.objectMapper.convertValue(responseMap.get(DATA),Map.class);
@@ -543,7 +504,7 @@ public class FormDataServiceImpl implements FormDataService
         ArrayList<Criteria> c1 = new ArrayList<>();
         prepareCriteriaList(keysList, valuesList, c1);
         criteria = criteria.andOperator(c1.toArray(new Criteria[0]));
-        PaginationResponsePayload paginationResponsePayload1 = getPaginationResponsePayloadIfReltionsExists(formId, relations, sortBy+";"+sortOrder, pageable, paginationResponsePayload, content, criteria);
+        PaginationResponsePayload paginationResponsePayload1 = getPaginationResponsePayloadIfRelationsExists(formId, relations, sortBy+";"+sortOrder, pageable, paginationResponsePayload, content, criteria);
         if (paginationResponsePayload1 != null) return paginationResponsePayload1;
         paginationResponsePayload1 = sortByAndSortOrderIsEmpty(formId, sortBy, sortOrder, pageable, paginationResponsePayload, content, criteria);
         if (paginationResponsePayload1 != null) return paginationResponsePayload1;
@@ -586,7 +547,7 @@ public class FormDataServiceImpl implements FormDataService
         }
     }
 
-    private PaginationResponsePayload getPaginationResponsePayloadIfReltionsExists(String formId, String relations,String sort, Pageable pageable, PaginationResponsePayload paginationResponsePayload, List<Map<String, Object>> content, Criteria criteria)
+    private PaginationResponsePayload getPaginationResponsePayloadIfRelationsExists(String formId, String relations, String sort, Pageable pageable, PaginationResponsePayload paginationResponsePayload, List<Map<String, Object>> content, Criteria criteria)
     {
         String sortBy=EMPTY_STRING;
         String sortOrder=EMPTY_STRING;
@@ -1196,7 +1157,8 @@ public class FormDataServiceImpl implements FormDataService
             webClient =checkEmptyToken(token);
             try
             {
-                String response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + id + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId, GET, null);
+                String response = getWebClientResponse(formId,webClient,id);
+//                 webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + id + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId, GET, null);
                 logger.info(response);
                 Map<String,Object> responseMap = this.objectMapper.readValue(response,Map.class);
                 Map<String,Object> dataMap = this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
@@ -1363,7 +1325,7 @@ public class FormDataServiceImpl implements FormDataService
         List<AggregationOperation> aggregationOperationsList = new ArrayList<>();
         if(StringUtils.isNotEmpty(filter))
         {
-            createMultipleFilterCriterias(filter, criteria, c1, aggregationOperationsList);
+            createMultipleFilterCriteria(filter, criteria, c1, aggregationOperationsList);
         }
         if(operation.equals(COUNT))
         {
@@ -1382,7 +1344,7 @@ public class FormDataServiceImpl implements FormDataService
         return new AggregationResponse(responseAggregationList);
     }
 
-    private static void createMultipleFilterCriterias(String filter, Criteria criteria, ArrayList<Criteria> c1, List<AggregationOperation> aggregationOperationsList)
+    private static void createMultipleFilterCriteria(String filter, Criteria criteria, ArrayList<Criteria> c1, List<AggregationOperation> aggregationOperationsList)
     {
         ArrayList<String> keysList = new ArrayList<>();
         ArrayList<String> valuesList = new ArrayList<>();

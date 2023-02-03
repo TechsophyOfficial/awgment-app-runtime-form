@@ -87,4 +87,21 @@ class FormValidationServiceTest
         Map<String,Object> dataMap=new HashMap<>();
         Assertions.assertNotNull(formValidationService.validateComponent(component,dataMap,TEST_FORM_ID));
     }
+
+    @Test
+    void checkComponentTableTest()
+    {
+        Component component=new Component();
+        component.setType("table");
+        List<Component> componentList=new ArrayList<>();
+        componentList.add(new Component());
+        component.setComponents(componentList);
+        List<List<ComponentsListInsideTable>> compList=new ArrayList<>();
+        component.setRowsList(compList);
+        component.setValidate(new Validate(true,"a-z",
+                null,null,null,null,1.0,10.0,1,100,
+                null,null,null,2,100,null,null));
+        Map<String,Object> dataMap=new HashMap<>();
+        Assertions.assertNotNull(formValidationService.validateComponent(component,dataMap,TEST_FORM_ID));
+    }
 }

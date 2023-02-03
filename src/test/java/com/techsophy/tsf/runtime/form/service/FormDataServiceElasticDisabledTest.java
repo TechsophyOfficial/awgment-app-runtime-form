@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertOneResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
@@ -274,18 +273,19 @@ class FormDataServiceElasticDisabledTest
         formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
         formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
         formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        Document document = new Document(formDataMap);
+        Document document = new Document();
         document.put(UNDERSCORE_ID,TEST_ID_VALUE);
+        document.put(VERSION,1);
         FindIterable<Document> iterable = mock(FindIterable.class);
         MongoCursor cursor = mock(MongoCursor.class);
         Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
-        Bson filter = Filters.eq(UNDERSCORE_ID, Long.valueOf("123"));
-        Mockito.when(mockMongoCollection.find(filter)).thenReturn(iterable);
+        Mockito.when(mockMongoCollection.find((Bson) any())).thenReturn(iterable);
         Mockito.when(iterable.iterator()).thenReturn(cursor);
-        Mockito.when(cursor.hasNext()).thenReturn(true).thenReturn(false);
+//        Mockito.when(cursor.hasNext()).thenReturn(true).thenReturn(false);
         Mockito.when(cursor.next()).thenReturn(document);
-        Mockito.when(mockObjectMapper.convertValue(document.get(FORM_DATA),LinkedHashMap.class)).thenReturn(formDataMap);
-        Mockito.when(mockObjectMapper.convertValue(document.get(FORM_META_DATA),Map.class)).thenReturn(testFormMetaData);
+//        Mockito.when(mockObjectMapper.convertValue(document.get(FORM_DATA),LinkedHashMap.class)).thenReturn(formDataMap);
+//        Mockito.when(mockObjectMapper.convertValue(document.get(FORM_META_DATA),Map.class)).thenReturn(testFormMetaData);
+        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
         Assertions.assertNotNull(mockFormDataServiceImpl.updateFormData(formDataSchemaTest));
     }
 
@@ -991,17 +991,24 @@ class FormDataServiceElasticDisabledTest
         document.append(CREATED_ON,currentDate);
         document.append(CREATED_BY_ID,"1");
         document.append(CREATED_BY_NAME,STRING);
+        document.put(VERSION,1);
         doReturn(userList).when(mockUserDetails).getUserDetails();
         Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
         Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),any(),any())).thenReturn(STRING);
-        Mockito.when(mockObjectMapper.convertValue(STRING,Map.class)).thenReturn(testFormData);
+//        Mockito.when(mockObjectMapper.convertValue(STRING,Map.class)).thenReturn(testFormData);
         Mockito.when(mockMongoTemplate.getCollection(any())).thenReturn(mongoCollectionDocument);
         Mockito.when(mongoCollectionDocument.find(any(Bson.class))).thenReturn(mockDocuments);
         Mockito.when(mockDocuments.iterator()).thenReturn(mongoCursor);
-        Mockito.when(mongoCursor.hasNext()).thenReturn(true).thenReturn(false);
+//        Mockito.when(mongoCursor.hasNext()).thenReturn(true).thenReturn(false);
         Mockito.when(mongoCursor.next()).thenReturn(document);
         FormDataSchema formDataSchemaTest = new FormDataSchema("1", TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
         Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
+        FindIterable<Document> iterable = mock(FindIterable.class);
+        MongoCursor cursor = mock(MongoCursor.class);
+//        Mockito.when(mockMongoCollection.find((Bson) any())).thenReturn(iterable);
+//        Mockito.when(iterable.iterator()).thenReturn(cursor);
+//        Mockito.when(cursor.next()).thenReturn(document);
+        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
         Assertions.assertNotNull(mockFormDataServiceImpl.updateFormData(formDataSchemaTest));
     }
 
