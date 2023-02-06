@@ -406,12 +406,10 @@ public class FormDataServiceImpl implements FormDataService
             return contentList;
         }
         checkMongoCollectionIfExistsOrNot(formId);
-        Query query = new Query();
         ArrayList<String> keysList = new ArrayList<>();
         ArrayList<String> valuesList = new ArrayList<>();
         extractKeyValuesList(keysList, valuesList, filter);
-        ArrayList<Criteria> c1 = new ArrayList<>();
-        Criteria criteria=prepareCriteriaList(keysList, valuesList, c1);
+        Criteria criteria=prepareCriteriaList(keysList,valuesList);
         if (isNotEmpty(relations))
         {
             ArrayList<String> mappedArrayOfDocumentsName=new ArrayList<>();
@@ -423,11 +421,9 @@ public class FormDataServiceImpl implements FormDataService
             prepareRelationList(mappedArrayOfDocumentsName, relationsList, relationKeysList, relationValuesList);
             prepareDocumentAggregateList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList, aggregationOperationsList);
             aggregationOperationsList.add(Aggregation.match(criteria));
-            List<Map<String, Object>> relationalMapList1 = getMapsEmptySort(formId, sortBy, sortOrder, relationalMapList, aggregationOperationsList);
-            if (!relationalMapList1.isEmpty()) return relationalMapList1;
+            return getMapsEmptySort(formId, sortBy, sortOrder, relationalMapList, aggregationOperationsList);
         }
-        query.addCriteria(criteria);
-        return getFormDataResponseSchemasSort(formId, sortBy, sortOrder, query);
+        return getFormDataResponseSchemasSort(formId, sortBy, sortOrder);
     }
 
     private List<Map<String,Object>> getContentList(Map<String, Object> dataMap)
@@ -440,25 +436,24 @@ public class FormDataServiceImpl implements FormDataService
         return this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
     }
 
-    private List<FormDataResponseSchema> getFormDataResponseSchemasSort(String formId, String sortBy, String sortOrder, Query query)
+    private List<FormDataResponseSchema> getFormDataResponseSchemasSort(String formId, String sortBy, String sortOrder)
     {
+        Query query=new Query();
         checkIfBothSortByAndSortOrderGivenAsInput(sortBy, sortOrder);
+        List<FormDataResponseSchema> formDataResponseSchemasList = new ArrayList<>();
         if (isEmpty(sortBy) && isEmpty(sortOrder))
         {
             query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
             List<FormDataDefinition> formDataDefinitionsList = mongoTemplate.find(query, FormDataDefinition.class, TP_RUNTIME_FORM_DATA + formId);
-            List<FormDataResponseSchema> formDataResponseSchemasList = new ArrayList<>();
             prepareFormDataResponseSchemaList(formDataResponseSchemasList, formDataDefinitionsList);
-            return formDataResponseSchemasList;
         }
         else
         {
             query.with(Sort.by(Sort.Direction.fromString(sortOrder), sortBy));
             List<FormDataDefinition> formDataDefinitionsList =  mongoTemplate.find(query, FormDataDefinition.class, TP_RUNTIME_FORM_DATA + formId);
-            List<FormDataResponseSchema> formDataResponseSchemasList = new ArrayList<>();
             prepareFormDataResponseSchemaList(formDataResponseSchemasList, formDataDefinitionsList);
-            return formDataResponseSchemasList;
         }
+        return formDataResponseSchemasList;
     }
 
     private List<Map<String, Object>> getMapsEmptySort(String formId, String sortBy, String sortOrder, List<Map<String, Object>> relationalMapList, List<AggregationOperation> aggregationOperationsList)
@@ -548,8 +543,7 @@ public class FormDataServiceImpl implements FormDataService
         ArrayList<String> keysList = new ArrayList<>();
         ArrayList<String> valuesList = new ArrayList<>();
         extractKeyValuesList(keysList, valuesList, filter);
-        ArrayList<Criteria> c1 = new ArrayList<>();
-        Criteria criteria = prepareCriteriaList(keysList, valuesList, c1);
+        Criteria criteria = prepareCriteriaList(keysList, valuesList);
         PaginationResponsePayload paginationResponsePayload1 = getPaginationResponsePayloadIfRelationsExists(formId, relations, sortBy+";"+sortOrder, pageable, paginationResponsePayload, content, criteria);
         if (paginationResponsePayload1 != null) return paginationResponsePayload1;
         paginationResponsePayload1 = sortByAndSortOrderIsEmpty(formId, sortBy, sortOrder, pageable, paginationResponsePayload, content, criteria);
@@ -569,8 +563,9 @@ public class FormDataServiceImpl implements FormDataService
         return paginationResponsePayload;
     }
 
-    private static Criteria prepareCriteriaList(ArrayList<String> keysList, ArrayList<String> valuesList, ArrayList<Criteria> c1)
+    private static Criteria prepareCriteriaList(ArrayList<String> keysList, ArrayList<String> valuesList)
     {
+        ArrayList<Criteria> c1 = new ArrayList<>();
         for (int i = 0; i < keysList.size(); i++)
         {
             if(keysList.get(i).equals(ID))
@@ -1242,8 +1237,8 @@ public class FormDataServiceImpl implements FormDataService
             WebClient webClient= checkEmptyToken(tokenUtils.getTokenFromContext());
             try
             {
-                    String  response= webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH+PARAM_INDEX_NAME+ TP_RUNTIME_FORM_DATA +formId,DELETE,null);
-                    logger.info(response);
+                String  response= webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH+PARAM_INDEX_NAME+ TP_RUNTIME_FORM_DATA +formId,DELETE,null);
+                logger.info(response);
             }
             catch (Exception e)
             {
@@ -1283,7 +1278,7 @@ public class FormDataServiceImpl implements FormDataService
                 if(flag)
                 {
                     String response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + id + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId, DELETE, null);
-                        logger.info(response);
+                    logger.info(response);
                 }
                 else
                 {
@@ -1302,11 +1297,10 @@ public class FormDataServiceImpl implements FormDataService
     {
         checkMongoCollectionIfExistsOrNot(formId);
         Criteria criteria = new Criteria();
-        ArrayList<Criteria> c1 = new ArrayList<>();
         List<AggregationOperation> aggregationOperationsList = new ArrayList<>();
         if(isNotEmpty(filter))
         {
-            createMultipleFilterCriteria(filter, criteria, c1, aggregationOperationsList);
+            createMultipleFilterCriteria(filter, criteria, aggregationOperationsList);
         }
         if(operation.equals(COUNT))
         {
@@ -1315,22 +1309,21 @@ public class FormDataServiceImpl implements FormDataService
        List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList),
                TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
         List<Map<String,String>> responseAggregationList=new ArrayList<>();
-        for(Map<String,Object> map: aggregateList)
-        {
-           Map<String,String> aggregationMap=new HashMap<>();
-           aggregationMap.put(UNDERSCORE_ID,String.valueOf(map.get(UNDERSCORE_ID)));
-           aggregationMap.put(COUNT,String.valueOf(map.get(COUNT)));
-           responseAggregationList.add(aggregationMap);
-        }
+        aggregateList.forEach(x->{
+            Map<String,String> aggregationMap=new HashMap<>();
+            aggregationMap.put(UNDERSCORE_ID,String.valueOf(x.get(UNDERSCORE_ID)));
+            aggregationMap.put(COUNT,String.valueOf(x.get(COUNT)));
+            responseAggregationList.add(aggregationMap);
+        });
         return new AggregationResponse(responseAggregationList);
     }
 
-    private static void createMultipleFilterCriteria(String filter, Criteria criteria, ArrayList<Criteria> c1, List<AggregationOperation> aggregationOperationsList)
+    private static void createMultipleFilterCriteria(String filter, Criteria criteria, List<AggregationOperation> aggregationOperationsList)
     {
         ArrayList<String> keysList = new ArrayList<>();
         ArrayList<String> valuesList = new ArrayList<>();
         extractKeyValuesList(keysList, valuesList, filter);
-        prepareCriteriaList(keysList, valuesList, c1);
+        prepareCriteriaList(keysList, valuesList);
         aggregationOperationsList.add(Aggregation.match(criteria));
     }
 }
