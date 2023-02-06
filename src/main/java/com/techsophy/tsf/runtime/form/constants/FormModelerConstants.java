@@ -158,7 +158,7 @@ public class FormModelerConstants
     public static final String CREATED_BY_NAME="createdByName";
     public static final String UPDATED_BY_ID="updatedById";
     public static final String UPDATED_BY_NAME="updatedByName";
-    public static final String FORM_META_DATA="formMetadata";
+    public static final String FORM_META_DATA="formMetaData";
     public static final String  DOT=".";
     public static final String FORM_DATA_MANDATORY_FIELDS_SUCCESS="Form data contains all mandatory fields";
     public static final String COMMA=",";

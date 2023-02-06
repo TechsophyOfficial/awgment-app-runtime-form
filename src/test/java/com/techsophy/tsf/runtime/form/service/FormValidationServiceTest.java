@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 
+import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.CHILDREN;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 
@@ -104,4 +105,99 @@ class FormValidationServiceTest
         Map<String,Object> dataMap=new HashMap<>();
         Assertions.assertNotNull(formValidationService.validateComponent(component,dataMap,TEST_FORM_ID));
     }
+
+    @Test
+    void checkComponentDataMapTest()
+    {
+        Component component=new Component();
+        component.setType("datamap");
+        List<Component> componentList=new ArrayList<>();
+        componentList.add(new Component());
+        component.setComponents(componentList);
+        List<List<ComponentsListInsideTable>> compList=new ArrayList<>();
+        component.setRowsList(compList);
+        component.setValidate(new Validate(true,"a-z",
+                null,null,null,null,1.0,10.0,1,100,
+                null,null,null,2,100,null,null));
+        Map<String,Object> dataMap=new HashMap<>();
+        Assertions.assertNotNull(formValidationService.validateComponent(component,dataMap,TEST_FORM_ID));
+    }
+
+    @Test
+    void checkComponentDataGridTest()
+    {
+        Component component=new Component();
+        component.setLabel("label1");
+        component.setType("datagrid");
+        List<Component> componentList=new ArrayList<>();
+        componentList.add(component);
+        component.setComponents(componentList);
+        List<List<ComponentsListInsideTable>> compList=new ArrayList<>();
+        component.setRowsList(compList);
+        component.setValidate(new Validate(true,"a-z",
+                null,null,null,null,1.0,10.0,1,100,
+                null,null,null,2,100,null,null));
+        Map<String,Object> dataMap=new HashMap<>();
+        List<Map<String,Object>> dataList=new ArrayList<>();
+        dataList.add(new HashMap<>());
+        dataMap.put("label1",dataList);
+        Assertions.assertNotNull(formValidationService.validateComponent(component,dataMap,TEST_FORM_ID));
+    }
+
+    @Test
+    void checkComponentTreeTest()
+    {
+        Component component=new Component();
+        component.setType("tree");
+        List<Component> componentList=new ArrayList<>();
+        componentList.add(new Component());
+        component.setComponents(componentList);
+        List<List<ComponentsListInsideTable>> compList=new ArrayList<>();
+        component.setRowsList(compList);
+        component.setValidate(new Validate(true,"a-z",
+                null,null,null,null,1.0,10.0,1,100,
+                null,null,null,2,100,null,null));
+        Map<String,Object> dataMap=new HashMap<>();
+        dataMap.put(CHILDREN,new ArrayList<>());
+        Assertions.assertNotNull(formValidationService.validateComponent(component,dataMap,TEST_FORM_ID));
+    }
+
+    @Test
+    void checkComponentTabsTest()
+    {
+        Component component=new Component();
+        component.setComponents(new ArrayList<>());
+        component.setType("tabs");
+        List<Component> componentList=new ArrayList<>();
+        componentList.add(new Component());
+        component.setComponents(componentList);
+        List<List<ComponentsListInsideTable>> compList=new ArrayList<>();
+        component.setRowsList(compList);
+        component.setValidate(new Validate(true,"a-z",
+                null,null,null,null,1.0,10.0,1,100,
+                null,null,null,2,100,null,null));
+        Map<String,Object> dataMap=new HashMap<>();
+        dataMap.put(CHILDREN,new ArrayList<>());
+        Assertions.assertNotNull(formValidationService.validateComponent(component,dataMap,TEST_FORM_ID));
+    }
+
+    @Test
+    void checkDefaultComponentTest()
+    {
+        Component component=new Component();
+        component.setComponents(new ArrayList<>());
+        component.setType("default");
+        List<Component> componentList=new ArrayList<>();
+        componentList.add(new Component());
+        component.setComponents(componentList);
+        List<List<ComponentsListInsideTable>> compList=new ArrayList<>();
+        component.setRowsList(compList);
+        component.setValidate(new Validate(true,"a-z",
+                null,null,null,null,1.0,10.0,1,100,
+                null,null,null,2,100,null,null));
+        Map<String,Object> dataMap=new HashMap<>();
+        dataMap.put(CHILDREN,new ArrayList<>());
+        Assertions.assertNotNull(formValidationService.validateComponent(component,dataMap,TEST_FORM_ID));
+    }
+
 }

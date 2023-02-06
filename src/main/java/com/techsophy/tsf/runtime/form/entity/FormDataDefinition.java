@@ -14,5 +14,5 @@ public class FormDataDefinition extends Auditable
     private String formId;
     private int version;
     private Map<String,Object> formData;
-    private Map<String,Object> formMetadata;
+    private Map<String,Object> formMetaData;
 }

@@ -16,5 +16,5 @@ public class FormDataSchema
     String formId;
     Integer version;
     Map<String,Object> formData;
-    Map<String,Object> formMetadata;
+    Map<String,Object> formMetaData;
 }
