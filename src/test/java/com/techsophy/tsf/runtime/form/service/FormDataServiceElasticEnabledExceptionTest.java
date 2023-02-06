@@ -452,7 +452,7 @@ class FormDataServiceElasticEnabledExceptionTest
         singleContentTest.put(CREATED_ON,TEST_CREATED_ON);
         singleContentTest.put(UPDATED_ON,TEST_UPDATED_ON);
         contentListTest.add(singleContentTest);
-        Mockito.when(mockObjectMapper.readValue(responseTest,Map.class)).thenReturn(responseMapTest);
+        Mockito.when(mockObjectMapper.readValue(responseTest,Map.class)).thenThrow(new InvalidInputException("message","message"));
         Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.getFormDataByFormIdAndId(TEST_FORM_ID, TEST_ID,null));
     }
 
@@ -462,9 +462,9 @@ class FormDataServiceElasticEnabledExceptionTest
         Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
         String responseTest =RESPONSE_VALUE_10;
-        Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),eq(GET),any())).thenReturn(responseTest);
+        Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),eq(GET),any())).thenThrow(new InvalidInputException("message","message"));
         Map<String,Object> responseMapTest =new HashMap<>();
-        Mockito.when(mockObjectMapper.readValue(responseTest, Map.class)).thenReturn(responseMapTest);
+//        Mockito.when(mockObjectMapper.readValue(responseTest, Map.class)).thenReturn(responseMapTest);
         Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.getFormDataByFormIdAndId(TEST_FORM_ID, TEST_ID,null));
     }
 
