@@ -32,7 +32,7 @@ public class SequenceGeneratorServiceImpl implements SequenceGeneratorService
            existingDefinition = sequenceGeneratorRepository.findBySequenceNameAndLength(sequenceName,length);
            sequenceGeneratorDefinition.setSequenceName(existingDefinition.getSequenceName());
            sequenceGeneratorDefinition.setLength(existingDefinition.getLength());
-           Long lastValue;
+           long lastValue;
            if(existingDefinition.getLastValue()>(Math.pow(10,existingDefinition.getLength())-1))
            {
                lastValue= -1L;

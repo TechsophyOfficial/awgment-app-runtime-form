@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @Service
 @AllArgsConstructor(onConstructor_ = {@Autowired})
@@ -38,7 +39,7 @@ public class FormServiceImpl implements FormService
     public void saveRuntimeForm(FormSchema formSchema) throws JsonProcessingException
     {
         Map<String,Object> loggedInUserDetails =userDetails.getUserDetails().get(0);
-        if (StringUtils.isEmpty(loggedInUserDetails.get(ID).toString()))
+        if (isEmpty(loggedInUserDetails.get(ID).toString()))
         {
             throw new UserDetailsIdNotFoundException(LOGGED_IN_USER_ID_NOT_FOUND,globalMessageSource.get(LOGGED_IN_USER_ID_NOT_FOUND,loggedInUserDetails.get(ID).toString()));
         }
@@ -65,7 +66,7 @@ public class FormServiceImpl implements FormService
 
     public Stream<FormResponseSchema> getAllRuntimeForms(boolean content, String type)
     {
-        if(StringUtils.isEmpty(type))
+        if(isEmpty(type))
         {
             return this.formDefinitionRepository.findAll().stream()
                     .map(formio ->

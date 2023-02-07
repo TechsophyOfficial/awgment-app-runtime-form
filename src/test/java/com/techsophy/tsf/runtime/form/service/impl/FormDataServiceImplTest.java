@@ -20,11 +20,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mongodb.core.MongoTemplate;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.STRING;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,7 +59,8 @@ class FormDataServiceImplTest {
 //    }
 
     @Test
-    void saveFormDataTestWhileUserIdIsEmpty() throws JsonProcessingException {
+    void saveFormDataTestWhileUserIdIsEmpty() throws JsonProcessingException
+    {
         LinkedHashMap<String,Object> map = new LinkedHashMap<>();
         map.put(STRING,STRING);
         FormDataSchema formDataSchema = new FormDataSchema("1","1",1,map,map);

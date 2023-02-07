@@ -158,7 +158,11 @@ class FormValidationServiceTest
                 null,null,null,null,1.0,10.0,1,100,
                 null,null,null,2,100,null,null));
         Map<String,Object> dataMap=new HashMap<>();
-        dataMap.put(CHILDREN,new ArrayList<>());
+        List<Map<String,Object>> childrenList=new ArrayList<>();
+        Map<String,Object> children=new HashMap<>();
+        children.put("children",new ArrayList<>());
+        childrenList.add(children);
+        dataMap.put(CHILDREN,childrenList);
         Assertions.assertNotNull(formValidationService.validateComponent(component,dataMap,TEST_FORM_ID));
     }
 

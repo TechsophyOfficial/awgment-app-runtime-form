@@ -9,7 +9,6 @@ import com.techsophy.tsf.runtime.form.service.SequenceGeneratorService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
-
 import static com.techsophy.tsf.runtime.form.constants.SequenceGeneratorConstants.SEQUENCE_GENERATED_SUCCESS;
 
 @RestController

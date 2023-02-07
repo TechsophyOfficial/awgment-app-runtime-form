@@ -444,13 +444,13 @@ public class FormDataServiceImpl implements FormDataService
         if (isEmpty(sortBy) && isEmpty(sortOrder))
         {
             query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
-            List<FormDataDefinition> formDataDefinitionsList = mongoTemplate.find(query, FormDataDefinition.class, TP_RUNTIME_FORM_DATA + formId);
+            List<FormDataDefinition> formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
             prepareFormDataResponseSchemaList(formDataResponseSchemasList, formDataDefinitionsList);
         }
         else
         {
             query.with(Sort.by(Sort.Direction.fromString(sortOrder), sortBy));
-            List<FormDataDefinition> formDataDefinitionsList =  mongoTemplate.find(query, FormDataDefinition.class, TP_RUNTIME_FORM_DATA + formId);
+            List<FormDataDefinition> formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
             prepareFormDataResponseSchemaList(formDataResponseSchemasList, formDataDefinitionsList);
         }
         return formDataResponseSchemasList;
@@ -551,16 +551,21 @@ public class FormDataServiceImpl implements FormDataService
         checkIfBothSortByAndSortOrderGivenAsInput(sortBy, sortOrder);
         query.addCriteria(criteria);
         query.with(Sort.by(Sort.Direction.fromString(sortOrder),sortBy));
-        long totalMatchedRecords=mongoTemplate.count(query, TP_RUNTIME_FORM_DATA +formId);
+        long totalMatchedRecords= getCount(formId, query);
         query.with(pageable);
-        List<FormDataDefinition> formDataDefinitionsList=mongoTemplate.find(query,FormDataDefinition.class, TP_RUNTIME_FORM_DATA +formId);
-        int totalPages = (int) Math.ceil((float)(totalMatchedRecords) / pageable.getPageSize());
+        List<FormDataDefinition> formDataDefinitionsList= getFormDataDefinitionsList(formId, query);
+        int totalPages = getTotalPages(pageable, totalMatchedRecords);
         prepareContentList(content, formDataDefinitionsList);
-        paginationResponsePayload.setContent(content);
-        paginationResponsePayload.setTotalPages(totalPages);
-        paginationResponsePayload.setTotalElements(totalMatchedRecords);
-        paginationResponsePayload.setNumberOfElements(content.size());
+        setPaginationResponsePayload(paginationResponsePayload, content, totalMatchedRecords, totalPages);
         return paginationResponsePayload;
+    }
+
+    private List<FormDataDefinition> getFormDataDefinitionsList(String formId, Query query) {
+        return mongoTemplate.find(query, FormDataDefinition.class, TP_RUNTIME_FORM_DATA + formId);
+    }
+
+    private long getCount(String formId, Query query) {
+        return mongoTemplate.count(query, TP_RUNTIME_FORM_DATA + formId);
     }
 
     private static Criteria prepareCriteriaList(ArrayList<String> keysList, ArrayList<String> valuesList)
@@ -623,11 +628,8 @@ public class FormDataServiceImpl implements FormDataService
             metaData = getMetaDataMap(metaDataList, metaData);
             long totalMatchedRecords;
             totalMatchedRecords = extractCountOfMatchedRecords(metaData);
-            int totalPages = (int) Math.ceil((float) (totalMatchedRecords) / pageable.getPageSize());
-            paginationResponsePayload.setContent(content);
-            paginationResponsePayload.setTotalPages(totalPages);
-            paginationResponsePayload.setTotalElements(totalMatchedRecords);
-            paginationResponsePayload.setNumberOfElements(content.size());
+            int totalPages = getTotalPages(pageable, totalMatchedRecords);
+            setPaginationResponsePayload(paginationResponsePayload, content, totalMatchedRecords, totalPages);
             return paginationResponsePayload;
         }
         return null;
@@ -661,18 +663,19 @@ public class FormDataServiceImpl implements FormDataService
             Query query=new Query();
             query.addCriteria(criteria);
             query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
-            long totalMatchedRecords=mongoTemplate.count(query, TP_RUNTIME_FORM_DATA + formId);
+            long totalMatchedRecords= getCount(formId, query);
             query.with(pageable);
-            List<FormDataDefinition> formDataDefinitionsList = mongoTemplate.find(query, FormDataDefinition.class, TP_RUNTIME_FORM_DATA + formId);
-            int totalPages = (int) Math.ceil((float) (totalMatchedRecords) / pageable.getPageSize());
+            List<FormDataDefinition> formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
+            int totalPages = getTotalPages(pageable, totalMatchedRecords);
             prepareContentList(content, formDataDefinitionsList);
-            paginationResponsePayload.setContent(content);
-            paginationResponsePayload.setTotalPages(totalPages);
-            paginationResponsePayload.setTotalElements(totalMatchedRecords);
-            paginationResponsePayload.setNumberOfElements(content.size());
+            setPaginationResponsePayload(paginationResponsePayload, content, totalMatchedRecords, totalPages);
             return paginationResponsePayload;
         }
         return null;
+    }
+
+    private static int getTotalPages(Pageable pageable, long totalMatchedRecords) {
+        return (int) Math.ceil((float) totalMatchedRecords / pageable.getPageSize());
     }
 
     private static void prepareContentList(List<Map<String, Object>> content, List<FormDataDefinition> formDataDefinitionsList)
@@ -751,7 +754,7 @@ public class FormDataServiceImpl implements FormDataService
             query.with(Sort.by(Sort.Direction.fromString(sortOrder), sortBy));
         }
         query.with(Sort.by(Sort.Direction.DESC,CREATED_ON));
-        formDataDefinitionsList = mongoTemplate.find(query, FormDataDefinition.class, TP_RUNTIME_FORM_DATA + formId);
+        formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
         prepareFormDataResponseSchemaList(formDataResponseSchemasList, formDataDefinitionsList);
         return formDataResponseSchemasList;
     }
@@ -770,7 +773,7 @@ public class FormDataServiceImpl implements FormDataService
                     Criteria.where(UPDATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
                     Criteria.where(UPDATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
             query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
-            formDataDefinitionsList = mongoTemplate.find(query, FormDataDefinition.class, TP_RUNTIME_FORM_DATA + formId);
+            formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
             prepareFormDataResponseSchemaList(formDataResponseSchemasList, formDataDefinitionsList);
             return formDataResponseSchemasList;
         }
@@ -923,15 +926,12 @@ public class FormDataServiceImpl implements FormDataService
                 Criteria.where(UPDATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
                 Criteria.where(UPDATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
         query.with(Sort.by(Sort.Direction.fromString(sortOrder), sortBy));
-        long totalMatchedRecords=mongoTemplate.count(query, TP_RUNTIME_FORM_DATA + formId);
+        long totalMatchedRecords= getCount(formId, query);
         query.with(pageable);
-        List<FormDataDefinition> formDataDefinitionsList = mongoTemplate.find(query, FormDataDefinition.class, TP_RUNTIME_FORM_DATA + formId);
-        int totalPages = (int) Math.ceil((float) (totalMatchedRecords) / pageable.getPageSize());
+        List<FormDataDefinition> formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
+        int totalPages = getTotalPages(pageable, totalMatchedRecords);
         prepareContentList(content, formDataDefinitionsList);
-        paginationResponsePayload.setContent(content);
-        paginationResponsePayload.setTotalPages(totalPages);
-        paginationResponsePayload.setTotalElements(totalMatchedRecords);
-        paginationResponsePayload.setNumberOfElements(content.size());
+        setPaginationResponsePayload(paginationResponsePayload, content, totalMatchedRecords, totalPages);
         return paginationResponsePayload;
     }
 
@@ -968,11 +968,8 @@ public class FormDataServiceImpl implements FormDataService
             metaData = getMetaDataMap(metaDataList, metaData);
             long totalMatchedRecords;
             totalMatchedRecords = extractCountOfMatchedRecords(metaData);
-            int totalPages = (int) Math.ceil((float) (totalMatchedRecords) / pageable.getPageSize());
-            paginationResponsePayload.setContent(content);
-            paginationResponsePayload.setTotalPages(totalPages);
-            paginationResponsePayload.setTotalElements(totalMatchedRecords);
-            paginationResponsePayload.setNumberOfElements(content.size());
+            int totalPages = getTotalPages(pageable, totalMatchedRecords);
+            setPaginationResponsePayload(paginationResponsePayload, content, totalMatchedRecords, totalPages);
             return paginationResponsePayload;
         }
         return null;
@@ -996,13 +993,9 @@ public class FormDataServiceImpl implements FormDataService
             prepareContentListFromData(content, dataList);
             Map<String,Object> metaData = new HashMap<>();
             metaData = getMetaDataMap(metaDataList, metaData);
-            long totalMatchedRecords;
-            totalMatchedRecords = extractCountOfMatchedRecords(metaData);
-            int totalPages = (int) Math.ceil((float)(totalMatchedRecords) / pageable.getPageSize());
-            paginationResponsePayload.setContent(content);
-            paginationResponsePayload.setTotalPages(totalPages);
-            paginationResponsePayload.setTotalElements(totalMatchedRecords);
-            paginationResponsePayload.setNumberOfElements(content.size());
+            long totalMatchedRecords = extractCountOfMatchedRecords(metaData);
+            int totalPages = getTotalPages(pageable, totalMatchedRecords);
+            setPaginationResponsePayload(paginationResponsePayload, content, totalMatchedRecords, totalPages);
             return paginationResponsePayload;
         }
         return null;
@@ -1033,8 +1026,7 @@ public class FormDataServiceImpl implements FormDataService
         WebClient webClient=checkEmptyToken(token);
         try
         {
-            String response = EMPTY_STRING;
-            response = getString(formId, q, sortBy, sortOrder, pageable, webClient, response);
+            String response = getString(formId, q, sortBy, sortOrder, pageable, webClient);
             Map<String,Object> responseMap= getResponseMap(response);
             Map<String,Object> dataMap= getDataMap(responseMap);
             contentList = getContentList(dataMap);
@@ -1052,12 +1044,13 @@ public class FormDataServiceImpl implements FormDataService
         return paginationResponsePayload;
     }
 
-    private String getString(String formId, String q, String sortBy, String sortOrder, Pageable pageable, WebClient webClient, String response)
+    private String getString(String formId, String q, String sortBy, String sortOrder, Pageable pageable, WebClient webClient)
     {
+        String response=EMPTY_STRING;
         if (isEmpty(q) && isBlank(sortBy) && isBlank(sortOrder))
         {
-                response =webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_PAGE+ pageable.getPageNumber()+AND_SIZE+ pageable.getPageSize()+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA + formId +AND_SOURCE+elasticSource,GET,null);
-                logger.info(response);
+            response =webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_PAGE+ pageable.getPageNumber()+AND_SIZE+ pageable.getPageSize()+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA + formId +AND_SOURCE+elasticSource,GET,null);
+            logger.info(response);
         }
         if(isEmpty(q)&&isNotBlank(sortBy)&&isNotBlank(sortOrder))
         {
@@ -1109,20 +1102,17 @@ public class FormDataServiceImpl implements FormDataService
             metaData = getMetaDataMap(metaDataList, metaData);
             long totalMatchedRecords;
             totalMatchedRecords = extractCountOfMatchedRecords(metaData);
-            int totalPages = (int) Math.ceil((float) (totalMatchedRecords) / pageable.getPageSize());
-            paginationResponsePayload.setContent(content);
-            paginationResponsePayload.setTotalPages(totalPages);
-            paginationResponsePayload.setTotalElements(totalMatchedRecords);
-            paginationResponsePayload.setNumberOfElements(content.size());
+            int totalPages = getTotalPages(pageable, totalMatchedRecords);
+            setPaginationResponsePayload(paginationResponsePayload, content, totalMatchedRecords, totalPages);
             return paginationResponsePayload;
         }
         Query query = new Query();
         List<FormDataDefinition> formDataDefinitionsList;
         query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
-        long totalMatchedRecords=mongoTemplate.count(query, TP_RUNTIME_FORM_DATA + formId);
+        long totalMatchedRecords= getCount(formId, query);
         query.with(pageable);
-        formDataDefinitionsList = mongoTemplate.find(query, FormDataDefinition.class, TP_RUNTIME_FORM_DATA + formId);
-        int totalPages = (int) Math.ceil((float) (totalMatchedRecords) / pageable.getPageSize());
+        formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
+        int totalPages = getTotalPages(pageable, totalMatchedRecords);
         prepareContentList(content, formDataDefinitionsList);
         paginationResponsePayload.setPage(0);
         paginationResponsePayload.setContent(content);
@@ -1131,6 +1121,13 @@ public class FormDataServiceImpl implements FormDataService
         paginationResponsePayload.setTotalElements(totalMatchedRecords);
         paginationResponsePayload.setNumberOfElements(content.size());
         return paginationResponsePayload;
+    }
+
+    private static void setPaginationResponsePayload(PaginationResponsePayload paginationResponsePayload, List<Map<String, Object>> content, long totalMatchedRecords, int totalPages) {
+        paginationResponsePayload.setContent(content);
+        paginationResponsePayload.setTotalPages(totalPages);
+        paginationResponsePayload.setTotalElements(totalMatchedRecords);
+        paginationResponsePayload.setNumberOfElements(content.size());
     }
 
     private PaginationResponsePayload getPaginationResponsePayload(String formId, PaginationResponsePayload paginationResponsePayload)

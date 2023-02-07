@@ -18,7 +18,6 @@ import com.techsophy.tsf.runtime.form.service.FormDataAuditService;
 import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -26,11 +25,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
+
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.*;
+
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @Service
 @AllArgsConstructor(onConstructor_ = {@Autowired})
@@ -47,11 +49,11 @@ public class FormDataAuditServiceImpl implements FormDataAuditService
     public FormDataAuditResponse saveFormDataAudit(FormDataAuditSchema formDataAuditSchema) throws JsonProcessingException
     {
         Map<String, Object> loggedInUserDetails = userDetails.getUserDetails().get(0);
-        if (StringUtils.isEmpty(String.valueOf(loggedInUserDetails.get(ID))))
+        if (isEmpty(String.valueOf(loggedInUserDetails.get(ID))))
         {
             throw new UserDetailsIdNotFoundException(LOGGED_IN_USER_ID_NOT_FOUND,globalMessageSource.get(LOGGED_IN_USER_ID_NOT_FOUND, loggedInUserDetails.get(ID).toString()));
         }
-        if(StringUtils.isEmpty(formDataAuditSchema.getFormId()))
+        if(isEmpty(formDataAuditSchema.getFormId()))
         {
             throw new InvalidInputException(FORM_ID_CANNOT_BE_EMPTY,globalMessageSource.get(FORM_ID_CANNOT_BE_EMPTY,formDataAuditSchema.getFormId()));
         }

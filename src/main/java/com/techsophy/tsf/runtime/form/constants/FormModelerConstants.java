@@ -360,7 +360,6 @@ public class FormModelerConstants
            AS_STRING_REFERENCE +
            CLOSING_BRACKET_NEXT_LINE +
            "}";
-
     public static final String MONGO_AGGREGATION_STAGE_PIPELINE_5="{\n" +
            LOOKUP +
             FROM_MATCH +
@@ -431,7 +430,6 @@ public class FormModelerConstants
           AS_STRING_REFERENCE +
           CLOSING_BRACKET_NEXT_LINE +
            "}";
-
     public static final String CONTAINS_ATLEAST_ONE_SPECIAL_CHARACTER =".*[!@#$%^&*()_+=]+.*";
 
     //Constants for Requestmapping
@@ -473,9 +471,7 @@ public class FormModelerConstants
     public static final String LOGGED_USER = "loggeduser";
     public static final String TOKEN = "token";
 
-
     /*MainMethodConstants*/
-
     public static final String PACKAGE_NAME = "com.techsophy.*";
     public static final String MULTI_TENANCY_PACKAGE_NAME = "com.techsophy.multitenancy.mongo.*";
     public static final String VERSION_1 = "1.0";

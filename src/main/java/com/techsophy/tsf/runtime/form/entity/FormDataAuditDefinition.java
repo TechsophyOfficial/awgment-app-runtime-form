@@ -1,12 +1,11 @@
 package com.techsophy.tsf.runtime.form.entity;
 
 import lombok.*;
-
 import javax.validation.constraints.NotBlank;
 import java.util.Map;
-
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.FORM_ID_NOT_BLANK;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @With
 @NoArgsConstructor

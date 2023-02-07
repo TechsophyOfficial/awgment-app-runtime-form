@@ -12,7 +12,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-
 import java.io.IOException;
 import java.io.InputStream;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
@@ -20,9 +19,11 @@ import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 @ChangeUnit(id=EDIT_GROUP_FORM, order =ORDER_4,systemVersion=SYSTEM_VERSION_1)
 @AllArgsConstructor(onConstructor_ = {@Autowired})
 @Slf4j
-public class EditGroup {
+public class EditGroup
+{
     private  final MongoTemplate template;
     private final ObjectMapper objectMapper;
+
     @Execution
     public void changeSetFormDefinition() throws IOException
     {
@@ -36,6 +37,7 @@ public class EditGroup {
             template.save(formDefinition1, TP_FORM_DEFINITION_COLLECTION);
         }
     }
+
     @RollbackExecution
     public void rollback()
     {
