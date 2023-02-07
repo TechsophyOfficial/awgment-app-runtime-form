@@ -94,34 +94,31 @@ public class FormDataServiceImpl implements FormDataService
             throw new InvalidInputException(String.valueOf(completeMessage),String.valueOf(completeMessage));
         });
         String uniqueDocumentId = extractUniqueDocumentId(formDataSchema);
-        FormDataDefinition formDataDefinition=objectMapper.convertValue(formDataSchema,FormDataDefinition.class);
-        formDataDefinition.setUpdatedById(String.valueOf(loggedInUserId));
-        formDataDefinition.setUpdatedOn(String.valueOf(Date.from(Instant.now())));
-         if (mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formId))
+        FormDataDefinition formDataDefinition = getFormDataDefinition(formDataSchema);
+        setUpdateAudit(loggedInUserId, formDataDefinition);
+        if (mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formId))
             {
                 if (uniqueDocumentId==null|| isEmpty(uniqueDocumentId))
                 {
                     id = getNextId();
                     formDataDefinition.setId(String.valueOf(id));
                     version = 1;
-                    formDataDefinition.setVersion(version);
-                    setAudit(loggedInUserId, formDataDefinition);
-                    mongoTemplate.save(formDataDefinition, TP_RUNTIME_FORM_DATA +formId);
-                    FormDataAuditSchema formDataAuditSchema = new FormDataAuditSchema(String.valueOf(getNextId()),String.valueOf(formDataDefinition.getId()),formId,version,
-                            formDataDefinition.getFormData(),formDataDefinition.getFormMetaData());
+                    setVersion(formDataDefinition, version);
+                    setCreatedAudit(loggedInUserId, formDataDefinition);
+                    saveToMongo(formId, formDataDefinition);
+                    FormDataAuditSchema formDataAuditSchema = getFormDataAuditSchema(formId, version, formDataDefinition);
                     this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
                 }
                 else
                 {
                     Bson filter=Filters.eq(UNDERSCORE_ID,uniqueDocumentId);
                     version= (int) mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).find(filter).iterator().next().get(VERSION);
-                    version=version+1;
+                    version = updateVersion(version);
                     id=BigInteger.valueOf(Long.parseLong(uniqueDocumentId));
                     mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).updateOne(filter,Updates.combine(
                             Updates.set(FORM_DATA,formDataDefinition.getFormData()),Updates.set(VERSION,version)));
-                    FormDataAuditSchema formDataAuditSchema = new FormDataAuditSchema(String.valueOf(getNextId()),String.valueOf(formDataDefinition.getId()),formId,1,
-                                  formDataDefinition.getFormData(),formDataDefinition.getFormMetaData());
-                            this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
+                    FormDataAuditSchema formDataAuditSchema = getFormDataAuditSchema(formId, 1, formDataDefinition);
+                    this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
                 }
             }
             else
@@ -133,9 +130,9 @@ public class FormDataServiceImpl implements FormDataService
                 id = getNextId();
                 formDataDefinition.setId(String.valueOf(id));
                 version = 1;
-                formDataDefinition.setVersion(version);
-                setAudit(loggedInUserId, formDataDefinition);
-                mongoTemplate.save(formDataDefinition, TP_RUNTIME_FORM_DATA +formId);
+                setVersion(formDataDefinition, version);
+                setCreatedAudit(loggedInUserId, formDataDefinition);
+                saveToMongo(formId, formDataDefinition);
                 FormDataAuditSchema formDataAuditSchema = new
                         FormDataAuditSchema(String.valueOf(getNextId()),String.valueOf(formDataDefinition.getId()),formId,version,
                         formDataSchema.getFormData(),formDataSchema.getFormMetaData());
@@ -150,7 +147,27 @@ public class FormDataServiceImpl implements FormDataService
         return new FormDataResponse(String.valueOf(id),version);
     }
 
-    private static void setAudit(BigInteger loggedInUserId, FormDataDefinition formDataDefinition) {
+    private FormDataAuditSchema getFormDataAuditSchema(String formId, int version, FormDataDefinition formDataDefinition) {
+       return new FormDataAuditSchema(String.valueOf(getNextId()),String.valueOf(formDataDefinition.getId()), formId, version,
+                formDataDefinition.getFormData(), formDataDefinition.getFormMetaData());
+    }
+
+    private void saveToMongo(String formId, FormDataDefinition formDataDefinition) {
+        mongoTemplate.save(formDataDefinition, TP_RUNTIME_FORM_DATA + formId);
+    }
+
+    private static void setUpdateAudit(BigInteger loggedInUserId, FormDataDefinition formDataDefinition) {
+        formDataDefinition.setUpdatedById(String.valueOf(loggedInUserId));
+        formDataDefinition.setUpdatedOn(String.valueOf(Date.from(Instant.now())));
+    }
+
+    private FormDataDefinition getFormDataDefinition(FormDataSchema formDataSchema)
+    {
+      return objectMapper.convertValue(formDataSchema,FormDataDefinition.class);
+    }
+
+    private static void setCreatedAudit(BigInteger loggedInUserId, FormDataDefinition formDataDefinition)
+    {
         formDataDefinition.setCreatedById(String.valueOf(loggedInUserId));
         formDataDefinition.setCreatedOn(String.valueOf(Date.from(Instant.now())));
     }
@@ -171,13 +188,22 @@ public class FormDataServiceImpl implements FormDataService
             checkResponseMapData(uniqueDocumentId, responseMap);
             Map<String,Object> dataMap= getMap(responseMap);
             int version= Integer.parseInt(String.valueOf(dataMap.get(VERSION)));
-            version=version+1;
-            formDataDefinition.setVersion(version);
+            version = updateVersion(version);
+            setVersion(formDataDefinition, version);
             formDataDefinition.setId(uniqueDocumentId);
             formDataDefinition.setCreatedById(String.valueOf(dataMap.get(CREATED_BY_ID)));
             formDataDefinition.setCreatedOn(String.valueOf(dataMap.get(CREATED_ON)));
             updateElasticDocument(webClient,formDataDefinition, responseMap);
         }
+    }
+
+    private static int updateVersion(int version) {
+        version = version +1;
+        return version;
+    }
+
+    private static void setVersion(FormDataDefinition formDataDefinition, int version) {
+        formDataDefinition.setVersion(version);
     }
 
     private LinkedHashMap<String,Object> getMap(Map<String, Object> responseMap)
@@ -270,12 +296,16 @@ public class FormDataServiceImpl implements FormDataService
 
     private static String extractUniqueDocumentId(FormDataSchema formDataSchema)
     {
-        String uniqueDocumentId = formDataSchema.getId();
+        String uniqueDocumentId = getUniqueDocumentId(formDataSchema);
         if (isEmpty(uniqueDocumentId)&&formDataSchema.getFormData().get(ID)!=null)
         {
             uniqueDocumentId = String.valueOf(formDataSchema.getFormData().get(ID));
         }
         return uniqueDocumentId;
+    }
+
+    private static String getUniqueDocumentId(FormDataSchema formDataSchema) {
+        return formDataSchema.getId();
     }
 
     private void checkUserDetailsPresentOrNot(UserDetails userDetails) throws JsonProcessingException
@@ -291,7 +321,7 @@ public class FormDataServiceImpl implements FormDataService
     public FormDataResponse updateFormData(FormDataSchema formDataSchema) throws JsonProcessingException
     {
         String formId=formDataSchema.getFormId();
-        String id=formDataSchema.getId();
+        String id = getUniqueDocumentId(formDataSchema);
         checkIfFormIdIsEmpty(formDataSchema, formId);
         checkIfIdIsEmpty(id);
         checkMongoCollectionIfExistsOrNot(formDataSchema.getFormId());
@@ -312,8 +342,8 @@ public class FormDataServiceImpl implements FormDataService
         {
             version= (int) document.get(VERSION);
         }
-        version=version+1;
-        formDataDefinition.setVersion(version);
+        version = updateVersion(version);
+        setVersion(formDataDefinition, version);
         formDataDefinition.setId(id);
         formDataDefinition.setFormId(formId);
         if(document.get(FORM_DATA)!=null)
@@ -340,9 +370,7 @@ public class FormDataServiceImpl implements FormDataService
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).updateOne(filter,Updates.combine(
                 Updates.set(FORM_DATA,formData),Updates.set(VERSION,version),Updates.set(FORM_META_DATA,formMetaData)));
-        FormDataAuditSchema formDataAuditSchema = new
-                FormDataAuditSchema(String.valueOf(getNextId()),String.valueOf(formDataDefinition.getId()),formId,version,
-                formDataDefinition.getFormData(),formDataDefinition.getFormMetaData());
+        FormDataAuditSchema formDataAuditSchema = getFormDataAuditSchema(formId, version, formDataDefinition);
         this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
         if (elasticEnable)
         {

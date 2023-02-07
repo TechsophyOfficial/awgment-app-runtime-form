@@ -21,7 +21,7 @@ import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 @Slf4j
 public class EditUser
 {
-    private  final MongoTemplate mongoTemplate;
+    private  final MongoTemplate mongo;
     private final ObjectMapper objectMapper;
     @Execution
     public void changeSetFormDefinition() throws IOException
@@ -32,9 +32,9 @@ public class EditUser
         String id = String.valueOf(formDefinition1.getId());
         Query query = new Query();
         query.addCriteria(Criteria.where(UNDERSCORE_ID).is(id));
-        if(mongoTemplate.find(query,FormDefinition.class).isEmpty())
+        if(mongo.find(query,FormDefinition.class).isEmpty())
         {
-            mongoTemplate.save(formDefinition1, TP_FORM_DEFINITION_COLLECTION);
+            mongo.save(formDefinition1, TP_FORM_DEFINITION_COLLECTION);
         }
     }
     @RollbackExecution
