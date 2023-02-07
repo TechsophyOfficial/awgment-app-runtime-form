@@ -101,14 +101,13 @@ public class FormDataServiceImpl implements FormDataService
             {
                 if (uniqueDocumentId==null|| isEmpty(uniqueDocumentId))
                 {
-                    id=idGenerator.nextId();
+                    id = getNextId();
                     formDataDefinition.setId(String.valueOf(id));
                     version = 1;
                     formDataDefinition.setVersion(version);
-                    formDataDefinition.setCreatedById(String.valueOf(loggedInUserId));
-                    formDataDefinition.setCreatedOn(String.valueOf(Date.from(Instant.now())));
+                    setAudit(loggedInUserId, formDataDefinition);
                     mongoTemplate.save(formDataDefinition, TP_RUNTIME_FORM_DATA +formId);
-                    FormDataAuditSchema formDataAuditSchema = new FormDataAuditSchema(String.valueOf(idGenerator.nextId()),String.valueOf(formDataDefinition.getId()),formId,version,
+                    FormDataAuditSchema formDataAuditSchema = new FormDataAuditSchema(String.valueOf(getNextId()),String.valueOf(formDataDefinition.getId()),formId,version,
                             formDataDefinition.getFormData(),formDataDefinition.getFormMetaData());
                     this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
                 }
@@ -120,7 +119,7 @@ public class FormDataServiceImpl implements FormDataService
                     id=BigInteger.valueOf(Long.parseLong(uniqueDocumentId));
                     mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).updateOne(filter,Updates.combine(
                             Updates.set(FORM_DATA,formDataDefinition.getFormData()),Updates.set(VERSION,version)));
-                    FormDataAuditSchema formDataAuditSchema = new FormDataAuditSchema(String.valueOf(idGenerator.nextId()),String.valueOf(formDataDefinition.getId()),formId,1,
+                    FormDataAuditSchema formDataAuditSchema = new FormDataAuditSchema(String.valueOf(getNextId()),String.valueOf(formDataDefinition.getId()),formId,1,
                                   formDataDefinition.getFormData(),formDataDefinition.getFormMetaData());
                             this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
                 }
@@ -131,15 +130,14 @@ public class FormDataServiceImpl implements FormDataService
                 {
                     throw new InvalidInputException(PAYLOAD_SHOULD_NOT_HAVE_ID,globalMessageSource.get(PAYLOAD_SHOULD_NOT_HAVE_ID));
                 }
-                id=idGenerator.nextId();
+                id = getNextId();
                 formDataDefinition.setId(String.valueOf(id));
                 version = 1;
                 formDataDefinition.setVersion(version);
-                formDataDefinition.setCreatedById(String.valueOf(loggedInUserId));
-                formDataDefinition.setCreatedOn(String.valueOf(Date.from(Instant.now())));
+                setAudit(loggedInUserId, formDataDefinition);
                 mongoTemplate.save(formDataDefinition, TP_RUNTIME_FORM_DATA +formId);
                 FormDataAuditSchema formDataAuditSchema = new
-                        FormDataAuditSchema(String.valueOf(idGenerator.nextId()),String.valueOf(formDataDefinition.getId()),formId,version,
+                        FormDataAuditSchema(String.valueOf(getNextId()),String.valueOf(formDataDefinition.getId()),formId,version,
                         formDataSchema.getFormData(),formDataSchema.getFormMetaData());
                 this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
             }
@@ -150,6 +148,18 @@ public class FormDataServiceImpl implements FormDataService
                 updateFormDataToElastic(webClient,uniqueDocumentId,formDataDefinition);
             }
         return new FormDataResponse(String.valueOf(id),version);
+    }
+
+    private static void setAudit(BigInteger loggedInUserId, FormDataDefinition formDataDefinition) {
+        formDataDefinition.setCreatedById(String.valueOf(loggedInUserId));
+        formDataDefinition.setCreatedOn(String.valueOf(Date.from(Instant.now())));
+    }
+
+    private BigInteger getNextId()
+    {
+        BigInteger id;
+        id=idGenerator.nextId();
+        return id;
     }
 
     private void updateFormDataToElastic(WebClient webClient,String uniqueDocumentId,FormDataDefinition formDataDefinition) throws JsonProcessingException
@@ -331,7 +341,7 @@ public class FormDataServiceImpl implements FormDataService
         mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).updateOne(filter,Updates.combine(
                 Updates.set(FORM_DATA,formData),Updates.set(VERSION,version),Updates.set(FORM_META_DATA,formMetaData)));
         FormDataAuditSchema formDataAuditSchema = new
-                FormDataAuditSchema(String.valueOf(idGenerator.nextId()),String.valueOf(formDataDefinition.getId()),formId,version,
+                FormDataAuditSchema(String.valueOf(getNextId()),String.valueOf(formDataDefinition.getId()),formId,version,
                 formDataDefinition.getFormData(),formDataDefinition.getFormMetaData());
         this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
         if (elasticEnable)
@@ -443,7 +453,7 @@ public class FormDataServiceImpl implements FormDataService
         List<FormDataResponseSchema> formDataResponseSchemasList = new ArrayList<>();
         if (isEmpty(sortBy) && isEmpty(sortOrder))
         {
-            query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
+            setQuery(query);
             List<FormDataDefinition> formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
             prepareFormDataResponseSchemaList(formDataResponseSchemasList, formDataDefinitionsList);
         }
@@ -662,7 +672,7 @@ public class FormDataServiceImpl implements FormDataService
         {
             Query query=new Query();
             query.addCriteria(criteria);
-            query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
+            setQuery(query);
             long totalMatchedRecords= getCount(formId, query);
             query.with(pageable);
             List<FormDataDefinition> formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
@@ -753,7 +763,7 @@ public class FormDataServiceImpl implements FormDataService
         {
             query.with(Sort.by(Sort.Direction.fromString(sortOrder), sortBy));
         }
-        query.with(Sort.by(Sort.Direction.DESC,CREATED_ON));
+        setQuery(query);
         formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
         prepareFormDataResponseSchemaList(formDataResponseSchemasList, formDataDefinitionsList);
         return formDataResponseSchemasList;
@@ -772,7 +782,7 @@ public class FormDataServiceImpl implements FormDataService
                     Criteria.where(UPDATED_ON).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
                     Criteria.where(UPDATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
                     Criteria.where(UPDATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
-            query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
+            setQuery(query);
             formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
             prepareFormDataResponseSchemaList(formDataResponseSchemasList, formDataDefinitionsList);
             return formDataResponseSchemasList;
@@ -1022,8 +1032,7 @@ public class FormDataServiceImpl implements FormDataService
     {
         List<Map<String,Object>> contentList;
         checkIfBothSortByAndSortOrderGivenAsInput(sortBy,sortOrder);
-        String token = tokenUtils.getTokenFromContext();
-        WebClient webClient=checkEmptyToken(token);
+        WebClient webClient=checkEmptyToken( tokenUtils.getTokenFromContext());
         try
         {
             String response = getString(formId, q, sortBy, sortOrder, pageable, webClient);
@@ -1078,9 +1087,7 @@ public class FormDataServiceImpl implements FormDataService
         }
         checkMongoCollectionIfExistsOrNot(formId);
         List<Map<String,Object>> content = new ArrayList<>();
-        Pageable pageable = PageRequest.of(0, defaultPageLimit);
-        paginationResponsePayload.setPage(pageable.getPageNumber());
-        paginationResponsePayload.setSize(pageable.getPageSize());
+        Pageable pageable = getPageable(paginationResponsePayload);
         if (isNotEmpty(relations))
         {
             ArrayList<String> mappedArrayOfDocumentsName=new ArrayList<>();
@@ -1108,22 +1115,32 @@ public class FormDataServiceImpl implements FormDataService
         }
         Query query = new Query();
         List<FormDataDefinition> formDataDefinitionsList;
-        query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
+        setQuery(query);
         long totalMatchedRecords= getCount(formId, query);
         query.with(pageable);
         formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
         int totalPages = getTotalPages(pageable, totalMatchedRecords);
         prepareContentList(content, formDataDefinitionsList);
         paginationResponsePayload.setPage(0);
-        paginationResponsePayload.setContent(content);
         paginationResponsePayload.setSize(defaultPageLimit);
-        paginationResponsePayload.setTotalPages(totalPages);
-        paginationResponsePayload.setTotalElements(totalMatchedRecords);
-        paginationResponsePayload.setNumberOfElements(content.size());
+        setPaginationResponsePayload(paginationResponsePayload, content, totalMatchedRecords, totalPages);
         return paginationResponsePayload;
     }
 
-    private static void setPaginationResponsePayload(PaginationResponsePayload paginationResponsePayload, List<Map<String, Object>> content, long totalMatchedRecords, int totalPages) {
+    private static void setQuery(Query query) {
+        query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
+    }
+
+    private Pageable getPageable(PaginationResponsePayload paginationResponsePayload)
+    {
+        Pageable pageable = PageRequest.of(0, defaultPageLimit);
+        paginationResponsePayload.setPage(pageable.getPageNumber());
+        paginationResponsePayload.setSize(pageable.getPageSize());
+        return pageable;
+    }
+
+    private static void setPaginationResponsePayload(PaginationResponsePayload paginationResponsePayload, List<Map<String, Object>> content, long totalMatchedRecords, int totalPages)
+    {
         paginationResponsePayload.setContent(content);
         paginationResponsePayload.setTotalPages(totalPages);
         paginationResponsePayload.setTotalElements(totalMatchedRecords);

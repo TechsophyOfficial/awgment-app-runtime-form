@@ -21,7 +21,7 @@ import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 @Slf4j
 public class EditGroup
 {
-    private  final MongoTemplate template;
+    private  final MongoTemplate mongoTemplate;
     private final ObjectMapper objectMapper;
 
     @Execution
@@ -33,8 +33,8 @@ public class EditGroup
         String id = String.valueOf(formDefinition1.getId());
         Query query = new Query();
         query.addCriteria(Criteria.where(UNDERSCORE_ID).is(id));
-        if(template.find(query,FormDefinition.class).isEmpty()) {
-            template.save(formDefinition1, TP_FORM_DEFINITION_COLLECTION);
+        if(mongoTemplate.find(query,FormDefinition.class).isEmpty()) {
+            mongoTemplate.save(formDefinition1, TP_FORM_DEFINITION_COLLECTION);
         }
     }
 
