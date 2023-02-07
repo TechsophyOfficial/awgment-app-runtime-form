@@ -149,8 +149,7 @@ public class FormModelerConstants
     public static final String DATAGRID= "datagrid";
 
     //FormDataService
-    public static final String TP_RUNTIME_FORM_DATA_ ="tp_runtime_form_data_";
-    public static final String TP_RUNTIME_FORM_DATA =TP_RUNTIME_FORM_DATA_;
+    public static final String TP_RUNTIME_FORM_DATA ="tp_runtime_form_data_";
     public static final String FORM_DATA="formData";
     public static final String SPACE=" ";
     public static final String USER_DEFINITION_FIRST_NAME="firstName";
@@ -159,7 +158,7 @@ public class FormModelerConstants
     public static final String CREATED_BY_NAME="createdByName";
     public static final String UPDATED_BY_ID="updatedById";
     public static final String UPDATED_BY_NAME="updatedByName";
-    public static final String FORM_META_DATA="formMetadata";
+    public static final String FORM_META_DATA="formMetaData";
     public static final String  DOT=".";
     public static final String FORM_DATA_MANDATORY_FIELDS_SUCCESS="Form data contains all mandatory fields";
     public static final String COMMA=",";
@@ -197,218 +196,240 @@ public class FormModelerConstants
     public static final String MAX_WORDS="maxWords";
     public static final String COUNT_WORDS="\\s+";
     public static final String METADATA="metaData";
+    public static final String LOOKUP="    $lookup: {\n";
+    public static final String FROM_MATCH="        from: '%s',\n";
+    public static final String LET="        'let': {\n";
+    public static final String LOCAL_ID="            localId: '$_id'\n";
+    public static final String CLOSING_BRACKET="        },\n";
+    public static final String PIPELINE="        pipeline: [{\n";
+    public static final String MATCH="            $match: {\n";
+    public static final String EXPR="                $expr: {\n";
+    public static final String OR_CONDITION="                    $or: [{\n";
+    public static final String EQ_EXPRESSION="                            $eq: [\n";
+    public static final String DOLLAR_LOCALID="                                '$$localId',\n";
+    public static final String  NEXT_LINE="                                {\n";
+    public static final String CONVERT="                                    $convert: {\n";
+    public static final String INPUT="                                        input: '$%s',\n";
+    public static final String TO_LONG="                                        to: 'long',\n";
+    public static final String ON_ERROR="                                        onError: '0',\n";
+    public static final String ON_NULL="                                        onNull: '0'\n";
+    public static final String CLOSING_BRACKET_NEXT_LINE="                                    }\n";
+    public static final String CLOSE_ARRAY="                            ]\n";
+    public static final String CLOSE_BRACKET_COMMA_NEXT_LINE="                        },\n";
+    public static final String OPENING_BRACKET_NEXT_LINE="                        {\n";
+    public static final String DOLLAR_STRING_REF_NEXT_LINE="                                '$%s'\n";
+    public static final String CLOSE_MAP_ARRAY_NEXT_LINE="        }],\n";
+    public static final String AS_STRING_REFERENCE="        as: '%s'\n";
     public static final String MONGO_AGGREGATION_STAGE_PIPELINE_1= "{\n" +
-        "    $lookup: {\n" +
-        "        from: '%s',\n" +
-        "        'let': {\n" +
-        "            localId: '$_id'\n" +
-        "        },\n" +
-        "        pipeline: [{\n" +
-        "            $match: {\n" +
-        "                $expr: {\n" +
-        "                    $or: [{\n" +
-        "                            $eq: [\n" +
-        "                                '$$localId',\n" +
-        "                                {\n" +
-        "                                    $convert: {\n" +
-        "                                        input: '$%s',\n" +
-        "                                        to: 'long',\n" +
-        "                                        onError: '0',\n" +
-        "                                        onNull: '0'\n" +
-        "                                    }\n" +
-        "                                }\n" +
-        "                            ]\n" +
-        "                        },\n" +
-        "                        {\n" +
-        "                            $eq: [\n" +
-        "                                '$$localId',\n" +
-        "                                '$%s'\n" +
-        "                            ]\n" +
-        "                        }\n" +
-        "                    ]\n" +
-        "                }\n" +
-        "            }\n" +
-        "        }],\n" +
-        "        as: '%s'\n" +
-        "    }\n" +
+         LOOKUP+
+            FROM_MATCH +
+         LET+
+            LOCAL_ID +
+            CLOSING_BRACKET+
+            PIPELINE +
+            MATCH +
+            EXPR+
+            OR_CONDITION+
+         EQ_EXPRESSION+
+        DOLLAR_LOCALID +
+            NEXT_LINE +
+            CONVERT+
+            INPUT+
+            TO_LONG +
+            ON_ERROR +
+            ON_NULL+
+            CLOSING_BRACKET_NEXT_LINE+
+            CLOSING_BRACKET_NEXT_LINE +
+            CLOSE_ARRAY+
+            CLOSE_BRACKET_COMMA_NEXT_LINE+
+            OPENING_BRACKET_NEXT_LINE +
+        EQ_EXPRESSION +
+        DOLLAR_LOCALID +
+            DOLLAR_STRING_REF_NEXT_LINE+
+        CLOSE_ARRAY +
+        CLOSING_BRACKET_NEXT_LINE +
+        CLOSE_ARRAY +
+        CLOSING_BRACKET_NEXT_LINE +
+            CLOSING_BRACKET_NEXT_LINE +
+            CLOSE_MAP_ARRAY_NEXT_LINE+
+            AS_STRING_REFERENCE +
+        CLOSING_BRACKET_NEXT_LINE +
         "}";
     public static final String MONGO_AGGREGATION_STAGE_PIPELINE_2 ="{\n" +
-            "    $lookup: {\n" +
-            "        from: '%s',\n" +
-            "        'let': {\n" +
-            "            localId: '$_id'\n" +
-            "        },\n" +
-            "        pipeline: [{\n" +
-            "            $match: {\n" +
-            "                $expr: {\n" +
-            "                    $or: [{\n" +
-            "                            $eq: [\n" +
-            "                                '$$localId',\n" +
-            "                                {\n" +
-            "                                    $convert: {\n" +
-            "                                        input: '$%s',\n" +
-            "                                        to: 'long',\n" +
-            "                                        onError: '0',\n" +
-            "                                        onNull: '0'\n" +
-            "                                    }\n" +
-            "                                }\n" +
-            "                            ]\n" +
-            "                        },\n" +
-            "                        {\n" +
-            "                            $eq: [\n" +
-            "                                '$$localId',\n" +
-            "                                '$%s'\n" +
-            "                            ]\n" +
-            "                        }\n" +
-            "                    ]\n" +
-            "                }\n" +
-            "            }\n" +
-            "        }],\n" +
-            "        as: '%s'\n" +
-            "    }\n" +
+            LOOKUP +
+            FROM_MATCH +
+            LET +
+            LOCAL_ID +
+            CLOSING_BRACKET +
+            PIPELINE +
+            MATCH +
+            EXPR +
+            OR_CONDITION +
+            EQ_EXPRESSION +
+            DOLLAR_LOCALID +
+            NEXT_LINE +
+            CONVERT +
+            INPUT +
+            TO_LONG +
+            ON_ERROR +
+            ON_NULL +
+            CLOSING_BRACKET_NEXT_LINE +
+            CLOSING_BRACKET_NEXT_LINE +
+            CLOSE_ARRAY +
+            CLOSE_BRACKET_COMMA_NEXT_LINE+
+            OPENING_BRACKET_NEXT_LINE +
+            EQ_EXPRESSION +
+            DOLLAR_LOCALID +
+            DOLLAR_STRING_REF_NEXT_LINE +
+            CLOSE_ARRAY +
+            CLOSING_BRACKET_NEXT_LINE +
+            CLOSE_ARRAY +
+            CLOSING_BRACKET_NEXT_LINE +
+            CLOSING_BRACKET_NEXT_LINE +
+            CLOSE_MAP_ARRAY_NEXT_LINE +
+            AS_STRING_REFERENCE +
+            CLOSING_BRACKET_NEXT_LINE +
             "}";
    public static final String MONGO_AGGREGATION_STAGE_PIPELINE_3= "{\n" +
-            "    $lookup: {\n" +
-            "        from: '%s',\n" +
-            "        'let': {\n" +
-            "            localId: '$_id'\n" +
-            "        },\n" +
-            "        pipeline: [{\n" +
-            "            $match: {\n" +
-            "                $expr: {\n" +
-            "                    $or: [{\n" +
-            "                            $eq: [\n" +
-            "                                '$$localId',\n" +
-            "                                {\n" +
-            "                                    $convert: {\n" +
-            "                                        input: '$%s',\n" +
-            "                                        to: 'long',\n" +
-            "                                        onError: '0',\n" +
-            "                                        onNull: '0'\n" +
-            "                                    }\n" +
-            "                                }\n" +
-            "                            ]\n" +
-            "                        },\n" +
-            "                        {\n" +
-            "                            $eq: [\n" +
-            "                                '$$localId',\n" +
-            "                                '$%s'\n" +
-            "                            ]\n" +
-            "                        }\n" +
-            "                    ]\n" +
-            "                }\n" +
-            "            }\n" +
-            "        }],\n" +
-            "        as: '%s'\n" +
-            "    }\n" +
+            LOOKUP +
+           FROM_MATCH +
+            LET +
+           LOCAL_ID +
+           CLOSING_BRACKET +
+           PIPELINE +
+           MATCH +
+           EXPR +
+           OR_CONDITION +
+            EQ_EXPRESSION +
+           DOLLAR_LOCALID +
+           NEXT_LINE +
+           CONVERT +
+           INPUT +
+           TO_LONG +
+           ON_ERROR +
+           ON_NULL +
+           CLOSING_BRACKET_NEXT_LINE +
+           CLOSING_BRACKET_NEXT_LINE +
+           CLOSE_ARRAY +
+           CLOSE_BRACKET_COMMA_NEXT_LINE +
+           OPENING_BRACKET_NEXT_LINE +
+            EQ_EXPRESSION +
+           DOLLAR_LOCALID +
+           DOLLAR_STRING_REF_NEXT_LINE +
+           CLOSE_ARRAY +
+           CLOSING_BRACKET_NEXT_LINE +
+           CLOSE_ARRAY +
+           CLOSING_BRACKET_NEXT_LINE +
+           CLOSING_BRACKET_NEXT_LINE +
+           CLOSE_MAP_ARRAY_NEXT_LINE +
+           AS_STRING_REFERENCE +
+           CLOSING_BRACKET_NEXT_LINE +
             "}";
    public static final String MONGO_AGGREGATION_STAGE_PIPELINE_4="{\n" +
-           "    $lookup: {\n" +
-           "        from: '%s',\n" +
-           "        'let': {\n" +
-           "            localId: '$_id'\n" +
-           "        },\n" +
-           "        pipeline: [{\n" +
-           "            $match: {\n" +
-           "                $expr: {\n" +
-           "                    $or: [{\n" +
-           "                            $eq: [\n" +
-           "                                '$$localId',\n" +
-           "                                {\n" +
-           "                                    $convert: {\n" +
-           "                                        input: '$%s',\n" +
-           "                                        to: 'long',\n" +
-           "                                        onError: '0',\n" +
-           "                                        onNull: '0'\n" +
-           "                                    }\n" +
-           "                                }\n" +
-           "                            ]\n" +
-           "                        },\n" +
-           "                        {\n" +
-           "                            $eq: [\n" +
-           "                                '$$localId',\n" +
-           "                                '$%s'\n" +
-           "                            ]\n" +
-           "                        }\n" +
-           "                    ]\n" +
-           "                }\n" +
-           "            }\n" +
-           "        }],\n" +
-           "        as: '%s'\n" +
-           "    }\n" +
+           LOOKUP +
+           FROM_MATCH +
+           LET +
+           LOCAL_ID +
+           CLOSING_BRACKET +
+           PIPELINE +
+           MATCH +
+           EXPR+
+           OR_CONDITION +
+           EQ_EXPRESSION +
+           DOLLAR_LOCALID +
+           NEXT_LINE +
+           CONVERT +
+           INPUT +
+           TO_LONG +
+           ON_ERROR +
+           ON_NULL +
+           CLOSING_BRACKET_NEXT_LINE +
+           CLOSING_BRACKET_NEXT_LINE +
+           CLOSE_ARRAY +
+           CLOSE_BRACKET_COMMA_NEXT_LINE +
+           OPENING_BRACKET_NEXT_LINE +
+          EQ_EXPRESSION +
+           DOLLAR_LOCALID +
+           DOLLAR_STRING_REF_NEXT_LINE +
+           CLOSE_ARRAY +
+           CLOSING_BRACKET_NEXT_LINE +
+           CLOSE_ARRAY +
+           CLOSING_BRACKET_NEXT_LINE +
+           CLOSING_BRACKET_NEXT_LINE +
+           CLOSE_MAP_ARRAY_NEXT_LINE +
+           AS_STRING_REFERENCE +
+           CLOSING_BRACKET_NEXT_LINE +
            "}";
-
     public static final String MONGO_AGGREGATION_STAGE_PIPELINE_5="{\n" +
-           "    $lookup: {\n" +
-           "        from: '%s',\n" +
-           "        'let': {\n" +
-           "            localId: '$_id'\n" +
-           "        },\n" +
-           "        pipeline: [{\n" +
-           "            $match: {\n" +
-           "                $expr: {\n" +
-           "                    $or: [{\n" +
-           "                            $eq: [\n" +
-           "                                '$$localId',\n" +
-           "                                {\n" +
-           "                                    $convert: {\n" +
-           "                                        input: '$%s',\n" +
-           "                                        to: 'long',\n" +
-           "                                        onError: '0',\n" +
-           "                                        onNull: '0'\n" +
-           "                                    }\n" +
-           "                                }\n" +
-           "                            ]\n" +
-           "                        },\n" +
-           "                        {\n" +
-           "                            $eq: [\n" +
-           "                                '$$localId',\n" +
-           "                                '$%s'\n" +
-           "                            ]\n" +
-           "                        }\n" +
-           "                    ]\n" +
-           "                }\n" +
-           "            }\n" +
-           "        }],\n" +
-           "        as: '%s'\n" +
-           "    }\n" +
+           LOOKUP +
+            FROM_MATCH +
+           LET +
+            LOCAL_ID +
+            CLOSING_BRACKET +
+            PIPELINE +
+            MATCH +
+            EXPR +
+            OR_CONDITION +
+           EQ_EXPRESSION +
+           DOLLAR_LOCALID +
+            NEXT_LINE +
+            CONVERT +
+            INPUT +
+            TO_LONG +
+            ON_ERROR +
+            ON_NULL +
+            CLOSING_BRACKET_NEXT_LINE +
+            CLOSING_BRACKET_NEXT_LINE +
+            CLOSE_ARRAY +
+            CLOSE_BRACKET_COMMA_NEXT_LINE +
+            OPENING_BRACKET_NEXT_LINE +
+           EQ_EXPRESSION +
+           DOLLAR_LOCALID +
+            DOLLAR_STRING_REF_NEXT_LINE +
+            CLOSE_ARRAY +
+            CLOSING_BRACKET_NEXT_LINE +
+            CLOSE_ARRAY +
+            CLOSING_BRACKET_NEXT_LINE +
+            CLOSING_BRACKET_NEXT_LINE +
+            CLOSE_MAP_ARRAY_NEXT_LINE +
+            AS_STRING_REFERENCE +
+            CLOSING_BRACKET_NEXT_LINE +
            "}";
   public static final String MONGO_AGGREGATION_STAGE_PIPELINE_6="{\n" +
-           "    $lookup: {\n" +
-           "        from: '%s',\n" +
-           "        'let': {\n" +
-           "            localId: '$_id'\n" +
-           "        },\n" +
-           "        pipeline: [{\n" +
-           "            $match: {\n" +
-           "                $expr: {\n" +
-           "                    $or: [{\n" +
-           "                            $eq: [\n" +
-           "                                '$$localId',\n" +
-           "                                {\n" +
-           "                                    $convert: {\n" +
-           "                                        input: '$%s',\n" +
-           "                                        to: 'long',\n" +
-           "                                        onError: '0',\n" +
-           "                                        onNull: '0'\n" +
-           "                                    }\n" +
-           "                                }\n" +
-           "                            ]\n" +
-           "                        },\n" +
-           "                        {\n" +
-           "                            $eq: [\n" +
-           "                                '$$localId',\n" +
-           "                                '$%s'\n" +
-           "                            ]\n" +
-           "                        }\n" +
-           "                    ]\n" +
-           "                }\n" +
-           "            }\n" +
-           "        }],\n" +
-           "        as: '%s'\n" +
-           "    }\n" +
+           LOOKUP +
+          FROM_MATCH +
+           LET +
+          LOCAL_ID +
+          CLOSING_BRACKET +
+          PIPELINE +
+          MATCH +
+          EXPR +
+          OR_CONDITION +
+           EQ_EXPRESSION +
+           DOLLAR_LOCALID +
+          NEXT_LINE +
+          CONVERT +
+          INPUT +
+          TO_LONG +
+          ON_ERROR +
+          ON_NULL +
+          CLOSING_BRACKET_NEXT_LINE +
+          CLOSING_BRACKET_NEXT_LINE +
+          CLOSE_ARRAY +
+          CLOSE_BRACKET_COMMA_NEXT_LINE +
+          OPENING_BRACKET_NEXT_LINE +
+           EQ_EXPRESSION +
+           DOLLAR_LOCALID +
+          DOLLAR_STRING_REF_NEXT_LINE +
+          CLOSE_ARRAY +
+          CLOSING_BRACKET_NEXT_LINE +
+          CLOSE_ARRAY +
+          CLOSING_BRACKET_NEXT_LINE +
+          CLOSING_BRACKET_NEXT_LINE +
+          CLOSE_MAP_ARRAY_NEXT_LINE +
+          AS_STRING_REFERENCE +
+          CLOSING_BRACKET_NEXT_LINE +
            "}";
-
     public static final String CONTAINS_ATLEAST_ONE_SPECIAL_CHARACTER =".*[!@#$%^&*()_+=]+.*";
 
     //Constants for Requestmapping
@@ -450,9 +471,7 @@ public class FormModelerConstants
     public static final String LOGGED_USER = "loggeduser";
     public static final String TOKEN = "token";
 
-
     /*MainMethodConstants*/
-
     public static final String PACKAGE_NAME = "com.techsophy.*";
     public static final String MULTI_TENANCY_PACKAGE_NAME = "com.techsophy.multitenancy.mongo.*";
     public static final String VERSION_1 = "1.0";

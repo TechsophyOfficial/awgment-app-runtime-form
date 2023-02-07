@@ -1,6 +1,5 @@
 package com.techsophy.tsf.runtime.form.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techsophy.tsf.runtime.form.config.CustomFilter;
 import com.techsophy.tsf.runtime.form.controller.impl.SequenceGeneratorImpl;
@@ -25,17 +24,15 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.TOKEN;
+import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.SequenceGeneratorConstants.SEQUENCE_NEXT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -47,7 +44,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith({MockitoExtension.class})
 @AutoConfigureMockMvc(addFilters = false)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class SequenceGeneratorImplTest {
+class SequenceGeneratorImplTest
+{
     private static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtSaveOrUpdate = jwt().authorities(new SimpleGrantedAuthority(AWGMENT_RUNTIME_FORM_CREATE_OR_UPDATE));
     private static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtRead = jwt().authorities(new SimpleGrantedAuthority(AWGMENT_RUNTIME_FORM_READ));
     private static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtDelete = jwt().authorities(new SimpleGrantedAuthority(AWGMENT_RUNTIME_FORM_DELETE));
@@ -82,7 +80,8 @@ class SequenceGeneratorImplTest {
     }
 
     @Test
-    void generateSequenceTest() throws Exception {
+    void generateSequenceTest() throws Exception
+    {
         ObjectMapper objectMapperTest = new ObjectMapper();
         Mockito.when(mockTokenUtils.getIssuerFromToken(TOKEN)).thenReturn(TENANT);
         RequestBuilder requestBuilder = MockMvcRequestBuilders.post(BASE_URL+VERSION_V1+SEQUENCE_NEXT)
@@ -92,5 +91,4 @@ class SequenceGeneratorImplTest {
         MvcResult mvcResult = this.mockMvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
         assertEquals(200, mvcResult.getResponse().getStatus());
     }
-
 }

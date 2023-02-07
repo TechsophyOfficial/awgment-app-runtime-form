@@ -23,7 +23,7 @@ public interface FormDataService
 
     PaginationResponsePayload getAllFormDataByFormId(String formId, String relations);
 
-    List<FormDataResponseSchema> getFormDataByFormIdAndId(String formId, String id, String relations);
+   List<FormDataResponseSchema> getFormDataByFormIdAndId(String formId, String id, String relations);
 
     void deleteAllFormDataByFormId(String formId);
 

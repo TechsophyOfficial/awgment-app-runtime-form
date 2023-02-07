@@ -7,7 +7,8 @@ import java.time.Instant;
 import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class RuntimeFormTestConstants {
+public class RuntimeFormTestConstants
+{
     //GlobalMessageSourceConstants
     public static final String TEST_ACTIVE_PROFILE = "test";
     public static final String KEY = "key";
@@ -144,7 +145,6 @@ public class RuntimeFormTestConstants {
     public static final String MAIL_ID = "tejaswini.k@techsophy.com";
     public static final String TEST_TOKEN = "testdata/token.txt";
 
-
     //FormDataServiceConstants
     public static final String TEST_SORT_BY = "createdOn";
     public static final String TEST_SORT_ORDER = "desc";
@@ -163,15 +163,11 @@ public class RuntimeFormTestConstants {
 
     //INITILIZATION CONSTANTS
     public static final String DEPARTMENT = "department";
-
     public static final String EMAIL_ID = "emailId";
     public static final String MOBILE_NUMBER = "mobileNumber";
     public static final String LAST_NAME = "lastName";
     public static final String FIRST_NAME = "firstName";
     public static final String USER_NAME = "userName";
-
-
-
     public static final String NUMBER = "1234567890";
 
     //UserDetailsTestConstants
@@ -180,7 +176,6 @@ public class RuntimeFormTestConstants {
             = "User details retrieved successfully";
     public static final String INITIALIZATION_DATA = "{\"data\":[{\"id\":\"847117072898674688\",\"userName\":\"tejaswini\",\"firstName\":\"Kaza\",\"lastName\":\"Tejaswini\",\"mobileNumber\":\"1234567890\",\"emailId\":\"tejaswini.k@techsophy.com\",\"department\":null,\"createdById\":null,\"createdByName\":null,\"createdOn\":null,\"updatedById\":null,\"updatedByName\":null,\"updatedOn\":null}],\"success\":true,\"message\":\"User details retrieved successfully\"}\n";
     public static final String LOGGED_USER_ID = "847117072898674688";
-
 
     //WEBCLIENTWrapperTestConstants
     public static final String LOCAL_HOST_URL = "http://localhost:8080";

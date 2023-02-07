@@ -90,8 +90,8 @@ class FormDataAuditControllerTest
         FormDataAuditResponseSchema formDataAuditResponseSchema = objectMapperTest.readValue(inputStreamTest, FormDataAuditResponseSchema.class);
         Mockito.when(mockTokenUtils.getIssuerFromToken(TOKEN)).thenReturn(TENANT);
         Mockito.when(mockFormDataAuditServiceImpl.getAllFormDataAuditByFormIdAndDocumentId(TEST_FORM_ID,TEST_FORM_DATA_ID)).thenReturn
-                (List.of(new FormDataAuditResponseSchema(TEST_ID,TEST_FORM_DATA_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA,TEST_CREATED_BY_ID,TEST_CREATED_ON)
-                        ,new FormDataAuditResponseSchema(TEST_ID,TEST_FORM_DATA_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA,TEST_CREATED_BY_ID,TEST_CREATED_ON)));
+                (List.of(new FormDataAuditResponseSchema(TEST_ID,TEST_FORM_DATA_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA,TEST_CREATED_BY_ID,String.valueOf(TEST_CREATED_ON))
+                        ,new FormDataAuditResponseSchema(TEST_ID,TEST_FORM_DATA_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA,TEST_CREATED_BY_ID,String.valueOf(TEST_CREATED_ON))));
         RequestBuilder requestBuilderTest = MockMvcRequestBuilders.get(BASE_URL + VERSION_V1 + HISTORY+FORM_DATA_DOCUMENT_ID_URL).param(FORM_ID,TEST_FORM_ID).param(FORM_DATA_ID,TEST_FORM_DATA_ID).header(ACCEPT_LANGUAGE, LOCALE_EN)
                 .content(objectMapperTest.writeValueAsString(formDataAuditResponseSchema))
                 .with(jwtRead)

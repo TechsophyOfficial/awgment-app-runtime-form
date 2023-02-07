@@ -19,10 +19,12 @@ import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.time.Instant;
+import java.util.Date;
 import java.util.Map;
 import java.util.stream.Stream;
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @Service
 @AllArgsConstructor(onConstructor_ = {@Autowired})
@@ -37,16 +39,16 @@ public class FormServiceImpl implements FormService
     public void saveRuntimeForm(FormSchema formSchema) throws JsonProcessingException
     {
         Map<String,Object> loggedInUserDetails =userDetails.getUserDetails().get(0);
-        if (StringUtils.isEmpty(loggedInUserDetails.get(ID).toString()))
+        if (isEmpty(loggedInUserDetails.get(ID).toString()))
         {
             throw new UserDetailsIdNotFoundException(LOGGED_IN_USER_ID_NOT_FOUND,globalMessageSource.get(LOGGED_IN_USER_ID_NOT_FOUND,loggedInUserDetails.get(ID).toString()));
         }
         BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(loggedInUserDetails.get(ID).toString()));
         FormDefinition formDefinition=new FormDefinition(BigInteger.valueOf(Long.parseLong(formSchema.getId())),formSchema.getName(),BigInteger.valueOf(formSchema.getVersion()),formSchema.getComponents(),formSchema.getAcls(),formSchema.getProperties(),formSchema.getType(),formSchema.getIsDefault());
-        formDefinition.setCreatedById(loggedInUserId);
-        formDefinition.setCreatedOn(Instant.now());
-        formDefinition.setUpdatedById(loggedInUserId);
-        formDefinition.setUpdatedOn(Instant.now());
+        formDefinition.setCreatedById(String.valueOf(loggedInUserId));
+        formDefinition.setCreatedOn(String.valueOf(Date.from(Instant.now())));
+        formDefinition.setUpdatedById(String.valueOf(loggedInUserId));
+        formDefinition.setUpdatedOn(String.valueOf(Date.from(Instant.now())));
         if(String.valueOf(formSchema.getIsDefault()).equals(NULL))
         {
             formDefinition.setIsDefault(false);
@@ -64,7 +66,7 @@ public class FormServiceImpl implements FormService
 
     public Stream<FormResponseSchema> getAllRuntimeForms(boolean content, String type)
     {
-        if(StringUtils.isEmpty(type))
+        if(isEmpty(type))
         {
             return this.formDefinitionRepository.findAll().stream()
                     .map(formio ->

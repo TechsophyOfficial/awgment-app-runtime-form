@@ -8,16 +8,19 @@ import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
 import java.util.List;
 import java.util.Map;
+
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @RefreshScope
 @Slf4j
@@ -38,12 +41,12 @@ public class UserDetails
         List<Map<String, Object>> userDetailsResponse;
         WebClient webClient;
         String loggedInUserId = tokenUtils.getLoggedInUserId();
-        if (StringUtils.isEmpty(loggedInUserId))
+        if (isEmpty(loggedInUserId))
         {
             throw new InvalidInputException(LOGGED_IN_USER_NOT_FOUND,globalMessageSource.get(LOGGED_IN_USER_NOT_FOUND,loggedInUserId));
         }
         String token = tokenUtils.getTokenFromContext();
-        if (StringUtils.isNotEmpty(token))
+        if (isNotEmpty(token))
         {
             webClient = webClientWrapper.createWebClient(token);
         }
@@ -52,7 +55,7 @@ public class UserDetails
             throw new InvalidInputException(TOKEN_NOT_NULL,globalMessageSource.get(TOKEN_NOT_NULL,loggedInUserId));
         }
         String userDetails = webClientWrapper.webclientRequest(webClient,gatewayApi + ACCOUNT_URL + FILTER_COLUMN+ loggedInUserId+ONLY_MANDATORY_FIELDS_TRUE,GET,null);
-        if ( StringUtils.isEmpty(userDetails) || userDetails.isEmpty())
+        if (isEmpty(userDetails) || userDetails.isEmpty())
         {
             throw new InvalidInputException(USER_DETAILS_NOT_FOUND,globalMessageSource.get(USER_DETAILS_NOT_FOUND,userDetails));
         }

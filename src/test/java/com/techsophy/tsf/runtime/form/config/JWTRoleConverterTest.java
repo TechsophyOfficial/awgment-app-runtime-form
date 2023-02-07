@@ -1,7 +1,6 @@
 package com.techsophy.tsf.runtime.form.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import com.techsophy.tsf.runtime.form.utils.WebClientWrapper;
@@ -13,23 +12,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import javax.servlet.http.HttpServletRequest;
-
 import java.nio.file.AccessDeniedException;
 import java.time.Instant;
 import java.util.*;
-
-import static com.mongodb.client.model.Filters.eq;
-import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class JWTRoleConverterTest {
-
+class JWTRoleConverterTest
+{
     @Mock
     HttpServletRequest mockHttpServletRequest;
 
@@ -95,5 +88,4 @@ class JWTRoleConverterTest {
         Collection grantedAuthority =  jwtRoleConverter.convert(jwt);
         Assertions.assertNotNull(grantedAuthority);
     }
-
 }

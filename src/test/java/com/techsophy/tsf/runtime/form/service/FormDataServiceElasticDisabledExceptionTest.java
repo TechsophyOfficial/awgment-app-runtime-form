@@ -491,7 +491,7 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(NAME_VALUE, NAME_VALUE);
         testFormData2.put(AGE,AGE_VALUE);
         FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
-        when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_+formDataSchemaTest.getFormId())).thenReturn(true);
+        when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
         Assertions.assertThrows(InvalidInputException.class, () ->
                 mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,EMPTY_STRING , null, null, null));
     }
@@ -505,7 +505,7 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(NAME, NAME_VALUE);
         testFormData2.put(AGE,AGE_VALUE);
         FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
-        when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_+formDataSchemaTest.getFormId())).thenReturn(true);
+        when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
         Assertions.assertThrows(IllegalArgumentException.class, () ->
                 mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,TEST_RELATIONS,SEARCH_STRING, CREATED_ON, null));
     }

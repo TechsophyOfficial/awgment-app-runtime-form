@@ -5,8 +5,10 @@ import javax.validation.constraints.NotBlank;
 import java.util.Map;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 
+@Data
 @With
-@Value
+@NoArgsConstructor
+@AllArgsConstructor
 public class FormDataSchema
 {
     String id;
@@ -14,5 +16,5 @@ public class FormDataSchema
     String formId;
     Integer version;
     Map<String,Object> formData;
-    Map<String,Object> formMetadata;
+    Map<String,Object> formMetaData;
 }

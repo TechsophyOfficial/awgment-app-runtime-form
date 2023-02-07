@@ -153,7 +153,7 @@ class FormServiceTest
         @Cleanup InputStream stream=new ClassPathResource(TEST_FORMS_DATA).getInputStream();
         String formDataTest =new String(stream.readAllBytes());
         FormResponseSchema formSchemaTest =new FormResponseSchema(TEST_ID,TEST_NAME,
-                TEST_COMPONENTS,list,TEST_PROPERTIES,TEST_TYPE_FORM,TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON,TEST_UPDATED_BY_ID,TEST_UPDATED_ON);
+                TEST_COMPONENTS,list,TEST_PROPERTIES,TEST_TYPE_FORM,TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,String.valueOf(TEST_CREATED_ON),TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON));
         FormDefinition formDefinitionTest =objectMapper.readValue(formDataTest,FormDefinition.class);
         when(mockObjectMapper.convertValue(any(),eq(FormResponseSchema.class))).thenReturn(formSchemaTest);
         when(mockFormDefinitionRepository.findById(BigInteger.valueOf(Long.parseLong(TEST_ID)))).thenReturn(java.util.Optional.ofNullable(formDefinitionTest));
@@ -239,7 +239,7 @@ class FormServiceTest
         Map<String, Object> component = new HashMap<>();
         component.put("key","value");
         FormResponseSchema formResponseSchema = new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
-                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,TEST_CREATED_ON, TEST_UPDATED_BY_ID,TEST_UPDATED_ON);
+                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON));
         FormDefinition formDefinition = new FormDefinition(BigInteger.ONE,NAME,BigInteger.ONE,component,List.of(component),component,TYPE_FORM,true);
         when(mockFormDefinitionRepository.existsById(BigInteger.valueOf(1))).thenReturn(true);
         when(mockFormDefinitionRepository.findById(BigInteger.valueOf(1))).thenReturn(Optional.of(formDefinition));

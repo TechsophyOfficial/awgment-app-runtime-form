@@ -1,14 +1,16 @@
-package com.techsophy.tsf.runtime.form.dto;
+package com.techsophy.tsf.runtime.form.entity;
 
-import lombok.Value;
-import lombok.With;
+import lombok.*;
 import javax.validation.constraints.NotBlank;
 import java.util.Map;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.FORM_ID_NOT_BLANK;
 
+@EqualsAndHashCode(callSuper = true)
+@Data
 @With
-@Value
-public class FormDataAuditResponseSchema
+@NoArgsConstructor
+@AllArgsConstructor
+public class FormDataAuditDefinition extends Auditable
 {
     String id;
     String formDataId;
@@ -17,6 +19,4 @@ public class FormDataAuditResponseSchema
     Integer version;
     Map<String,Object> formData;
     Map<String,Object> formMetadata;
-    String  createdById;
-    String createdOn;
 }

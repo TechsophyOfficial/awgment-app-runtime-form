@@ -12,14 +12,13 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
-
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.TEST_ACTIVE_PROFILE;
 
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ActiveProfiles(TEST_ACTIVE_PROFILE)
-class LoggingHandlerTest {
-
+class LoggingHandlerTest
+{
         @Mock
         JoinPoint joinPoint;
         @Mock
@@ -30,7 +29,8 @@ class LoggingHandlerTest {
         LoggingHandler loggingHandler;
 
         @Test
-        void logAfterThrowingController() {
+        void logAfterThrowingController()
+        {
             Mockito.when((joinPoint.getSignature())).thenReturn(signature);
             Mockito.when((signature.getName())).thenReturn("abc");
             loggingHandler.logAfterThrowingController(joinPoint, exception);
@@ -38,7 +38,8 @@ class LoggingHandlerTest {
         }
 
         @Test
-        void logAfterThrowingService(){
+        void logAfterThrowingService()
+        {
             Mockito.when((joinPoint.getSignature())).thenReturn(signature);
             Mockito.when((signature.getName())).thenReturn("abc");
             loggingHandler.logAfterThrowingService(joinPoint, exception);
@@ -46,7 +47,8 @@ class LoggingHandlerTest {
         }
 
         @Test
-        void beforeControllerTest() {
+        void beforeControllerTest()
+        {
             Mockito.when((joinPoint.getSignature())).thenReturn(signature);
             Mockito.when((signature.getName())).thenReturn("abc");
             loggingHandler.beforeController(joinPoint);
@@ -54,7 +56,8 @@ class LoggingHandlerTest {
         }
 
         @Test
-        void afterControllerTest() {
+        void afterControllerTest()
+        {
             Mockito.when((joinPoint.getSignature())).thenReturn(signature);
             Mockito.when((signature.getName())).thenReturn("abc");
             loggingHandler.afterController(joinPoint);
@@ -62,7 +65,8 @@ class LoggingHandlerTest {
         }
 
         @Test
-        void beforeServiceTest() {
+        void beforeServiceTest()
+        {
             Mockito.when((joinPoint.getSignature())).thenReturn(signature);
             Mockito.when((signature.getName())).thenReturn("abc");
             loggingHandler.beforeService(joinPoint);
@@ -70,7 +74,8 @@ class LoggingHandlerTest {
         }
 
         @Test
-        void afterServiceTest() {
+        void afterServiceTest()
+        {
             Mockito.when((joinPoint.getSignature())).thenReturn(signature);
             Mockito.when((signature.getName())).thenReturn("abc");
             loggingHandler.afterService(joinPoint);

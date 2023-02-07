@@ -24,7 +24,8 @@ public class WebClientWrapper {
     private final GlobalMessageSource globalMessageSource;
     private final ObjectMapper objectMapper;
 
-    public WebClient createWebClient(String token) {
+    public WebClient createWebClient(String token)
+    {
         return WebClient.builder()
                 .defaultHeader(AUTHORIZATION, BEARER + token)
                 .defaultHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -32,7 +33,8 @@ public class WebClientWrapper {
     }
 
     @CircuitBreaker(name = SERVICE, fallbackMethod = "availableMethod")
-    public String webclientRequest(WebClient client, String url, @NotBlank String requestType, Object data) {
+    public String webclientRequest(WebClient client, String url, @NotBlank String requestType, Object data)
+    {
         if (requestType.equalsIgnoreCase(GET)) {
             return Objects.requireNonNull(client.get()
                             .uri(url)

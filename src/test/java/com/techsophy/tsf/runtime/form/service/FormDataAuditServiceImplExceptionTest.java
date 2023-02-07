@@ -102,7 +102,7 @@ class FormDataAuditServiceImplExceptionTest
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
         FormDataAuditSchema formDataAuditSchemaTest = new FormDataAuditSchema(TEST_ID,TEST_FORM_DATA_ID,TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(false);
+        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(false);
         Assertions.assertThrows(FormIdNotFoundException.class, () ->
                 mockFormDataAuditServiceImpl.getAllFormDataAuditByFormIdAndDocumentId(TEST_FORM_ID,TEST_ID));
     }
@@ -116,8 +116,8 @@ class FormDataAuditServiceImplExceptionTest
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
         FormDataAuditSchema formDataAuditSchemaTest = new FormDataAuditSchema(TEST_ID,TEST_FORM_DATA_ID,TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_ +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(true);
-        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_ +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(null);
+        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(true);
+        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(null);
         Assertions.assertThrows(FormIdNotFoundException.class,() ->
                 mockFormDataAuditServiceImpl.getAllFormDataAuditByFormIdAndDocumentId(TEST_FORM_ID,TEST_ID));
     }
