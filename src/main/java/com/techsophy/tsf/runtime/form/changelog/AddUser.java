@@ -1,7 +1,6 @@
 package com.techsophy.tsf.runtime.form.changelog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.shaded.json.parser.ParseException;
 import com.techsophy.tsf.runtime.form.entity.FormDefinition;
 import io.mongock.api.annotations.ChangeUnit;
 import io.mongock.api.annotations.Execution;
@@ -24,18 +23,21 @@ public class AddUser
 {
     private  final MongoTemplate template;
     private final ObjectMapper objectMapper;
+
     @Execution
-    public void changeSetFormDefinition() throws IOException, ParseException {
+    public void changeSetFormDefinition() throws IOException
+    {
             String  path = TP_ADD_USER;
             InputStream inputStreamTest=new ClassPathResource(path).getInputStream();
             FormDefinition formDefinition1 = objectMapper.readValue(inputStreamTest,FormDefinition.class);
             String id = String.valueOf(formDefinition1.getId());
             Query query = new Query();
             query.addCriteria(Criteria.where(UNDERSCORE_ID).is(id));
-            if(template.find(query,FormDefinition.class).size()==0) {
+            if(template.find(query,FormDefinition.class).isEmpty()) {
                 template.save(formDefinition1, TP_FORM_DEFINITION_COLLECTION);
             }
     }
+
     @RollbackExecution
     public void rollback()
     {

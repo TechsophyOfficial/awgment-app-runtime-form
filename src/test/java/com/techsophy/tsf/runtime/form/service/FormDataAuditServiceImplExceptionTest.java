@@ -19,24 +19,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.reactive.function.client.WebClient;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.AUDIT;
-import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.TP_RUNTIME_FORM_DATA_;
+import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.Mockito.doReturn;
 
-@SpringBootTest
-@ActiveProfiles(TEST_ACTIVE_PROFILE)
-@ExtendWith({SpringExtension.class})
+@ExtendWith({MockitoExtension.class})
 class FormDataAuditServiceImplExceptionTest
 {
     @Mock
@@ -88,8 +83,6 @@ class FormDataAuditServiceImplExceptionTest
     void saveFormDataInvalidInputExceptionTest() throws JsonProcessingException
     {
         doReturn(userList).when(mockUserDetails).getUserDetails();
-        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-        Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
         Map<String, Object> testFormMetaData = new HashMap<>();
         testFormMetaData.put(FORM_VERSION, 1);
         Map<String, Object> testFormData = new HashMap<>();
@@ -109,7 +102,7 @@ class FormDataAuditServiceImplExceptionTest
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
         FormDataAuditSchema formDataAuditSchemaTest = new FormDataAuditSchema(TEST_ID,TEST_FORM_DATA_ID,TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_+formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(false);
+        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(false);
         Assertions.assertThrows(FormIdNotFoundException.class, () ->
                 mockFormDataAuditServiceImpl.getAllFormDataAuditByFormIdAndDocumentId(TEST_FORM_ID,TEST_ID));
     }
@@ -123,8 +116,8 @@ class FormDataAuditServiceImplExceptionTest
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
         FormDataAuditSchema formDataAuditSchemaTest = new FormDataAuditSchema(TEST_ID,TEST_FORM_DATA_ID,TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_+formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(true);
-        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_+formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(null);
+        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(true);
+        Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(null);
         Assertions.assertThrows(FormIdNotFoundException.class,() ->
                 mockFormDataAuditServiceImpl.getAllFormDataAuditByFormIdAndDocumentId(TEST_FORM_ID,TEST_ID));
     }

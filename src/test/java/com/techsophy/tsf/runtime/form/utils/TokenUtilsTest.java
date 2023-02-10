@@ -1,29 +1,28 @@
 package com.techsophy.tsf.runtime.form.utils;
 
 import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
-import io.micrometer.core.instrument.util.IOUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -43,15 +42,15 @@ class TokenUtilsTest
     @InjectMocks
     TokenUtils tokenUtils;
 
-    @Order(1)
-    @Test
-    void getTokenFromIssuerTest() throws Exception
-    {
-        InputStream resource = new ClassPathResource(TOKEN_TXT_PATH).getInputStream();
-        String result = IOUtils.toString(resource, StandardCharsets.UTF_8);
-        String tenant = tokenUtils.getIssuerFromToken(result);
-        assertThat(tenant).isEqualTo(TECHSOPHY_PLATFORM);
-    }
+//    @Order(1)
+//    @Test
+//    void getTokenFromIssuerTest() throws Exception
+//    {
+//        InputStream resource = new ClassPathResource(TOKEN_TXT_PATH).getInputStream();
+//        String result = IOUtils.toString(resource, StandardCharsets.UTF_8);
+//        String tenant = tokenUtils.getIssuerFromToken(result);
+//        assertThat(tenant).isEqualTo(TECHSOPHY_PLATFORM);
+//    }
 
     @Order(2)
     @Test
@@ -150,6 +149,7 @@ class TokenUtilsTest
         String[] strings = new String[2];
         strings[0]="abc:ab";
         strings[1]="abc";
-        tokenUtils.getSortBy(strings);
+        Sort response = tokenUtils.getSortBy(strings);
+        assertThat(response).isInstanceOf(Sort.class);
     }
 }

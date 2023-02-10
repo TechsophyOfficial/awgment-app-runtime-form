@@ -1,7 +1,6 @@
 package com.techsophy.tsf.runtime.form.entity;
 
 import lombok.*;
-import java.math.BigInteger;
 import java.util.Map;
 
 @EqualsAndHashCode(callSuper = true)
@@ -11,8 +10,9 @@ import java.util.Map;
 @AllArgsConstructor
 public class FormDataDefinition extends Auditable
 {
-    private BigInteger id;
-    private Integer version;
+    private String id;
+    private String formId;
+    private int version;
     private Map<String,Object> formData;
-    private Map<String,Object> formMetadata;
+    private Map<String,Object> formMetaData;
 }

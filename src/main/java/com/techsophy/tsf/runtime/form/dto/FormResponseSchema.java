@@ -3,7 +3,6 @@ package com.techsophy.tsf.runtime.form.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Value;
 import lombok.With;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.DATE_PATTERN;
@@ -23,10 +22,8 @@ public class FormResponseSchema
     Boolean isDefault;
     String createdById;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_PATTERN, timezone = TIME_ZONE)
-    Instant createdOn;
-    String createdByName;
+    String createdOn;
     String updatedById;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_PATTERN, timezone = TIME_ZONE)
-    Instant updatedOn;
-    String updatedByName;
+    String updatedOn;
 }

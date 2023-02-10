@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.With;
-import java.math.BigInteger;
-import java.time.Instant;
 
 @Data
 @With
@@ -13,10 +11,8 @@ import java.time.Instant;
 @AllArgsConstructor
 public class Auditable
 {
-    private BigInteger createdById;
-    private Instant createdOn;
-    private String createdByName;
-    private BigInteger updatedById;
-    private Instant updatedOn;
-    private String updatedByName;
+    private String createdById;
+    private String createdOn;
+    private String updatedById;
+    private String updatedOn;
 }

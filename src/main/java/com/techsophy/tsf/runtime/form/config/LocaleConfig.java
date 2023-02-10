@@ -22,7 +22,7 @@ public class LocaleConfig extends AcceptHeaderLocaleResolver implements WebMvcCo
         {
             return Locale.US;
         }
-     else
+         else
         {
             return  new Locale(request.getHeader(ACCEPT_LANGUAGE));
         }
