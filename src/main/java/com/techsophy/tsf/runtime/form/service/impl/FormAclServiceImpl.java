@@ -34,7 +34,7 @@ public class FormAclServiceImpl implements FormAclService {
     private final ObjectMapper objectMapper;
     private final GlobalMessageSource globalMessageSource;
     @Override
-    public FormAclDto saveFormIdWithAclID(FormAclDto formAclDto) throws JsonProcessingException {
+    public FormAclDto saveFormAcl(FormAclDto formAclDto) throws JsonProcessingException {
         Query query = new Query().addCriteria(Criteria.where(FORM_ID).is(formAclDto.getFormId()));
         Update updateDefinition = new Update().set(ACL_ID,formAclDto.getAclId());
         FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true).upsert(true);
@@ -43,13 +43,13 @@ public class FormAclServiceImpl implements FormAclService {
     }
 
     @Override
-    public FormAclDto getFormIdWithAclID(BigInteger id) {
+    public FormAclDto getFormAcl(BigInteger id) {
         FormAclEntity formAclEntity = this.formAclRepository.findById(id).orElseThrow(()->new EntityIdNotFoundException(ENTITY_ID_NOT_FOUND_EXCEPTION,globalMessageSource.get(ENTITY_ID_NOT_FOUND_EXCEPTION, String.valueOf(id))));
         return  this.objectMapper.convertValue(formAclEntity,FormAclDto.class);
     }
 
     @Override
-    public PaginationResponsePayload getAllFormsIdWithAclID(Integer page, Integer size) throws JsonProcessingException {
+    public PaginationResponsePayload getAllFormsAcl(Integer page, Integer size) throws JsonProcessingException {
         Pageable pageable = PageRequest.of(page, size);
         Page<FormAclEntity> formAclEntityPage= formAclRepository.findAll(pageable);
         PaginationResponsePayload paginationResponsePayload = this.objectMapper.convertValue(formAclEntityPage,PaginationResponsePayload.class);
@@ -58,7 +58,7 @@ public class FormAclServiceImpl implements FormAclService {
     }
 
     @Override
-    public void deleteFormIdWithAclId(BigInteger id) throws JsonProcessingException {
+    public void deleteFormAcl(BigInteger id) throws JsonProcessingException {
         this.formAclRepository.deleteById(id);
     }
 }

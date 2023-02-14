@@ -4,9 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormAclDto;
+import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
 import com.techsophy.tsf.runtime.form.entity.FormAclEntity;
+import com.techsophy.tsf.runtime.form.exception.EntityIdNotFoundException;
+import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
 import com.techsophy.tsf.runtime.form.repository.FormAclRepository;
 import com.techsophy.tsf.runtime.form.service.impl.FormAclServiceImpl;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,7 +30,6 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 
 @ActiveProfiles("test")
@@ -44,34 +47,45 @@ import static org.mockito.Mockito.doNothing;
     FormAclServiceImpl formAclService;
 
     @Test
-    void saveFormIdWithAclID() throws JsonProcessingException {
+    void saveFormAclSuccess() throws JsonProcessingException {
         FormAclDto formAclDto = new FormAclDto();
         formAclDto.setFormId("123");
         formAclDto.setAclId("123");
-        formAclService.saveFormIdWithAclID(formAclDto);
+        formAclService.saveFormAcl(formAclDto);
         Mockito.verify(mongoTemplate,Mockito.times(1)).findAndModify((Query) any(), (UpdateDefinition) any(), (FindAndModifyOptions) any(),any());
     }
     @Test
-    void getFormIdWithAclID() throws JsonProcessingException {
+    void getFormAclSuccess() throws JsonProcessingException {
         FormAclEntity formAclDto = new FormAclEntity("123","123");
         Mockito.when(formAclRepository.findById(any())).thenReturn(Optional.of(formAclDto));
-        formAclService.getFormIdWithAclID(BigInteger.ONE);
+        formAclService.getFormAcl(BigInteger.ONE);
         Mockito.verify(formAclRepository,Mockito.times(1)).findById(any());
     }
     @Test
-    void getAllFormsIdWithAclID() throws JsonProcessingException {
+    void getFormAclException() throws JsonProcessingException {
+        FormAclEntity formAclDto = new FormAclEntity("123","123");
+        Mockito.when(formAclRepository.findById(any())).thenThrow(EntityIdNotFoundException.class);
+        Assertions.assertThrows(EntityIdNotFoundException.class, () ->
+                formAclService.getFormAcl(BigInteger.ONE));
+        Mockito.verify(formAclRepository,Mockito.times(1)).findById(any());
+    }
+    @Test
+    void getAllFormsAclSuccess() throws JsonProcessingException {
         FormAclEntity formAclDto = new FormAclEntity("1223","123");
         Pageable pageable = PageRequest.of(1,1);
         Page<FormAclEntity> page = new PageImpl<>(List.of(formAclDto),pageable,0);
+        PaginationResponsePayload paginationResponsePayload = new PaginationResponsePayload();
+        paginationResponsePayload.setPage(1);
         Mockito.when(formAclRepository.findAll((Pageable) any())).thenReturn(page);
-        formAclService.getAllFormsIdWithAclID(1,1);
+        Mockito.when(objectMapper.convertValue(page,PaginationResponsePayload.class)).thenReturn(paginationResponsePayload);
+        formAclService.getAllFormsAcl(1,1);
         Mockito.verify(formAclRepository,Mockito.times(1)).findAll((Pageable) any());
     }
     @Test
-    void deleteFormIdWithAclId() throws JsonProcessingException {
+    void deleteFormAclSuccess() throws JsonProcessingException {
         FormAclEntity formAclDto = new FormAclEntity("1223","123");
         doNothing().when(formAclRepository).deleteById(any());
-        formAclService.deleteFormIdWithAclId(BigInteger.ONE);
+        formAclService.deleteFormAcl(BigInteger.ONE);
         Mockito.verify(formAclRepository,Mockito.times(1)).deleteById(any());
     }
 }

@@ -17,24 +17,23 @@ public class FormAclControllerImpl implements FormAclController {
     
     private final FormAclService formAclService;
     @Override
-    public ApiResponse<FormAclDto> saveFormIdWithAclID(FormAclDto formAclDto) throws JsonProcessingException {
-         return  new ApiResponse<>(formAclService.saveFormIdWithAclID(formAclDto),true,"formAcl created successfully");
+    public ApiResponse<FormAclDto> saveFormAcl(FormAclDto formAclDto) throws JsonProcessingException {
+         return  new ApiResponse<>(formAclService.saveFormAcl(formAclDto),true,"formAcl created successfully");
     }
 
     @Override
-    public ApiResponse<FormAclDto> getFormIdWithAclID(BigInteger id) throws JsonProcessingException {
-        return new ApiResponse<>(formAclService.getFormIdWithAclID(id),true,"Data get successfully");
+    public ApiResponse<FormAclDto> getFormAcl(BigInteger id) throws JsonProcessingException {
+        return new ApiResponse<>(formAclService.getFormAcl(id),true,"Data get successfully");
     }
 
     @Override
-    public ApiResponse getAllFormsIdWithAclID(Integer page, Integer size) throws JsonProcessingException {
-        return new ApiResponse<>(formAclService.getAllFormsIdWithAclID(page,size),true,"All FormsAcl data get successfully");
+    public ApiResponse getAllFormsAcl(Integer page, Integer size) throws JsonProcessingException {
+        return new ApiResponse<>(formAclService.getAllFormsAcl(page,size),true,"All FormsAcl data get successfully");
     }
 
     @Override
-    public ApiResponse<Void> deleteFormIdWithAclID(BigInteger id) throws JsonProcessingException {
-        formAclService.deleteFormIdWithAclId(id);
+    public ApiResponse<Void> deleteFormAcl(BigInteger id) throws JsonProcessingException {
+        formAclService.deleteFormAcl(id);
         return new ApiResponse<>(null, true,"deleted formAcl successfully");
     }
-
 }
