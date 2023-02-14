@@ -45,17 +45,20 @@ public class Validate
       ObjectMapper objectMapper=new ObjectMapper();
       Map<String,Object> dataMap=objectMapper.convertValue(compData.data, Map.class);
       String key=component.getKey();
-      String value = String.valueOf(dataMap.get(key)==null?"":dataMap.get(key));
-      validateMisssingField(validationResultList, dataMap, key);
-      validateMinLengthCondition(validationResultList, key, value);
-      validateMaxLengthCondition(validationResultList, key, value);
-      validateMinValueCondition(validationResultList, key, value);
-      validateMaxValueCondition(validationResultList, key, value);
-      validateMinWordsCondition(validationResultList, key, value);
-      validateMaxWordsCondition(validationResultList, key, value);
-      validatePatternCondition(validationResultList, component, key, value);
-      validateNumberCondition(validationResultList, component, key, value);
-      validationResultList.add(new ValidationResult(key));
+      if(dataMap!=null)
+      {
+          String value = String.valueOf(dataMap.get(key)==null?"":dataMap.get(key));
+          validateMisssingField(validationResultList, dataMap, key);
+          validateMinLengthCondition(validationResultList, key, value);
+          validateMaxLengthCondition(validationResultList, key, value);
+          validateMinValueCondition(validationResultList, key, value);
+          validateMaxValueCondition(validationResultList, key, value);
+          validateMinWordsCondition(validationResultList, key, value);
+          validateMaxWordsCondition(validationResultList, key, value);
+          validatePatternCondition(validationResultList, component, key, value);
+          validateNumberCondition(validationResultList, component, key, value);
+          validationResultList.add(new ValidationResult(key));
+      }
       return validationResultList;
    }
 

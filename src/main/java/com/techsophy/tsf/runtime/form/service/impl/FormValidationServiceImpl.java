@@ -74,23 +74,23 @@ public class FormValidationServiceImpl
                         }
                         case "table":
                         {
-                            checkRowsListsInTable(component, data, formId, validationResultList);
+                            checkDataNotNull(component, data, formId, validationResultList);
                             break;
                         }
                         case "datamap":
                         {
-                            validationResultList.addAll(validateComponent(component.getValueComponent(), data, formId));
+                            checkIfDataPresent(component, data, formId, validationResultList);
                             break;
                         }
                         case "datagrid":
                         case "editgrid":
                         {
-                            checkIfDataContainsComponents(component, data, formId, validationResultList);
+                            checkDataForGrids(component, data, formId, validationResultList);
                             break;
                         }
                         case "tree":
                         {
-                            checkIfChildrenExists(component, data, formId, validationResultList);
+                            checkTreeData(component, data, formId, validationResultList);
                             break;
                         }
                         case "tabs":
@@ -107,14 +107,39 @@ public class FormValidationServiceImpl
                 }
                 else
                 {
-                    if(component.getValidate()!=null)
-                    {
-                        return true;
-                    }
+                    return component.getValidate() != null;
                 }
             }
         }
         return false;
+    }
+
+    private void checkTreeData(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+        if(data !=null)
+        {
+            checkIfChildrenExists(component, data, formId, validationResultList);
+        }
+    }
+
+    private void checkDataForGrids(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+        if(data !=null)
+        {
+            checkIfDataContainsComponents(component, data, formId, validationResultList);
+        }
+    }
+
+    private void checkIfDataPresent(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+        if(data !=null)
+        {
+            validationResultList.addAll(validateComponent(component.getValueComponent(), data, formId));
+        }
+    }
+
+    private void checkDataNotNull(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+        if(data !=null)
+        {
+            checkRowsListsInTable(component, data, formId, validationResultList);
+        }
     }
 
     private void validateColumnsList(Map<String, Object> data, String formId, List<ValidationResult> validationResultList, List<Columns> columns)
