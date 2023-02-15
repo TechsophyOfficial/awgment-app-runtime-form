@@ -9,6 +9,7 @@ import com.techsophy.tsf.runtime.form.dto.FormAclDto;
 import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
 import com.techsophy.tsf.runtime.form.entity.FormAclEntity;
 import com.techsophy.tsf.runtime.form.exception.EntityIdNotFoundException;
+import com.techsophy.tsf.runtime.form.exception.EntityPathException;
 import com.techsophy.tsf.runtime.form.repository.FormAclRepository;
 import com.techsophy.tsf.runtime.form.service.impl.FormAclServiceImpl;
 import org.bson.Document;
@@ -63,17 +64,17 @@ import static org.mockito.Mockito.*;
     @Test
     void getFormAclSuccess() throws JsonProcessingException {
         FormAclEntity formAclDto = new FormAclEntity("123","123");
-        Mockito.when(formAclRepository.findById(any())).thenReturn(Optional.of(formAclDto));
+        Mockito.when(formAclRepository.findByFormId(any())).thenReturn(Optional.of(formAclDto));
         formAclService.getFormAcl("1");
-        Mockito.verify(formAclRepository,Mockito.times(1)).findById(any());
+        Mockito.verify(formAclRepository,Mockito.times(1)).findByFormId(any());
     }
     @Test
     void getFormAclNotFound() throws JsonProcessingException {
         FormAclEntity formAclDto = new FormAclEntity("123","123");
-        Mockito.when(formAclRepository.findById(any())).thenThrow(EntityIdNotFoundException.class);
-        Assertions.assertThrows(EntityIdNotFoundException.class, () ->
+        Mockito.when(formAclRepository.findByFormId(any())).thenThrow(EntityPathException.class);
+        Assertions.assertThrows(EntityPathException.class, () ->
                 formAclService.getFormAcl("1"));
-        Mockito.verify(formAclRepository,Mockito.times(1)).findById(any());
+        Mockito.verify(formAclRepository,Mockito.times(1)).findByFormId(any());
     }
     @Test
     void getAllFormsAclSuccess() throws JsonProcessingException {
