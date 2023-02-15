@@ -13,8 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
-import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.CONTAINS_ATLEAST_ONE_ALPHABET;
-import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.COUNT_WORDS;
+import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 
 @Data
 @AllArgsConstructor(onConstructor_ = {@Autowired})
@@ -45,20 +44,21 @@ public class Validate
       ObjectMapper objectMapper=new ObjectMapper();
       Map<String,Object> dataMap=objectMapper.convertValue(compData.data, Map.class);
       String key=component.getKey();
+      String value=EMPTY_STRING;
       if(dataMap!=null)
       {
-          String value = String.valueOf(dataMap.get(key)==null?"":dataMap.get(key));
-          validateMisssingField(validationResultList, dataMap, key);
-          validateMinLengthCondition(validationResultList, key, value);
-          validateMaxLengthCondition(validationResultList, key, value);
-          validateMinValueCondition(validationResultList, key, value);
-          validateMaxValueCondition(validationResultList, key, value);
-          validateMinWordsCondition(validationResultList, key, value);
-          validateMaxWordsCondition(validationResultList, key, value);
-          validatePatternCondition(validationResultList, component, key, value);
-          validateNumberCondition(validationResultList, component, key, value);
-          validationResultList.add(new ValidationResult(key));
+          value = String.valueOf(dataMap.get(key)==null?"":dataMap.get(key));
       }
+       validateMissingField(validationResultList, dataMap, key);
+       validateMinLengthCondition(validationResultList, key, value);
+       validateMaxLengthCondition(validationResultList, key, value);
+       validateMinValueCondition(validationResultList, key, value);
+       validateMaxValueCondition(validationResultList, key, value);
+       validateMinWordsCondition(validationResultList, key, value);
+       validateMaxWordsCondition(validationResultList, key, value);
+       validatePatternCondition(validationResultList, component, key, value);
+       validateNumberCondition(validationResultList, component, key, value);
+       validationResultList.add(new ValidationResult(key));
       return validationResultList;
    }
 
@@ -119,9 +119,9 @@ public class Validate
        }
     }
 
-    private void validateMisssingField(List<ValidationResult> validationResultList, Map<String, Object> dataMap, String key)
+    private void validateMissingField(List<ValidationResult> validationResultList, Map<String, Object> dataMap, String key)
     {
-        if(Boolean.TRUE.equals(required)&&(!dataMap.containsKey(key)))
+        if(Boolean.TRUE.equals(required)&&(dataMap==null||(!dataMap.containsKey(key))))
         {
            validationResultList.add(new ValidationResult(key,FORM_DATA_MISSING_MANDATORY_FIELDS));
         }

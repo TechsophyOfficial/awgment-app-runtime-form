@@ -74,18 +74,18 @@ public class FormValidationServiceImpl
                         }
                         case "table":
                         {
-                            checkDataNotNull(component, data, formId, validationResultList);
+                            checkValidTableData(component, data, formId, validationResultList);
                             break;
                         }
                         case "datamap":
                         {
-                            checkIfDataPresent(component, data, formId, validationResultList);
+                            checkIfDataIsPresent(component, data, formId, validationResultList);
                             break;
                         }
                         case "datagrid":
                         case "editgrid":
                         {
-                            checkDataForGrids(component, data, formId, validationResultList);
+                            checkIfDataIsNotNull(component, data, formId, validationResultList);
                             break;
                         }
                         case "tree":
@@ -121,21 +121,23 @@ public class FormValidationServiceImpl
         }
     }
 
-    private void checkDataForGrids(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+    private void checkIfDataIsNotNull(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
         if(data !=null)
         {
             checkIfDataContainsComponents(component, data, formId, validationResultList);
         }
     }
 
-    private void checkIfDataPresent(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+    private void checkIfDataIsPresent(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList)
+    {
         if(data !=null)
         {
             validationResultList.addAll(validateComponent(component.getValueComponent(), data, formId));
         }
     }
 
-    private void checkDataNotNull(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList) {
+    private void checkValidTableData(Component component, Map<String, Object> data, String formId, List<ValidationResult> validationResultList)
+    {
         if(data !=null)
         {
             checkRowsListsInTable(component, data, formId, validationResultList);
