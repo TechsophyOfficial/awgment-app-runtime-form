@@ -1294,7 +1294,7 @@ public class FormDataServiceImpl implements FormDataService
     {
         boolean flag = false;
         long count = 0;
-        Bson filter= Filters.eq(UNDERSCORE_ID,Long.valueOf(id));
+        Bson filter= Filters.eq(UNDERSCORE_ID,id);
         checkMongoCollectionIfExistsOrNot(formId);
         try
         {
