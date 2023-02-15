@@ -2,14 +2,16 @@ package com.techsophy.tsf.runtime.form.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.result.DeleteResult;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormAclDto;
 import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
 import com.techsophy.tsf.runtime.form.entity.FormAclEntity;
 import com.techsophy.tsf.runtime.form.exception.EntityIdNotFoundException;
-import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
 import com.techsophy.tsf.runtime.form.repository.FormAclRepository;
 import com.techsophy.tsf.runtime.form.service.impl.FormAclServiceImpl;
+import org.bson.Document;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +32,7 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +45,10 @@ import static org.mockito.Mockito.doNothing;
     ObjectMapper objectMapper;
     @Mock
     GlobalMessageSource globalMessageSource;
+    @Mock
+    MongoCollection<Document> mongoCollection;
+    @Mock
+    DeleteResult deleteResult;
     @InjectMocks
     FormAclServiceImpl formAclService;
 
@@ -58,15 +64,15 @@ import static org.mockito.Mockito.doNothing;
     void getFormAclSuccess() throws JsonProcessingException {
         FormAclEntity formAclDto = new FormAclEntity("123","123");
         Mockito.when(formAclRepository.findById(any())).thenReturn(Optional.of(formAclDto));
-        formAclService.getFormAcl(BigInteger.ONE);
+        formAclService.getFormAcl("1");
         Mockito.verify(formAclRepository,Mockito.times(1)).findById(any());
     }
     @Test
-    void getFormAclException() throws JsonProcessingException {
+    void getFormAclNotFound() throws JsonProcessingException {
         FormAclEntity formAclDto = new FormAclEntity("123","123");
         Mockito.when(formAclRepository.findById(any())).thenThrow(EntityIdNotFoundException.class);
         Assertions.assertThrows(EntityIdNotFoundException.class, () ->
-                formAclService.getFormAcl(BigInteger.ONE));
+                formAclService.getFormAcl("1"));
         Mockito.verify(formAclRepository,Mockito.times(1)).findById(any());
     }
     @Test
@@ -78,14 +84,18 @@ import static org.mockito.Mockito.doNothing;
         paginationResponsePayload.setPage(1);
         Mockito.when(formAclRepository.findAll((Pageable) any())).thenReturn(page);
         Mockito.when(objectMapper.convertValue(page,PaginationResponsePayload.class)).thenReturn(paginationResponsePayload);
-        formAclService.getAllFormsAcl(1,1);
+        formAclService.getAllFormsAcl(1L,1L);
         Mockito.verify(formAclRepository,Mockito.times(1)).findAll((Pageable) any());
     }
     @Test
     void deleteFormAclSuccess() throws JsonProcessingException {
         FormAclEntity formAclDto = new FormAclEntity("1223","123");
-        doNothing().when(formAclRepository).deleteById(any());
-        formAclService.deleteFormAcl(BigInteger.ONE);
-        Mockito.verify(formAclRepository,Mockito.times(1)).deleteById(any());
+        Document document = new Document();
+        document.append("name", "Ram");
+        Mockito.when(mongoTemplate.getCollection(any())).thenReturn(mongoCollection);
+        Mockito.when(mongoCollection.deleteOne(any())).thenReturn(deleteResult);
+        Mockito.when(deleteResult.getDeletedCount()).thenReturn(1L);
+        formAclService.deleteFormAcl("1");
+        verify(mongoTemplate,times(1)).getCollection(any());
     }
 }

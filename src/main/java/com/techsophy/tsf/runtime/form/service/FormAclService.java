@@ -4,15 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.techsophy.tsf.runtime.form.dto.FormAclDto;
 import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
 
-import java.math.BigInteger;
-
 public interface FormAclService {
     FormAclDto saveFormAcl(FormAclDto formAclDto) throws JsonProcessingException;
 
-    FormAclDto getFormAcl(BigInteger id) ;
+    FormAclDto getFormAcl(String formId) ;
 
-    PaginationResponsePayload getAllFormsAcl(Integer page, Integer size) throws JsonProcessingException;
+    PaginationResponsePayload getAllFormsAcl(Long page, Long size) throws JsonProcessingException;
 
-    void deleteFormAcl(BigInteger id) throws JsonProcessingException;
+    Long deleteFormAcl(String formId) throws JsonProcessingException;
 
 }

@@ -2,14 +2,19 @@ package com.techsophy.tsf.runtime.form.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.DeleteResult;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormAclDto;
 import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
 import com.techsophy.tsf.runtime.form.entity.FormAclEntity;
 import com.techsophy.tsf.runtime.form.exception.EntityIdNotFoundException;
+import com.techsophy.tsf.runtime.form.exception.EntityPathException;
 import com.techsophy.tsf.runtime.form.repository.FormAclRepository;
 import com.techsophy.tsf.runtime.form.service.FormAclService;
 import lombok.RequiredArgsConstructor;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,9 +27,9 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import java.math.BigInteger;
 
+import static com.mongodb.client.model.Filters.eq;
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.ENTITY_ID_NOT_FOUND_EXCEPTION;
-import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.ACL_ID;
-import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.FORM_ID;
+import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.*;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -43,22 +48,24 @@ public class FormAclServiceImpl implements FormAclService {
     }
 
     @Override
-    public FormAclDto getFormAcl(BigInteger id) {
-        FormAclEntity formAclEntity = this.formAclRepository.findById(id).orElseThrow(()->new EntityIdNotFoundException(ENTITY_ID_NOT_FOUND_EXCEPTION,globalMessageSource.get(ENTITY_ID_NOT_FOUND_EXCEPTION, String.valueOf(id))));
+    public FormAclDto getFormAcl(String formId) {
+        FormAclEntity formAclEntity = this.formAclRepository.findByFormId(formId).orElseThrow(()-> new EntityPathException(NO_RECORD_FOUND,globalMessageSource.get(NO_RECORD_FOUND,formId)));
         return  this.objectMapper.convertValue(formAclEntity,FormAclDto.class);
     }
 
     @Override
-    public PaginationResponsePayload getAllFormsAcl(Integer page, Integer size) throws JsonProcessingException {
-        Pageable pageable = PageRequest.of(page, size);
+    public PaginationResponsePayload getAllFormsAcl(Long page, Long size) throws JsonProcessingException {
+        Pageable pageable = PageRequest.of(Math.toIntExact(page), Math.toIntExact(size));
         Page<FormAclEntity> formAclEntityPage= formAclRepository.findAll(pageable);
         PaginationResponsePayload paginationResponsePayload = this.objectMapper.convertValue(formAclEntityPage,PaginationResponsePayload.class);
-       paginationResponsePayload.setPage(page);
+       paginationResponsePayload.setPage(Math.toIntExact(page));
         return paginationResponsePayload;
     }
 
     @Override
-    public void deleteFormAcl(BigInteger id) throws JsonProcessingException {
-        this.formAclRepository.deleteById(id);
+    public Long deleteFormAcl(String formId) throws JsonProcessingException {
+        MongoCollection<Document> collection = mongoTemplate.getCollection("tp_formAcl");
+        DeleteResult deleteOnePublisher = collection.deleteOne(eq("formId", formId));
+        return deleteOnePublisher.getDeletedCount();
     }
 }
