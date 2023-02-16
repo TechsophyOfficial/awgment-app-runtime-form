@@ -18,24 +18,24 @@ import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 public interface FormAclController {
     @GetMapping(FORMID+ACL)
     @ApiOperation(value =GET_FORM_ACL ,notes=REQUIRES_ROLE+AWGMENT_RUNTIME_FORMACL_READ+OR+AWGMENT_RUNTIME_FORMACL_ALL)
-    @PreAuthorize("hasAnyAuthority('awgment-form-acl-read') or ('awgment-form-acl-all')")
+    @PreAuthorize("hasAnyAuthority('awgment-form-acl-read') or hasAnyAuthority('awgment-form-acl-all')")
     ApiResponse<FormAclDto> getFormAcl(@PathVariable(FORM_ID) String formId) throws JsonProcessingException;
 
     @PostMapping(ACL)
     @ApiOperation(value =SAVE_FORM_ACL ,notes=REQUIRES_ROLE+AWGMENT_RUNTIME_FORMACL_CREATE_OR_UPDATE+OR+AWGMENT_RUNTIME_FORMACL_ALL)
 
-    @PreAuthorize("hasAnyAuthority('awgment-form-acl-create-or-update') or ('awgment-form-acl-all')")
+    @PreAuthorize("hasAnyAuthority('awgment-form-acl-create-or-update') or hasAnyAuthority('awgment-form-acl-all')")
     ApiResponse<FormAclDto> saveFormAcl(@RequestBody @Validated FormAclDto formAclDto) throws JsonProcessingException;
 
     @GetMapping(ACL)
     @ApiOperation(value =GET_FORMS_ACL ,notes=REQUIRES_ROLE+AWGMENT_RUNTIME_FORMACL_READ+OR+AWGMENT_RUNTIME_FORMACL_ALL)
-    @PreAuthorize("hasAnyAuthority('awgment-form-acl-read') or ('awgment-form-acl-all')")
+    @PreAuthorize("hasAnyAuthority('awgment-form-acl-read') or hasAnyAuthority('awgment-form-acl-all')")
     ApiResponse<Page<FormAclEntity>> getAllFormsAcl(@RequestParam(required = false,defaultValue = "0") Long page,
                                                     @RequestParam(required = false,defaultValue = "200") Long size) throws JsonProcessingException;
 
     @DeleteMapping(FORMID+ACL)
     @ApiOperation(value =DELETE_FORM_ACL ,notes=REQUIRES_ROLE+AWGMENT_RUNTIME_FORMACL_DELETE+OR+AWGMENT_RUNTIME_FORMACL_ALL)
-    @PreAuthorize("hasAnyAuthority('awgment-form-acl-delete') or ('awgment-form-acl-all')")
+    @PreAuthorize("hasAnyAuthority('awgment-form-acl-delete') or hasAnyAuthority('awgment-form-acl-all')")
     ApiResponse<Void> deleteFormAcl(@PathVariable(FORM_ID) String formId) throws JsonProcessingException;
 
 }
