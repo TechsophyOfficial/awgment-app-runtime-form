@@ -2,6 +2,8 @@ package com.techsophy.tsf.runtime.form.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.MongoException;
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.ReturnDocument;
@@ -47,6 +49,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.regex.Pattern;
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
+import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.DUPLICATE_FIELD_VALUE;
+import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.E11000;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.SEMICOLON;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static org.apache.commons.lang3.StringUtils.*;
@@ -77,6 +81,14 @@ public class FormDataServiceImpl implements FormDataService
     private FormService formService = null;
     private FormValidationServiceImpl formValidationServiceImpl;
 
+    private void handleMongoException(Exception e) {
+        boolean exist = e.getMessage().contains(E11000);
+        if (exist) {
+            throw new InvalidInputException(DUPLICATE_FIELD_VALUE, globalMessageSource.get(DUPLICATE_FIELD_VALUE));
+        } else {
+            throw new InvalidInputException(DUPLICATE_FIELD_VALUE, e.getMessage());
+        }
+    }
     @Override
     public FormDataResponse saveFormData(FormDataSchema formDataSchema) throws IOException
     {
@@ -115,8 +127,13 @@ public class FormDataServiceImpl implements FormDataService
                     version= (int) mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).find(filter).iterator().next().get(VERSION);
                     version = updateVersion(version);
                     id=BigInteger.valueOf(Long.parseLong(uniqueDocumentId));
-                    mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).updateOne(filter,Updates.combine(
-                            Updates.set(FORM_DATA,formDataDefinition.getFormData()),Updates.set(VERSION,version)));
+                    try {
+                        mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).updateOne(filter,Updates.combine(
+                                Updates.set(FORM_DATA,formDataDefinition.getFormData()),Updates.set(VERSION,version)));
+                    }catch(Exception e)
+                    {
+                        handleMongoException(e);
+                    }
                     FormDataAuditSchema formDataAuditSchema = getFormDataAuditSchema(formId, 1, formDataDefinition);
                     this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
                 }
@@ -153,7 +170,12 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     private void saveToMongo(String formId, FormDataDefinition formDataDefinition) {
-        mongoTemplate.save(formDataDefinition, TP_RUNTIME_FORM_DATA + formId);
+        try{
+            mongoTemplate.save(formDataDefinition, TP_RUNTIME_FORM_DATA + formId);
+        }catch(Exception e){
+            handleMongoException(e);
+        }
+
     }
 
     private static void setUpdateAudit(BigInteger loggedInUserId, FormDataDefinition formDataDefinition) {
@@ -368,8 +390,14 @@ public class FormDataServiceImpl implements FormDataService
         formDataDefinition.setCreatedOn(String.valueOf(document.get(CREATED_ON)));
         formDataDefinition.setUpdatedById(String.valueOf(loggedInUserId));
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
-        mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).updateOne(filter,Updates.combine(
-                Updates.set(FORM_DATA,formData),Updates.set(VERSION,version),Updates.set(FORM_META_DATA,formMetaData)));
+        try {
+            mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA + formId).updateOne(filter, Updates.combine(
+                    Updates.set(FORM_DATA, formData), Updates.set(VERSION, version), Updates.set(FORM_META_DATA, formMetaData)));
+        }catch(Exception e)
+        {
+            handleMongoException(e);
+
+        }
         FormDataAuditSchema formDataAuditSchema = getFormDataAuditSchema(formId, version, formDataDefinition);
         this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
         if (elasticEnable)
