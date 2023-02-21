@@ -39,12 +39,10 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.*;
-
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.CONTENT;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.DATA;
@@ -140,7 +138,6 @@ class FormDataServiceElasticDisabledTest
         FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID_VALUE,TEST_FORM_ID,
                 TEST_VERSION,testFormData,testFormMetaData);
         doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
                 String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
         Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
@@ -170,7 +167,6 @@ class FormDataServiceElasticDisabledTest
         Mockito.when(mockMongoCollection.find((Bson) any())).thenReturn(iterable);
         Mockito.when(iterable.iterator()).thenReturn(cursor);
         Mockito.when(cursor.next()).thenReturn(document);
-//        Mockito.when(mockMongoCollection.findOneAndReplace((Bson) any(),any(),any())).thenReturn(formDataMap);
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
         Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
         Assertions.assertNotNull(mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
@@ -187,7 +183,6 @@ class FormDataServiceElasticDisabledTest
         FormDataSchema formDataSchemaTest=new FormDataSchema(null,TEST_FORM_ID,
                 TEST_VERSION,testFormData,testFormMetaData);
         doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
                 String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
         Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
@@ -470,7 +465,6 @@ class FormDataServiceElasticDisabledTest
         Mockito.when(iterable.iterator()).thenReturn(cursor);
         Mockito.when(cursor.hasNext()).thenReturn(true);
         Mockito.when(cursor.next()).thenReturn(document);
-//        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
         Assertions.assertNotNull(mockFormDataServiceImpl.updateFormData(formDataSchemaTest));
     }
 
@@ -921,8 +915,6 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinitionsList.add(formDataDefinition);
         Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-//        Mockito.when(mockObjectMapper.convertValue(document.get(FORM_DATA),Map.class)).thenReturn(formDataMap);
-//        Mockito.when(mockObjectMapper.convertValue(document.get(FORM_META_DATA),Map.class)).thenReturn(testFormMetaData);
         Assertions.assertNotNull(mockFormDataServiceImpl.getFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID,EMPTY_STRING));
     }
 
