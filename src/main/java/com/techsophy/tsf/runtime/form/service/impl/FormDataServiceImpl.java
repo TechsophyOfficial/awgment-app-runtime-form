@@ -110,6 +110,7 @@ public class FormDataServiceImpl implements FormDataService
         setUpdateAudit(loggedInUserId, formDataDefinition);
         if (mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formId))
             {
+
                 if (uniqueDocumentId==null|| isEmpty(uniqueDocumentId))
                 {
                     id = getNextId();
