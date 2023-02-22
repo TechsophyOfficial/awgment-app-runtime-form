@@ -234,7 +234,7 @@ class FormDataServiceElasticDisabledTest
         formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
         formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
         formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        Mockito.when(mockMongoTemplate.save(any(),anyString())).thenThrow(new RuntimeException("E11000 duplicate key"));
+        mockMongoSave();
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
     }
@@ -274,7 +274,7 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void saveFormDataWithUniqueKeyCheck1() throws IOException
+    void saveFormDataWithUniqueKeyCheckWithMongoErrorCode() throws IOException
     {
         Map<String, Object> testFormData = new HashMap<>();
         testFormData.put(NAME, NAME_VALUE);
@@ -302,9 +302,14 @@ class FormDataServiceElasticDisabledTest
         formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
         formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
         formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        Mockito.when(mockMongoTemplate.save(any(),anyString())).thenThrow(new RuntimeException("E11000 duplicate key"));
+        mockMongoSave();
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
+    }
+
+    public void mockMongoSave()
+    {
+        Mockito.when(mockMongoTemplate.save(any(),anyString())).thenThrow(new RuntimeException(DUPLICATE_KEY_ERROR_CODE));
     }
 
     @Test
@@ -389,9 +394,7 @@ class FormDataServiceElasticDisabledTest
         Bson update = Updates.combine(
                 Updates.set(FORM_DATA, null),
                 Updates.set(VERSION, "2"));
-        Mockito.doThrow(new RuntimeException("E11000 duplicate key")).when(mockMongoCollection).updateOne(filter, update);
-
-//        Mockito.when(mockMongoTemplate.save(any(),anyString())).thenThrow(new RuntimeException("E11000 duplicate key"));
+        Mockito.doThrow(new RuntimeException(DUPLICATE_KEY_ERROR_CODE)).when(mockMongoCollection).updateOne(filter, update);
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
     }
@@ -510,7 +513,7 @@ class FormDataServiceElasticDisabledTest
                 Updates.set(FORM_DATA, testFormData),
                 Updates.set(VERSION, "2"),
                 Updates.set(FORM_META_DATA, testFormMetaData));
-        Mockito.doThrow(new RuntimeException("E11000 duplicate key")).when(mockMongoCollection).updateOne(filter, update);
+        Mockito.doThrow(new RuntimeException(DUPLICATE_KEY_ERROR_CODE)).when(mockMongoCollection).updateOne(filter, update);
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.updateFormData(formDataSchemaTest));
     }
 
