@@ -12,7 +12,6 @@ public class FormModelerConstants
     public static final String ORDER_3="3";
     public static final String ORDER_4="4";
     public static final String SYSTEM_VERSION_1="1";
-    public static final String TP_APP_RUNTIME_FORM="tp-app-runtime-form";
     public static final String ADD_USER_FORM= "add-user-form01";
     public static final String EDIT_GROUP_FORM= "edit-group-form01";
     public static final String ADD_GROUP_FORM= "add-group-form01";
@@ -35,6 +34,9 @@ public class FormModelerConstants
     public static final String CAUSE="Cause : ";
     public static final String BRACKETS_IN_CONTROLLER="() in controller";
     public static final String BRACKETS_IN_SERVICE="() in service";
+
+    //ACLConstants
+    public static final String DENY="deny";
 
     //JWTRoleConverter
     public static final String AWGMENT_ROLES_MISSING_IN_CLIENT_ROLES ="AwgmentRoles are missing in clientRoles";
@@ -110,9 +112,6 @@ public class FormModelerConstants
     public static final String DELETE_FORM_DATA_SUCCESS="DELETE_FORM_DATA_SUCCESS";
     public static final String DELETE_ALL_FORM_DATA_SUCCESS="DELETE_ALL_FORM_DATA_SUCCESS";
     public static final String FORM="form";
-    public static final String FORM_DATA_VALIDATE_URL ="/form-data/validate";
-    public static final String FORM_DATA_VALIDATED_SUCCESSFULLY="FORM_DATA_VALIDATED_SUCCESSFULLY";
-    public static final String  FORM_DATA_DOT="formData.";
     public static final String UNIQUE="unique";
 
     /*FormSchemaConstants*/
@@ -127,40 +126,22 @@ public class FormModelerConstants
     /*FormDefinitionConstants*/
     public static final String TP_FORM_DEFINITION_COLLECTION = "tp_runtime_form_definition";
 
-    /*AddUserConstants*/
-    public static final String AWGMENT_ADD_USER = "awgment_add_user";
-
     /*FormDefinitionCustomRepositoryConstants*/
     public static final String FORM_ID ="formId";
     public static final String FORM_NAME ="name";
     public static final String FORM_TYPE ="type";
-    public static final String EMAIL="email";
     public static final String COMPONENTS="components";
-    public static final String VALIDATE="validate";
-    public static final String CONDITIONAL="conditional";
-    public static final String SHOW="show";
-    public static final String WHEN="when";
-    public static final String EQ="eq";
-    public static final String INSIDE_EDIT_GRID="insideEditGrid";
     public static final String REQUIRED="required";
-    public static final String KEY="key";
-    public static final String COLUMNS="columns";
-    public static final String GRID="Grid";
-    public static final String DATAGRID= "datagrid";
 
     //FormDataService
     public static final String TP_RUNTIME_FORM_DATA ="tp_runtime_form_data_";
     public static final String FORM_DATA="formData";
-    public static final String SPACE=" ";
-    public static final String USER_DEFINITION_FIRST_NAME="firstName";
-    public static final String USER_DEFINITION_LAST_NAME ="lastName";
     public static final String CREATED_BY_ID="createdById";
     public static final String CREATED_BY_NAME="createdByName";
     public static final String UPDATED_BY_ID="updatedById";
     public static final String UPDATED_BY_NAME="updatedByName";
     public static final String FORM_META_DATA="formMetaData";
     public static final String  DOT=".";
-    public static final String FORM_DATA_MANDATORY_FIELDS_SUCCESS="Form data contains all mandatory fields";
     public static final String COMMA=",";
     public static final String NULL="null";
     public static final String DEFAULT_PAGE_LIMIT="${default.pagelimit}";
@@ -187,13 +168,7 @@ public class FormModelerConstants
     public static final String ELASTIC_SOURCE ="${elastic.source}";
     public static final String ELASTIC_ENABLE="${elastic.enable}";
     public static final String Q="q";
-    public static final String MIN="min";
-    public static final String MAX="max";
-    public static final String MIN_LENGTH="minLength";
-    public static final String MAX_LENGTH="maxLength";
     public static final String CONTAINS_ATLEAST_ONE_ALPHABET=".*[a-zA-Z]+.*";
-    public static final String MIN_WORDS="minWords";
-    public static final String MAX_WORDS="maxWords";
     public static final String COUNT_WORDS="\\s+";
     public static final String METADATA="metaData";
     public static final String LOOKUP="    $lookup: {\n";
@@ -478,8 +453,5 @@ public class FormModelerConstants
     public static final String GATEWAY_URL = "${gateway.uri}";
     public static final String RUNTIME_FORM = "tp-app-runtime-form";
     public static final String RUNTIME_FORM_MODELER_API_VERSION_1 = "Runtime Form API v1.0";
-    public static final String EMAIL_PATTERN = "^[a-zA-Z0-9+_%.-]+@[a-zA-Z0-9.-]+\\.[A-Za-z]{2,3}$";
     public static final String SERVICE = "service";
-    public static final String SUCCESS = "success";
-    public static final String VALIDATION = "All are validated";
 }
