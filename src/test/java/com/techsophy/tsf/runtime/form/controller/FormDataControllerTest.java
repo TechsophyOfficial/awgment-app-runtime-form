@@ -5,10 +5,10 @@ import com.techsophy.tsf.commons.ACLDecision;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.impl.FormDataControllerImpl;
 import com.techsophy.tsf.runtime.form.dto.*;
-import com.techsophy.tsf.runtime.form.exception.ACLException;
 import com.techsophy.tsf.runtime.form.model.ApiResponse;
 import com.techsophy.tsf.runtime.form.service.FormAclService;
 import com.techsophy.tsf.runtime.form.service.FormDataService;
+import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,6 +41,8 @@ class FormDataControllerTest
     GlobalMessageSource globalMessageSource;
     @Mock
     FormAclService mockFormACLService;
+    @Mock
+    RelationUtils mockRelationUtils;
     FormDataControllerImpl formDataController;
 
     WireMockServer wireMockServer ;
@@ -55,7 +58,7 @@ class FormDataControllerTest
 
     @BeforeEach
     public void beforeEach() {
-        formDataController = new FormDataControllerImpl(globalMessageSource, formDataService, mockFormACLService, tokenUtils, wireMockServer.baseUrl());
+        formDataController = new FormDataControllerImpl(globalMessageSource, formDataService, mockFormACLService, tokenUtils,mockRelationUtils, wireMockServer.baseUrl());
     }
 
     public void commonStubs()
@@ -196,20 +199,6 @@ class FormDataControllerTest
         ApiResponse apiResponse=new ApiResponse(paginationResponsePayload,true,"Form data retrieved successfully");
         Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data retrieved successfully");
         Assertions.assertEquals(apiResponse,formDataController.getAllFormDataByFormId("101","994102731543871488:orderId,994122561634369536:parcelId",null,null,null,null,EMPTY_STRING,null));
-    }
-
-    @Test
-    void getFormDataByFormIdAndIdRelationsExceptionTest()
-    {
-        FormAclDto formAclDto1 = new FormAclDto();
-        formAclDto1.setAclId("2");
-        formAclDto1.setFormId("101");
-        FormAclDto formAclDto2 = new FormAclDto();
-        formAclDto2.setAclId("1");
-        formAclDto2.setFormId("102");
-        Mockito.when(mockFormACLService.getFormAcl("102")).thenReturn(formAclDto2);
-        Mockito.when(mockFormACLService.getFormAcl("101")).thenReturn(formAclDto1);
-        Assertions.assertThrows(ACLException.class, () -> formDataController.getFormDataByFormIdAndId("102", "201", "101:orderId,994122561634369536:parcelId"));
     }
 
     @Test

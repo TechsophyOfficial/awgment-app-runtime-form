@@ -6,6 +6,7 @@ import com.techsophy.tsf.runtime.form.controller.impl.SequenceGeneratorImpl;
 import com.techsophy.tsf.runtime.form.dto.SequenceGeneratorDTO;
 import com.techsophy.tsf.runtime.form.dto.SequenceGeneratorResponse;
 import com.techsophy.tsf.runtime.form.service.SequenceGeneratorService;
+import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
@@ -56,6 +57,8 @@ class SequenceGeneratorImplTest
     SequenceGeneratorDTO sequenceGeneratorDTO;
     @MockBean
     TokenUtils mockTokenUtils;
+    @MockBean
+    private RelationUtils mockRelationUtils;
     @Mock
     SequenceGeneratorResponse sequenceGeneratorResponse;
     @Autowired

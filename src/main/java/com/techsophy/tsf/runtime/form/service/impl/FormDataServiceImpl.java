@@ -2,8 +2,6 @@ package com.techsophy.tsf.runtime.form.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.MongoException;
-import com.mongodb.MongoWriteException;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.ReturnDocument;
@@ -49,7 +47,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.regex.Pattern;
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
-import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.DUPLICATE_FIELD_VALUE;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.E11000;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.SEMICOLON;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;

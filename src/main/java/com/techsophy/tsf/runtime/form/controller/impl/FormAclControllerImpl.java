@@ -26,7 +26,11 @@ public class FormAclControllerImpl implements FormAclController {
 
     @Override
     public ApiResponse<FormAclDto> getFormAcl(String formId) throws JsonProcessingException {
-        return new ApiResponse<>(formAclService.getFormAcl(formId),true,"Data get successfully");
+        FormAclDto dto = formAclService.getFormAcl(formId);
+        if(dto == null){
+            throw new EntityPathException(NO_RECORD_FOUND,globalMessageSource.get(NO_RECORD_FOUND,formId));
+        }
+        return new ApiResponse<>(dto,true,"Data get successfully");
     }
 
     @Override

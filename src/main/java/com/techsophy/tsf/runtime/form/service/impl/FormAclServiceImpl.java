@@ -3,14 +3,11 @@ package com.techsophy.tsf.runtime.form.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.DeleteResult;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormAclDto;
 import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
 import com.techsophy.tsf.runtime.form.entity.FormAclEntity;
-import com.techsophy.tsf.runtime.form.exception.EntityIdNotFoundException;
-import com.techsophy.tsf.runtime.form.exception.EntityPathException;
 import com.techsophy.tsf.runtime.form.repository.FormAclRepository;
 import com.techsophy.tsf.runtime.form.service.FormAclService;
 import lombok.RequiredArgsConstructor;
@@ -25,11 +22,10 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
-import java.math.BigInteger;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.ENTITY_ID_NOT_FOUND_EXCEPTION;
-import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.*;
+import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.ACL_ID;
+import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.FORM_ID;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -49,7 +45,8 @@ public class FormAclServiceImpl implements FormAclService {
 
     @Override
     public FormAclDto getFormAcl(String formId) {
-        FormAclEntity formAclEntity = this.formAclRepository.findByFormId(formId).orElseThrow(()-> new EntityPathException(NO_RECORD_FOUND,globalMessageSource.get(NO_RECORD_FOUND,formId)));
+        FormAclEntity formAclEntity = this.formAclRepository.findByFormId(formId)
+                .orElse(null);
         return  this.objectMapper.convertValue(formAclEntity,FormAclDto.class);
     }
 

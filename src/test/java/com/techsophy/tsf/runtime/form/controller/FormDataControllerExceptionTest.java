@@ -15,6 +15,7 @@ import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
 import com.techsophy.tsf.runtime.form.service.FormAclService;
 import com.techsophy.tsf.runtime.form.service.FormDataService;
+import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import org.junit.Rule;
 import org.junit.jupiter.api.*;
@@ -48,6 +49,8 @@ class FormDataControllerExceptionTest {
     @Mock
     FormDataService formDataService;
     @Mock
+    RelationUtils mockRelationUtils;
+    @Mock
     GlobalMessageSource globalMessageSource;
     @Mock
     FormAclService mockFormACLService;
@@ -63,8 +66,9 @@ class FormDataControllerExceptionTest {
     }
 
     @BeforeEach
-    public void beforeEach() {
-        formDataController = new FormDataControllerImpl(globalMessageSource, formDataService, mockFormACLService, mockTokenUtils, wireMockServer.baseUrl());
+    public void beforeEach()
+    {
+        formDataController = new FormDataControllerImpl(globalMessageSource, formDataService, mockFormACLService, mockTokenUtils,mockRelationUtils, wireMockServer.baseUrl());
     }
 
     public void commonStubs() {
@@ -173,5 +177,4 @@ class FormDataControllerExceptionTest {
         Mockito.when(mockFormACLService.getFormAcl(anyString())).thenReturn(formAclDto);
         Assertions.assertThrows(ACLException.class, () -> formDataController.getFormDataByFormIdAndId("101", "201", "994102731543871488:orderId,994122561634369536:parcelId"));
     }
-
 }

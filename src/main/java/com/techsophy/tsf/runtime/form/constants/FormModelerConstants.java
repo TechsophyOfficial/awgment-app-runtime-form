@@ -36,7 +36,7 @@ public class FormModelerConstants
     public static final String BRACKETS_IN_SERVICE="() in service";
 
     //ACLConstants
-    public static final String DENY="deny";
+    public static final String ALLOW="allow";
 
     //JWTRoleConverter
     public static final String AWGMENT_ROLES_MISSING_IN_CLIENT_ROLES ="AwgmentRoles are missing in clientRoles";

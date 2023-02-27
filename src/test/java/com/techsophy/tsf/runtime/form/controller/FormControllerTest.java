@@ -5,9 +5,11 @@ import com.techsophy.tsf.runtime.form.config.CustomFilter;
 import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
 import com.techsophy.tsf.runtime.form.dto.FormSchema;
 import com.techsophy.tsf.runtime.form.service.FormService;
+import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -32,9 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.TOKEN;
+import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -56,6 +58,8 @@ class FormControllerTest
     TokenUtils mockTokenUtils;
     @Autowired
     private MockMvc mockMvc;
+    @MockBean
+    private RelationUtils mockRelationUtils;
     @MockBean
     FormService mockFormService;
     @Autowired

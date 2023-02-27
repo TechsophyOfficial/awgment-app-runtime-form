@@ -1,5 +1,6 @@
 package com.techsophy.tsf.runtime.form.config;
 
+import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.MessageSource;
 import org.springframework.test.context.ActiveProfiles;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
@@ -19,7 +21,8 @@ class GlobalMessageSourceTest
 {
     @Mock
     MessageSource mockMessageSource;
-
+    @MockBean
+    RelationUtils mockRelationUtils;
     @InjectMocks
     GlobalMessageSource mockGlobalMessageSource;
 
