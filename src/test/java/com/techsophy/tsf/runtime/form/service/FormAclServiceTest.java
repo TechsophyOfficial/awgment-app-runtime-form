@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
+import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormAclDto;
 import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
@@ -50,14 +51,26 @@ import static org.mockito.Mockito.*;
     MongoCollection<Document> mongoCollection;
     @Mock
     DeleteResult deleteResult;
+    @Mock
+    IdGeneratorImpl idGenerator;
     @InjectMocks
     FormAclServiceImpl formAclService;
 
     @Test
-    void saveFormAclSuccess() throws JsonProcessingException {
+    void saveFormAclSuccessWithId() throws JsonProcessingException {
         FormAclDto formAclDto = new FormAclDto();
         formAclDto.setFormId("123");
         formAclDto.setAclId("123");
+        formAclDto.setId("123");
+        formAclService.saveFormAcl(formAclDto);
+        Mockito.verify(mongoTemplate,Mockito.times(1)).findAndModify((Query) any(), (UpdateDefinition) any(), (FindAndModifyOptions) any(),any());
+    }
+    @Test
+    void saveFormAclSuccessWithIdNuLL() throws JsonProcessingException {
+        FormAclDto formAclDto = new FormAclDto();
+        formAclDto.setFormId("123");
+        formAclDto.setAclId("123");
+        Mockito.when(idGenerator.nextId()).thenReturn(BigInteger.valueOf(1));
         formAclService.saveFormAcl(formAclDto);
         Mockito.verify(mongoTemplate,Mockito.times(1)).findAndModify((Query) any(), (UpdateDefinition) any(), (FindAndModifyOptions) any(),any());
     }

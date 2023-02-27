@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.DeleteResult;
+import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormAclDto;
 import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
@@ -38,10 +39,14 @@ public class FormAclServiceImpl implements FormAclService {
     private final MongoTemplate mongoTemplate;
     private final ObjectMapper objectMapper;
     private final GlobalMessageSource globalMessageSource;
+    private final IdGeneratorImpl idGenerator;
     @Override
     public FormAclDto saveFormAcl(FormAclDto formAclDto) throws JsonProcessingException {
+        if(formAclDto.getId()==null) {
+            formAclDto.setId(idGenerator.nextId().toString());
+        }
         Query query = new Query().addCriteria(Criteria.where(FORM_ID).is(formAclDto.getFormId()));
-        Update updateDefinition = new Update().set(ACL_ID,formAclDto.getAclId());
+        Update updateDefinition = new Update().set(ACL_ID,formAclDto.getAclId()).set(ID,formAclDto.getId());
         FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true).upsert(true);
         FormAclEntity formAclEntity = mongoTemplate.findAndModify(query,updateDefinition,options,FormAclEntity.class);
         return this.objectMapper.convertValue(formAclEntity,FormAclDto.class);
