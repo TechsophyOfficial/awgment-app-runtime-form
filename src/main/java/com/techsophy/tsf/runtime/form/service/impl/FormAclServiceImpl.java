@@ -25,8 +25,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.ACL_ID;
-import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.FORM_ID;
+import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.*;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
