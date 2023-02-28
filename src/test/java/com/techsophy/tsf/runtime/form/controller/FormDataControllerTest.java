@@ -55,7 +55,7 @@ class FormDataControllerTest
     @BeforeAll
     public void beforeTest()
     {
-        wireMockServer = new WireMockServer();
+        wireMockServer = new WireMockServer(9292);
         wireMockServer.start();
         wireMockServer.resetAll();
         commonStubs();
@@ -68,68 +68,74 @@ class FormDataControllerTest
 
     public void commonStubs()
     {
-        stubFor(post("/accounts/v1/acl/2/evaluate").willReturn(okJson("{\n" +
-                "    \"data\": {\n" +
-                "        \"name\": \"aclRule\",\n" +
-                "        \"read\": {\n" +
-                "            \"decision\": \"deny\",\n" +
-                "            \"additionalDetails\": null\n" +
-                "        },\n" +
-                "        \"update\": {\n" +
-                "            \"decision\": \"allow\",\n" +
-                "            \"additionalDetails\": null\n" +
-                "        },\n" +
-                "        \"delete\": {\n" +
-                "            \"decision\": \"allow\",\n" +
-                "            \"additionalDetails\": null\n" +
-                "        }\n" +
-                "    },\n" +
-                "    \"success\": true,\n" +
-                "    \"message\": \"ACL evaluated successfully\"\n" +
-                "}").withStatus(200)));
-        stubFor(post("/accounts/v1/acl/1/evaluate").willReturn(okJson("{\n" +
-                "    \"data\": {\n" +
-                "        \"name\": \"aclRule\",\n" +
-                "        \"read\": {\n" +
-                "            \"decision\": \"allow\",\n" +
-                "            \"additionalDetails\": null\n" +
-                "        },\n" +
-                "        \"update\": {\n" +
-                "            \"decision\": \"allow\",\n" +
-                "            \"additionalDetails\": null\n" +
-                "        },\n" +
-                "        \"delete\": {\n" +
-                "            \"decision\": \"allow\",\n" +
-                "            \"additionalDetails\": null\n" +
-                "        }\n" +
-                "    },\n" +
-                "    \"success\": true,\n" +
-                "    \"message\": \"ACL evaluated successfully\"\n" +
-                "}").withStatus(200)));
-        stubFor(post("/accounts/v1/acl/101/evaluate").willReturn(okJson("{\n" +
-                "    \"data\": {\n" +
-                "        \"name\": \"aclRule\",\n" +
-                "        \"read\": {\n" +
-                "            \"decision\": \"deny\",\n" +
-                "            \"additionalDetails\": null\n" +
-                "        },\n" +
-                "        \"update\": {\n" +
-                "            \"decision\": \"deny\",\n" +
-                "            \"additionalDetails\": null\n" +
-                "        },\n" +
-                "        \"delete\": {\n" +
-                "            \"decision\": \"deny\",\n" +
-                "            \"additionalDetails\": null\n" +
-                "        }\n" +
-                "    },\n" +
-                "    \"success\": true,\n" +
-                "    \"message\": \"ACL evaluated successfully\"\n" +
-                "}").withStatus(200)));
+        stubFor(post("/accounts/v1/acl/2/evaluate").willReturn(okJson(
+                "{\n" +
+                        "    \"data\": {\n" +
+                        "        \"name\": \"aclRule\",\n" +
+                        "        \"read\": {\n" +
+                        "            \"decision\": \"deny\",\n" +
+                        "            \"additionalDetails\": null\n" +
+                        "        },\n" +
+                        "        \"update\": {\n" +
+                        "            \"decision\": \"allow\",\n" +
+                        "            \"additionalDetails\": null\n" +
+                        "        },\n" +
+                        "        \"delete\": {\n" +
+                        "            \"decision\": \"allow\",\n" +
+                        "            \"additionalDetails\": null\n" +
+                        "        }\n" +
+                        "    },\n" +
+                        "    \"success\": true,\n" +
+                        "    \"message\": \"ACL evaluated successfully\"\n" +
+                        "}"
+        ).withStatus(200)));
+        stubFor(post("/accounts/v1/acl/1/evaluate").willReturn(okJson(
+                "{\n" +
+                        "    \"data\": {\n" +
+                        "        \"name\": \"aclRule\",\n" +
+                        "        \"read\": {\n" +
+                        "            \"decision\": \"allow\",\n" +
+                        "            \"additionalDetails\": null\n" +
+                        "        },\n" +
+                        "        \"update\": {\n" +
+                        "            \"decision\": \"allow\",\n" +
+                        "            \"additionalDetails\": null\n" +
+                        "        },\n" +
+                        "        \"delete\": {\n" +
+                        "            \"decision\": \"allow\",\n" +
+                        "            \"additionalDetails\": null\n" +
+                        "        }\n" +
+                        "    },\n" +
+                        "    \"success\": true,\n" +
+                        "    \"message\": \"ACL evaluated successfully\"\n" +
+                        "}"
+        ).withStatus(200)));
+        stubFor(post("/accounts/v1/acl/101/evaluate").willReturn(okJson(
+                "{\n" +
+                        "    \"data\": {\n" +
+                        "        \"name\": \"aclRule\",\n" +
+                        "        \"read\": {\n" +
+                        "            \"decision\": \"deny\",\n" +
+                        "            \"additionalDetails\": null\n" +
+                        "        },\n" +
+                        "        \"update\": {\n" +
+                        "            \"decision\": \"deny\",\n" +
+                        "            \"additionalDetails\": null\n" +
+                        "        },\n" +
+                        "        \"delete\": {\n" +
+                        "            \"decision\": \"deny\",\n" +
+                        "            \"additionalDetails\": null\n" +
+                        "        }\n" +
+                        "    },\n" +
+                        "    \"success\": true,\n" +
+                        "    \"message\": \"ACL evaluated successfully\"\n" +
+                        "}"
+        ).withStatus(200)));
     }
 
     @AfterAll
     public void teardown() {
-        wireMockServer.shutdownServer();
+        wireMockServer.shutdown();
     }
 
     @Test
