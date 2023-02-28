@@ -1,10 +1,15 @@
 package com.techsophy.tsf.runtime.form.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.techsophy.tsf.commons.ACLDecision;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.impl.FormDataControllerImpl;
 import com.techsophy.tsf.runtime.form.dto.*;
+import com.techsophy.tsf.runtime.form.exception.ACLException;
+import com.techsophy.tsf.runtime.form.exception.FormIdNotFoundException;
+import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
+import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
 import com.techsophy.tsf.runtime.form.model.ApiResponse;
 import com.techsophy.tsf.runtime.form.service.FormAclService;
 import com.techsophy.tsf.runtime.form.service.FormDataService;
@@ -15,13 +20,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.PageRequest;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
+import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
@@ -99,6 +107,26 @@ class FormDataControllerTest
                 "    \"success\": true,\n" +
                 "    \"message\": \"ACL evaluated successfully\"\n" +
                 "}").withStatus(200)));
+
+        stubFor(post("/accounts/v1/acl/101/evaluate").willReturn(okJson("{\n" +
+                "    \"data\": {\n" +
+                "        \"name\": \"aclRule\",\n" +
+                "        \"read\": {\n" +
+                "            \"decision\": \"deny\",\n" +
+                "            \"additionalDetails\": null\n" +
+                "        },\n" +
+                "        \"update\": {\n" +
+                "            \"decision\": \"deny\",\n" +
+                "            \"additionalDetails\": null\n" +
+                "        },\n" +
+                "        \"delete\": {\n" +
+                "            \"decision\": \"deny\",\n" +
+                "            \"additionalDetails\": null\n" +
+                "        }\n" +
+                "    },\n" +
+                "    \"success\": true,\n" +
+                "    \"message\": \"ACL evaluated successfully\"\n" +
+                "}").withStatus(200)));
     }
 
     @AfterAll
@@ -106,6 +134,85 @@ class FormDataControllerTest
         wireMockServer.shutdownServer();
     }
 
+    @Test
+    void userDetailsNotFoundExceptionTest() throws Exception {
+        InputStream inputStreamTest = new ClassPathResource(TEST_RUNTIME_FORM_DATA_1).getInputStream();
+        ObjectMapper objectMapperTest = new ObjectMapper();
+        FormDataSchema formDataSchemaTest = objectMapperTest.readValue(inputStreamTest, FormDataSchema.class);
+        Mockito.when(formDataService.saveFormData(formDataSchemaTest)).thenThrow(new UserDetailsIdNotFoundException(errorCode, USER_DETAILS_NOT_FOUND_WITH_GIVEN_ID));
+        Assertions.assertThrows(UserDetailsIdNotFoundException.class, () -> formDataController.saveFormData(formDataSchemaTest));
+    }
+
+    @Test
+    void FormIdNotFoundExceptionTest() throws Exception {
+        InputStream inputStreamTest = new ClassPathResource(TEST_RUNTIME_FORM_DATA_1).getInputStream();
+        ObjectMapper objectMapperTest = new ObjectMapper();
+        FormDataSchema formDataSchemaTest = objectMapperTest.readValue(inputStreamTest, FormDataSchema.class);
+        Mockito.when(formDataService.saveFormData(formDataSchemaTest)).thenThrow(new FormIdNotFoundException(errorCode, USER_DETAILS_NOT_FOUND_WITH_GIVEN_ID));
+        Assertions.assertThrows(FormIdNotFoundException.class, () -> formDataController.saveFormData(formDataSchemaTest));
+    }
+
+    @Test
+    void InvalidInputExceptionTest() throws Exception {
+        InputStream inputStreamTest = new ClassPathResource(TEST_RUNTIME_FORM_DATA_1).getInputStream();
+        ObjectMapper objectMapperTest = new ObjectMapper();
+        FormDataSchema formDataSchemaTest = objectMapperTest.readValue(inputStreamTest, FormDataSchema.class);
+        Mockito.when(formDataService.saveFormData(formDataSchemaTest)).thenThrow(new InvalidInputException(errorCode, USER_DETAILS_NOT_FOUND_WITH_GIVEN_ID));
+        Assertions.assertThrows(InvalidInputException.class, () -> formDataController.saveFormData(formDataSchemaTest));
+    }
+
+    @Test
+    void saveFormDataExceptionTest() throws Exception {
+        Map<String, Object> formData = new HashMap<>();
+        Map<String, Object> formMetaData = new HashMap<>();
+        FormDataSchema formDataSchema = new FormDataSchema("101", "101", 1, formData, formMetaData);
+        FormDataResponse formDataResponse = new FormDataResponse("101", 1);
+        Mockito.when(formDataService.saveFormData(formDataSchema)).thenReturn(formDataResponse);
+        formDataController.saveFormData(formDataSchema);
+        verify(formDataService, times(1)).saveFormData(formDataSchema);
+    }
+
+    @Test
+    void updateFormDataExceptionTest() {
+        Map<String, Object> formData = new HashMap<>();
+        Map<String, Object> formMetaData = new HashMap<>();
+        FormDataSchema formDataSchema = new FormDataSchema("1", "101", 1, formData, formMetaData);
+        FormAclDto formAclDto = new FormAclDto();
+        formAclDto.setFormId("101");
+        formAclDto.setAclId("101");
+        Mockito.when(mockFormACLService.getFormAcl(any())).thenReturn(formAclDto);
+        ACLDecision aclDecision = new ACLDecision();
+        aclDecision.setDecision("deny");
+        aclDecision.setAdditionalDetails(null);
+        Assertions.assertThrows(ACLException.class, () -> formDataController.updateFormData(formDataSchema));
+    }
+
+    @Test
+    void deleteAllFormDataByFormIdExceptionTest() {
+        FormAclDto formAclDto = new FormAclDto();
+        formAclDto.setAclId("101");
+        formAclDto.setFormId("101");
+        Mockito.when(mockFormACLService.getFormAcl(anyString())).thenReturn(formAclDto);
+        Assertions.assertThrows(ACLException.class, () -> formDataController.deleteAllFormDataByFormId("101"));
+    }
+
+    @Test
+    void deleteFormDataByFormIdAndIdExceptionTest() {
+        FormAclDto formAclDto = new FormAclDto();
+        formAclDto.setAclId("101");
+        formAclDto.setFormId("101");
+        Mockito.when(mockFormACLService.getFormAcl(anyString())).thenReturn(formAclDto);
+        Assertions.assertThrows(ACLException.class, () -> formDataController.deleteFormDataByFormIdAndId("101", "201"));
+    }
+
+    @Test
+    void getFormDataByFormIdAndIdExceptionTest() {
+        FormAclDto formAclDto = new FormAclDto();
+        formAclDto.setAclId("101");
+        formAclDto.setFormId("101");
+        Mockito.when(mockFormACLService.getFormAcl(anyString())).thenReturn(formAclDto);
+        Assertions.assertThrows(ACLException.class, () -> formDataController.getFormDataByFormIdAndId("101", "201", "994102731543871488:orderId,994122561634369536:parcelId"));
+    }
     @Test
     void saveFormDataTest() throws Exception
     {
