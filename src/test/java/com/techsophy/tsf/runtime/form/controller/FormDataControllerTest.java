@@ -55,7 +55,7 @@ class FormDataControllerTest
     @BeforeAll
     public void beforeTest()
     {
-        wireMockServer = new WireMockServer(9292);
+        wireMockServer = new WireMockServer();
         wireMockServer.start();
         wireMockServer.resetAll();
         commonStubs();
