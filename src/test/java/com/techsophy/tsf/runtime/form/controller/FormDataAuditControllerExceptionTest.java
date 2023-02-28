@@ -7,6 +7,7 @@ import com.techsophy.tsf.runtime.form.exception.ExternalServiceErrorException;
 import com.techsophy.tsf.runtime.form.exception.FormIdNotFoundException;
 import com.techsophy.tsf.runtime.form.exception.GlobalExceptionHandler;
 import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
+import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 class FormDataAuditControllerExceptionTest
 {
+    @MockBean
+    private RelationUtils mockRelationUtils;
     @MockBean
     TokenUtils mockTokenUtils;
     @Autowired

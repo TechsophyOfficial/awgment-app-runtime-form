@@ -1,169 +1,250 @@
 package com.techsophy.tsf.runtime.form.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.techsophy.tsf.runtime.form.config.CustomFilter;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.techsophy.tsf.commons.ACLDecision;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.impl.FormDataControllerImpl;
-import com.techsophy.tsf.runtime.form.dto.FormDataResponse;
-import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
+import com.techsophy.tsf.runtime.form.dto.*;
+import com.techsophy.tsf.runtime.form.model.ApiResponse;
+import com.techsophy.tsf.runtime.form.service.FormAclService;
 import com.techsophy.tsf.runtime.form.service.FormDataService;
+import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.RequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import java.io.InputStream;
+import org.springframework.data.domain.PageRequest;
+
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
-import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.FILTER;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.Q;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.TOKEN;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@ActiveProfiles(TEST_ACTIVE_PROFILE)
 @ExtendWith({MockitoExtension.class})
-@AutoConfigureMockMvc(addFilters = false)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FormDataControllerTest
 {
-    private static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtSaveOrUpdate = jwt().authorities(new SimpleGrantedAuthority(AWGMENT_RUNTIME_FORM_CREATE_OR_UPDATE));
-    private static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtRead = jwt().authorities(new SimpleGrantedAuthority(AWGMENT_RUNTIME_FORM_READ));
-    private static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtDelete = jwt().authorities(new SimpleGrantedAuthority(AWGMENT_RUNTIME_FORM_DELETE));
-
-    @MockBean
-    TokenUtils mockTokenUtils;
-    @Autowired
-    private MockMvc mockMvc;
-    @MockBean
-    FormDataService mockFormService;
-    @Autowired
-    WebApplicationContext webApplicationContext;
-    @Autowired
-    CustomFilter customFilter;
+    @Mock
+    TokenUtils tokenUtils;
     @Mock
     FormDataService formDataService ;
     @Mock
     GlobalMessageSource globalMessageSource;
-    @InjectMocks
+    @Mock
+    FormAclService mockFormACLService;
+    @Mock
+    RelationUtils mockRelationUtils;
     FormDataControllerImpl formDataController;
 
-    @BeforeEach
-    public void setUp()
+    WireMockServer wireMockServer ;
+
+    @BeforeAll
+    public void beforeTest()
     {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(webApplicationContext)
-                .addFilters(customFilter)
-                .apply(springSecurity())
-                .build();
+        wireMockServer = new WireMockServer();
+        wireMockServer.start();
+        wireMockServer.resetAll();
+        commonStubs();
+    }
+
+    @BeforeEach
+    public void beforeEach() {
+        formDataController = new FormDataControllerImpl(globalMessageSource, formDataService, mockFormACLService, tokenUtils,mockRelationUtils, wireMockServer.baseUrl());
+    }
+
+    public void commonStubs()
+    {
+        stubFor(post("/accounts/v1/acl/2/evaluate").willReturn(okJson("{\n" +
+                "    \"data\": {\n" +
+                "        \"name\": \"aclRule\",\n" +
+                "        \"read\": {\n" +
+                "            \"decision\": \"deny\",\n" +
+                "            \"additionalDetails\": null\n" +
+                "        },\n" +
+                "        \"update\": {\n" +
+                "            \"decision\": \"allow\",\n" +
+                "            \"additionalDetails\": null\n" +
+                "        },\n" +
+                "        \"delete\": {\n" +
+                "            \"decision\": \"allow\",\n" +
+                "            \"additionalDetails\": null\n" +
+                "        }\n" +
+                "    },\n" +
+                "    \"success\": true,\n" +
+                "    \"message\": \"ACL evaluated successfully\"\n" +
+                "}").withStatus(200)));
+        stubFor(post("/accounts/v1/acl/1/evaluate").willReturn(okJson("{\n" +
+                "    \"data\": {\n" +
+                "        \"name\": \"aclRule\",\n" +
+                "        \"read\": {\n" +
+                "            \"decision\": \"allow\",\n" +
+                "            \"additionalDetails\": null\n" +
+                "        },\n" +
+                "        \"update\": {\n" +
+                "            \"decision\": \"allow\",\n" +
+                "            \"additionalDetails\": null\n" +
+                "        },\n" +
+                "        \"delete\": {\n" +
+                "            \"decision\": \"allow\",\n" +
+                "            \"additionalDetails\": null\n" +
+                "        }\n" +
+                "    },\n" +
+                "    \"success\": true,\n" +
+                "    \"message\": \"ACL evaluated successfully\"\n" +
+                "}").withStatus(200)));
+    }
+
+    @AfterAll
+    public void teardown() {
+        wireMockServer.shutdownServer();
     }
 
     @Test
     void saveFormDataTest() throws Exception
     {
-        InputStream inputStreamTest = new ClassPathResource(TEST_RUNTIME_FORM_DATA_1).getInputStream();
-        ObjectMapper objectMapperTest = new ObjectMapper();
-        FormDataSchema formDataSchemaTest = objectMapperTest.readValue(inputStreamTest, FormDataSchema.class);
-        Mockito.when(mockTokenUtils.getIssuerFromToken(TOKEN)).thenReturn(TENANT);
-        Mockito.when(mockFormService.saveFormData(formDataSchemaTest)).thenReturn(new FormDataResponse(TEST_ID, TEST_VERSION));
-        RequestBuilder requestBuilderTest = MockMvcRequestBuilders.post(BASE_URL + VERSION_V1 + FORM_DATA_URL).header(ACCEPT_LANGUAGE, LOCALE_EN)
-                .content(objectMapperTest.writeValueAsString(formDataSchemaTest))
-                .with(jwtSaveOrUpdate)
-                .contentType(MediaType.APPLICATION_JSON);
-        MvcResult mvcResult = this.mockMvc.perform(requestBuilderTest).andExpect(status().isOk()).andReturn();
-        assertEquals(200, mvcResult.getResponse().getStatus());
+        Map<String,Object> formData=new HashMap<>();
+        Map<String,Object> formMetaData=new HashMap<>();
+        FormDataSchema formDataSchema = new FormDataSchema("101","201",1,formData,formMetaData);
+        FormDataResponse formDataResponse=new FormDataResponse("101",1);
+        Mockito.when(formDataService.saveFormData(formDataSchema)).thenReturn(formDataResponse);
+        formDataController.saveFormData(formDataSchema);
+        verify(formDataService,times(1)).saveFormData(formDataSchema);
     }
 
     @Test
     void updateFormData() throws Exception
     {
-        LinkedHashMap<String,Object> map = new LinkedHashMap<>();
-        map.put(STRING,STRING);
-        FormDataSchema formDataSchema = new FormDataSchema("1","1",1,map,map);
-        formDataController.updateFormData(formDataSchema);
-        verify(formDataService,times(0)).updateFormData(any());
+        Map<String,Object> formData=new HashMap<>();
+        Map<String,Object> formMetaData=new HashMap<>();
+        FormDataSchema formDataSchema = new FormDataSchema("1","1",1,formData,formMetaData);
+        FormAclDto formAclDto=new FormAclDto();
+        formAclDto.setFormId("101");
+        formAclDto.setAclId("1");
+        Mockito.when(mockFormACLService.getFormAcl(any())).thenReturn(formAclDto);
+        Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("abc");
+        ACLDecision aclDecision=new ACLDecision();
+        aclDecision.setDecision("deny");
+        aclDecision.setAdditionalDetails(null);
+        FormDataResponse formDataResponse=new FormDataResponse("1",1);
+        ApiResponse apiResponse=new ApiResponse(formDataResponse,true,"Form data updated successfully");
+        Mockito.when(formDataService.updateFormData(formDataSchema)).thenReturn(formDataResponse);
+        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data updated successfully");
+        Assertions.assertEquals(apiResponse,formDataController.updateFormData(formDataSchema));
     }
 
     @Test
-    void getAllFormDataByFormIdFilterEmptyPaginationTest() throws Exception
+    void getAllFormDataByFormIdFilterTest()
     {
-        Map<String,Object> map = new HashMap<>();
-        map.put(STRING,STRING);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.get(BASE_URL+VERSION_V1+FORM_DATA_URL).param(FORM_ID,"1").with(jwtRead).contentType(MediaType.APPLICATION_JSON);
-        RequestBuilder requestBuilder1 = MockMvcRequestBuilders.get(BASE_URL+VERSION_V1+FORM_DATA_URL).param(FORM_ID,"1").param(FILTER,STRING).with(jwtRead).contentType(MediaType.APPLICATION_JSON);
-        RequestBuilder requestBuilder3 = MockMvcRequestBuilders.get(BASE_URL+VERSION_V1+FORM_DATA_URL).param(FORM_ID,"1").param(SORT_BY,STRING).param(Q,STRING).with(jwtRead).contentType(MediaType.APPLICATION_JSON);
-        RequestBuilder requestBuilder4 = MockMvcRequestBuilders.get(BASE_URL+VERSION_V1+FORM_DATA_URL).param(FORM_ID,"1").param(SORT_BY,STRING).param(Q,STRING).param(PAGE,"1").param(SIZE,PAGE_SIZE).with(jwtRead).contentType(MediaType.APPLICATION_JSON);
-        RequestBuilder requestBuilder2 = MockMvcRequestBuilders.get(BASE_URL+VERSION_V1+FORM_DATA_URL).param(FORM_ID,"1").param(FILTER,STRING).param(PAGE,"1").param(SIZE,PAGE_SIZE).with(jwtRead).contentType(MediaType.APPLICATION_JSON);
-        MvcResult mvcResult = this.mockMvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
-        MvcResult mvcResult1 = this.mockMvc.perform(requestBuilder1).andExpect(status().isOk()).andReturn();
-        MvcResult mvcResult2 = this.mockMvc.perform(requestBuilder2).andExpect(status().isOk()).andReturn();
-        MvcResult mvcResult3 = this.mockMvc.perform(requestBuilder3).andExpect(status().isOk()).andReturn();
-        MvcResult mvcResult4 = this.mockMvc.perform(requestBuilder4).andExpect(status().isOk()).andReturn();
-        assertEquals(200, mvcResult.getResponse().getStatus());
-        assertEquals(200, mvcResult1.getResponse().getStatus());
-        assertEquals(200, mvcResult2.getResponse().getStatus());
-        assertEquals(200, mvcResult3.getResponse().getStatus());
-        assertEquals(200, mvcResult4.getResponse().getStatus());
+        List<FormDataResponseSchema> formDataResponseSchemaList=new ArrayList<>();
+        Mockito.when(formDataService.getAllFormDataByFormId(anyString(),anyString(),any(),any(),any())).thenReturn(formDataResponseSchemaList);
+        ApiResponse apiResponse=new ApiResponse(new ArrayList<>(),true,"Form data retrieved successfully");
+        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data retrieved successfully");
+        Assertions.assertEquals(apiResponse,formDataController.getAllFormDataByFormId("101","994102731543871488:orderId,994122561634369536:parcelId",null,null,null,null,"formData.name:akhil",null));
     }
 
     @Test
-    void deleteAllFormDataByFormId() throws Exception
+    void getAllFormDataByFormIdFilterPaginationTest()
     {
-        Mockito.when(mockTokenUtils.getIssuerFromToken(TOKEN)).thenReturn(TENANT);
-        RequestBuilder requestBuilderTest = MockMvcRequestBuilders
-                .delete(BASE_URL + VERSION_V1 + FORM_DATA_URL).param(FORM_ID, TEST_FORM_ID)
-                .with(jwtDelete);
-        MvcResult mvcResult = this.mockMvc.perform(requestBuilderTest).andExpect(status().isOk()).andReturn();
-        assertEquals(200, mvcResult.getResponse().getStatus());
+        PaginationResponsePayload paginationResponsePayload=new PaginationResponsePayload();
+        Mockito.when(formDataService.getAllFormDataByFormId(anyString(),anyString(),any(),any(),any(),any())).thenReturn(paginationResponsePayload);
+        ApiResponse apiResponse=new ApiResponse(paginationResponsePayload,true,"Form data retrieved successfully");
+        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data retrieved successfully");
+        Assertions.assertEquals(apiResponse,formDataController.getAllFormDataByFormId("101","994102731543871488:orderId,994122561634369536:parcelId",0,5,null,null,"formData.name:akhil",null));
     }
 
     @Test
-    void deleteFormDataByFormIdAndId() throws Exception
+    void getAllFormDataByFormIdFilterSortTest()
     {
-        Mockito.when(mockTokenUtils.getIssuerFromToken(TOKEN)).thenReturn(TENANT);
-        RequestBuilder requestBuilderTest=MockMvcRequestBuilders
-                .delete(BASE_URL + VERSION_V1 + FORM_DATA_ID_URL,TEST_FORM_ID).param(ID,TEST_ID)
-                .with(jwtDelete);
-        MvcResult mvcResult = this.mockMvc.perform(requestBuilderTest).andExpect(status().isOk()).andReturn();
-        assertEquals(200,mvcResult.getResponse().getStatus());
+        PaginationResponsePayload paginationResponsePayload=new PaginationResponsePayload();
+        Mockito.when(formDataService.getAllFormDataByFormId(anyString(),anyString(),any(),any(),any(),any())).thenReturn(paginationResponsePayload);
+        ApiResponse apiResponse=new ApiResponse(paginationResponsePayload,true,"Form data retrieved successfully");
+        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data retrieved successfully");
+        Assertions.assertEquals(apiResponse,formDataController.getAllFormDataByFormId("101","994102731543871488:orderId,994122561634369536:parcelId",0,5,null,null,"formData.name:akhil",null));
     }
 
     @Test
-    void getFormDataByFormIdAndIdTest() throws Exception
+    void getAllFormDataByFormIdSortTest()
     {
-        Mockito.when(mockTokenUtils.getIssuerFromToken(TOKEN)).thenReturn(TENANT);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.get(BASE_URL+VERSION_V1+FORM_DATA_ID_URL,"1").param(FORM_ID,"1").param(ID,TEST_ID_VALUE).param(RELATIONS,STRING).with(jwtRead).contentType(MediaType.APPLICATION_JSON);
-        MvcResult mvcResult = this.mockMvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
-        assertEquals(200, mvcResult.getResponse().getStatus());
+        List<FormDataResponseSchema> formDataResponseSchemaList=new ArrayList<>();
+        Mockito.when(formDataService.getAllFormDataByFormIdAndQ("101","994102731543871488:orderId,994122561634369536:parcelId",null,CREATED_ON,DESCENDING)).thenReturn(formDataResponseSchemaList);
+        ApiResponse apiResponse=new ApiResponse(formDataResponseSchemaList,true,"Form data retrieved successfully");
+        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data retrieved successfully");
+        Assertions.assertEquals(apiResponse,formDataController.getAllFormDataByFormId("101","994102731543871488:orderId,994122561634369536:parcelId",null,null,CREATED_ON,DESCENDING,EMPTY_STRING,null));
+    }
 
+    @Test
+    void getAllFormDataByFormIdSortPaginationTest()
+    {
+        PaginationResponsePayload paginationResponsePayload=new PaginationResponsePayload();
+        Mockito.when(formDataService.getAllFormDataByFormIdAndQ("101","994102731543871488:orderId,994122561634369536:parcelId",null,CREATED_ON,DESCENDING, PageRequest.of(0,5))).thenReturn(paginationResponsePayload);
+        ApiResponse apiResponse=new ApiResponse(paginationResponsePayload,true,"Form data retrieved successfully");
+        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data retrieved successfully");
+        Assertions.assertEquals(apiResponse,formDataController.getAllFormDataByFormId("101","994102731543871488:orderId,994122561634369536:parcelId",0,5,CREATED_ON,DESCENDING,EMPTY_STRING,null));
+    }
+
+    @Test
+    void getAllFormDataByFormIdRelationsTest()
+    {
+        PaginationResponsePayload paginationResponsePayload=new PaginationResponsePayload();
+        Mockito.when(formDataService.getAllFormDataByFormId("101","994102731543871488:orderId,994122561634369536:parcelId")).thenReturn(paginationResponsePayload);
+        ApiResponse apiResponse=new ApiResponse(paginationResponsePayload,true,"Form data retrieved successfully");
+        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data retrieved successfully");
+        Assertions.assertEquals(apiResponse,formDataController.getAllFormDataByFormId("101","994102731543871488:orderId,994122561634369536:parcelId",null,null,null,null,EMPTY_STRING,null));
+    }
+
+    @Test
+    void deleteAllFormDataByFormId()
+    {
+        FormAclDto formAclDto=new FormAclDto();
+        formAclDto.setAclId("1");
+        formAclDto.setFormId("101");
+        Mockito.when(mockFormACLService.getFormAcl(anyString())).thenReturn(formAclDto);
+        ApiResponse apiResponse=new ApiResponse(null,true,"Form data deleted successfully");
+        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data deleted successfully");
+        Assertions.assertEquals(apiResponse,formDataController.deleteAllFormDataByFormId("101"));
+    }
+
+    @Test
+    void deleteFormDataByFormIdAndId()
+    {
+        FormAclDto formAclDto=new FormAclDto();
+        formAclDto.setAclId("1");
+        formAclDto.setFormId("101");
+        Mockito.when(mockFormACLService.getFormAcl(anyString())).thenReturn(formAclDto);
+        ApiResponse apiResponse=new ApiResponse(null,true,"Form data deleted successfully");
+        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data deleted successfully");
+        Assertions.assertEquals(apiResponse,formDataController.deleteFormDataByFormIdAndId("101","201"));
+    }
+
+    @Test
+    void getFormDataByFormIdAndIdTest()
+    {
+        FormAclDto formAclDto=new FormAclDto();
+        formAclDto.setAclId("1");
+        formAclDto.setFormId("101");
+        Mockito.when(mockFormACLService.getFormAcl(anyString())).thenReturn(formAclDto);
+        List<FormDataResponseSchema> formDataResponseSchemaList=new ArrayList<>();
+        ApiResponse apiResponse=new ApiResponse(formDataResponseSchemaList,true,"Form data retrieved successfully");
+        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data retrieved successfully");
+        Assertions.assertEquals(apiResponse,formDataController.getFormDataByFormIdAndId("101","201","994102731543871488:orderId,994122561634369536:parcelId"));
+    }
+
+    @Test
+    void aggregateByFormIdFilterGroupByTest()
+    {
+        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data retrieved successfully");
+        AggregationResponse aggregationResponse=new AggregationResponse(new ArrayList<>());
+        Mockito.when(formDataService.aggregateByFormIdFilterGroupBy(any(),anyString(),any(),anyString())).thenReturn(aggregationResponse);
+        ApiResponse apiResponse=new ApiResponse(aggregationResponse,true,"Form data retrieved successfully");
+        Assertions.assertEquals(apiResponse,formDataController.aggregateByFormIdFilterGroupBy("101","formData.name:akhil","formData.name","groupBy"));
     }
 }

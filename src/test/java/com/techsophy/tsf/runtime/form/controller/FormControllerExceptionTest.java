@@ -4,6 +4,7 @@ import com.techsophy.tsf.runtime.form.config.CustomFilter;
 import com.techsophy.tsf.runtime.form.exception.EntityIdNotFoundException;
 import com.techsophy.tsf.runtime.form.exception.FormIdNotFoundException;
 import com.techsophy.tsf.runtime.form.exception.GlobalExceptionHandler;
+import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,8 @@ class FormControllerExceptionTest
 {
     @MockBean
     TokenUtils mockTokenUtils;
+    @MockBean
+    RelationUtils mockRelationUtils;
     @Autowired
     private MockMvc mockMvc;
     @Autowired
