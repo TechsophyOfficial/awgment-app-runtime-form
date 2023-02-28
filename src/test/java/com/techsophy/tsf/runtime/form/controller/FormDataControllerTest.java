@@ -50,7 +50,6 @@ class FormDataControllerTest
     @Mock
     RelationUtils mockRelationUtils;
     FormDataControllerImpl formDataController;
-
     WireMockServer wireMockServer ;
 
     @BeforeAll
@@ -107,7 +106,6 @@ class FormDataControllerTest
                 "    \"success\": true,\n" +
                 "    \"message\": \"ACL evaluated successfully\"\n" +
                 "}").withStatus(200)));
-
         stubFor(post("/accounts/v1/acl/101/evaluate").willReturn(okJson("{\n" +
                 "    \"data\": {\n" +
                 "        \"name\": \"aclRule\",\n" +
