@@ -2,7 +2,8 @@ package com.techsophy.tsf.runtime.form.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.techsophy.tsf.commons.ACLDecision;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.impl.FormDataControllerImpl;
@@ -24,11 +25,13 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.PageRequest;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
@@ -42,10 +45,7 @@ import static org.mockito.Mockito.verify;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FormDataControllerTest
 {
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(
-            wireMockConfig()
-                    .dynamicPort());
+
     @Mock
     TokenUtils tokenUtils;
     @Mock
@@ -62,7 +62,11 @@ class FormDataControllerTest
     @BeforeAll
     public void beforeTest()
     {
-        wireMockServer = new WireMockServer();
+
+        WireMock.configureFor(9090);
+        wireMockServer = new WireMockServer(9090);
+
+
         wireMockServer.start();
         wireMockServer.resetAll();
         commonStubs();
@@ -70,31 +74,15 @@ class FormDataControllerTest
 
     @BeforeEach
     public void beforeEach() {
-        formDataController = new FormDataControllerImpl(globalMessageSource, formDataService, mockFormACLService, tokenUtils,mockRelationUtils, wireMockServer.baseUrl());
+
+        String baseURL = wireMockServer.baseUrl();
+        formDataController = new FormDataControllerImpl(globalMessageSource, formDataService, mockFormACLService, tokenUtils,mockRelationUtils, baseURL);
     }
 
     public void commonStubs()
     {
-        stubFor(post("/accounts/v1/acl/2/evaluate").willReturn(okJson(
-                "{\n" +
-                        "    \"data\": {\n" +
-                        "        \"name\": \"aclRule\",\n" +
-                        "        \"read\": {\n" +
-                        "            \"decision\": \"deny\",\n" +
-                        "            \"additionalDetails\": null\n" +
-                        "        },\n" +
-                        "        \"update\": {\n" +
-                        "            \"decision\": \"allow\",\n" +
-                        "            \"additionalDetails\": null\n" +
-                        "        },\n" +
-                        "        \"delete\": {\n" +
-                        "            \"decision\": \"allow\",\n" +
-                        "            \"additionalDetails\": null\n" +
-                        "        }\n" +
-                        "    },\n" +
-                        "    \"success\": true,\n" +
-                        "    \"message\": \"ACL evaluated successfully\"\n" +
-                        "}"
+        stubFor(post("/accounts/v1/acl/2/evaluate").willReturn(ok(
+                "{\"data\":{\"name\":\"aclRule\",\"read\":{\"decision\":\"deny\",\"additionalDetails\":null},\"update\":{\"decision\":\"allow\",\"additionalDetails\":null},\"delete\":{\"decision\":\"allow\",\"additionalDetails\":null}},\"success\":true,\"message\":\"ACL evaluated successfully\"}"
         ).withStatus(200)));
         stubFor(post("/accounts/v1/acl/1/evaluate").willReturn(okJson(
                 "{\n" +
