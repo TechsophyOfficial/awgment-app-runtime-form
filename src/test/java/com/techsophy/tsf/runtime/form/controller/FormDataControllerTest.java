@@ -1,7 +1,6 @@
 package com.techsophy.tsf.runtime.form.controller;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.techsophy.tsf.commons.ACLDecision;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.impl.FormDataControllerImpl;
@@ -11,21 +10,17 @@ import com.techsophy.tsf.runtime.form.service.FormAclService;
 import com.techsophy.tsf.runtime.form.service.FormDataService;
 import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -36,11 +31,6 @@ import static org.mockito.Mockito.verify;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FormDataControllerTest
 {
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(
-            wireMockConfig()
-                    .dynamicPort()
-                    .dynamicHttpsPort());
     @Mock
     TokenUtils tokenUtils;
     @Mock
