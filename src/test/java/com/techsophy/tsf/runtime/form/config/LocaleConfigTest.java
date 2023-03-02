@@ -7,16 +7,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.ActiveProfiles;
-
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
-
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.TEST_ACTIVE_PROFILE;
+import java.util.List;
+import java.util.Locale;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
-@ActiveProfiles(TEST_ACTIVE_PROFILE)
 @ExtendWith(MockitoExtension.class)
 class LocaleConfigTest
 {

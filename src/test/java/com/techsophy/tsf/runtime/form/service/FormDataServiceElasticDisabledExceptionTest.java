@@ -12,6 +12,7 @@ import com.techsophy.tsf.runtime.form.exception.FormIdNotFoundException;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataAuditServiceImpl;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataServiceImpl;
+import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import com.techsophy.tsf.runtime.form.utils.WebClientWrapper;
@@ -63,6 +64,8 @@ class FormDataServiceElasticDisabledExceptionTest
     @Mock
     WebClientWrapper mockWebClientWrapper;
     @Mock
+    RelationUtils mockRelationUtils;
+    @Mock
     Logger mockLogger;
     @Mock
     FormDataDefinition mockFormDataDefinition;
@@ -106,301 +109,6 @@ class FormDataServiceElasticDisabledExceptionTest
         mapData.put("create","true");
         list.add(mapData);
     }
-
-
-//    @Test
-//    void saveFormDataFormIdNullExceptionTest()
-//    {
-//        Map<String,Object> testFormData=new HashMap<>();
-//        testFormData.put(NAME,NAME_VALUE);
-//        testFormData.put(AGE,AGE_VALUE);
-//        Map<String,Object> testFormMetaData=new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION,1);
-//        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID,null,TEST_VERSION,testFormData,testFormMetaData);
-//        Assertions.assertThrows(InvalidInputException.class, () ->
-//                mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-//    }
-
-//    @Test
-//    void saveFormDataEmptyTokenExceptionTest() throws JsonProcessingException
-//    {
-//        Map<String,Object> testFormData=new HashMap<>();
-//        testFormData.put(NAME,NAME_VALUE);
-//        testFormData.put(AGE,AGE_VALUE);
-//        Map<String,Object> testFormMetaData=new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION,1);
-//        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,testFormData,testFormMetaData);
-//        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        when(mockTokenUtils.getTokenFromContext()).thenReturn(EMPTY_STRING);
-//        Assertions.assertThrows(InvalidInputException.class, () ->
-//                mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-//    }
-
-
-//    @Test
-//    void saveFormDataMissingMandatoryFieldsExceptionTest() throws JsonProcessingException
-//    {
-//        Map<String, Object> testFormMetaData = new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION, 1);
-//        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-//        when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
-//        Map<String, Object> givenData = new HashMap<>();
-//        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,givenData,testFormMetaData);
-//        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_ID, TEST_NAME,
-//                TEST_COMPONENTS,list, TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,
-//                TEST_CREATED_BY_ID, TEST_CREATED_ON,
-//                TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
-//        when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-//        LinkedHashMap<String, LinkedHashMap<String,Object>> schemaMap=new LinkedHashMap<>();
-//        LinkedHashMap<String,Object> fieldsMap=new LinkedHashMap<>();
-//        fieldsMap.put(REQUIRED,true);
-//        schemaMap.put(NAME,fieldsMap);
-//        schemaMap.put(AGE,fieldsMap);
-//        try (MockedStatic<ValidateFormUtils> mockValidateFormUtils = Mockito.mockStatic(ValidateFormUtils.class))
-//        {
-//            mockValidateFormUtils.when(() -> ValidateFormUtils.getSchema(formResponseSchemaTest.getComponents()))
-//                    .thenReturn(schemaMap);
-//            when(mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,givenData,formDataSchemaTest.getFormId(),formDataSchemaTest.getId())).thenReturn(List.of(String.valueOf(0),NAME));
-//            Assertions.assertThrows(InvalidInputException.class, () ->
-//                    mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-//        }
-//    }
-
-//    @Test
-//    void saveFormDataDuplicatesExceptionTest() throws JsonProcessingException
-//    {
-//        Map<String, Object> testFormMetaData = new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION, 1);
-//        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-//        when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
-//        Map<String, Object> givenData = new HashMap<>();
-//        givenData.put(NAME, NAME_VALUE);
-//        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,givenData,testFormMetaData);
-//        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_ID, TEST_NAME,
-//                TEST_COMPONENTS,list, TEST_PROPERTIES,TEST_TYPE_FORM,
-//                TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID, TEST_CREATED_ON, TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
-//        when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-//        LinkedHashMap<String,LinkedHashMap<String,Object>> schemaMap=new LinkedHashMap<>();
-//        LinkedHashMap<String,Object> fieldsMap=new LinkedHashMap<>();
-//        fieldsMap.put(UNIQUE,true);
-//        schemaMap.put(NAME,fieldsMap);
-//        try (MockedStatic<ValidateFormUtils> mockValidateFormUtils = Mockito.mockStatic(ValidateFormUtils.class))
-//        {
-//            mockValidateFormUtils.when(() -> ValidateFormUtils.getSchema(formResponseSchemaTest.getComponents()))
-//                    .thenReturn(schemaMap);
-//            when(mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,givenData,formDataSchemaTest.getFormId(), formDataSchemaTest.getId())).thenReturn(List.of(String.valueOf(1),NAME));
-//            Assertions.assertThrows(InvalidInputException.class, () ->
-//                    mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-//        }
-//    }
-
-//    @Test
-//    void saveFormDataMinLengthExceptionTest() throws JsonProcessingException
-//    {
-//        Map<String, Object> testFormMetaData = new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION, 1);
-//        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-//        when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
-//        Map<String, Object> givenData = new HashMap<>();
-//        givenData.put(NAME, NAME_VALUE);
-//        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,givenData,testFormMetaData);
-//        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_ID, TEST_NAME,
-//                TEST_COMPONENTS,list, TEST_PROPERTIES,TEST_TYPE_FORM,
-//                TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID, TEST_CREATED_ON,
-//                TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
-//        when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-//        LinkedHashMap<String,LinkedHashMap<String,Object>> schemaMap=new LinkedHashMap<>();
-//        LinkedHashMap<String,Object> fieldsMap=new LinkedHashMap<>();
-//        fieldsMap.put(MIN_LENGTH,10);
-//        schemaMap.put(NAME,fieldsMap);
-//        try (MockedStatic<ValidateFormUtils> mockValidateFormUtils = Mockito.mockStatic(ValidateFormUtils.class))
-//        {
-//            mockValidateFormUtils.when(() -> ValidateFormUtils.getSchema(formResponseSchemaTest.getComponents()))
-//                    .thenReturn(schemaMap);
-//            when(mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,givenData,formDataSchemaTest.getFormId(), formDataSchemaTest.getId())).thenReturn(List.of(String.valueOf(2),NAME));
-//            Assertions.assertThrows(InvalidInputException.class, () ->
-//                    mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-//        }
-//    }
-
-//    @Test
-//    void saveFormDataMaxLengthExceptionTest() throws JsonProcessingException
-//    {
-//        Map<String, Object> testFormMetaData = new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION, 1);
-//        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-//        when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
-//        Map<String, Object> givenData = new HashMap<>();
-//        givenData.put(NAME, NAME_VALUE);
-//        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,givenData,testFormMetaData);
-//        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_ID, TEST_NAME,
-//                TEST_COMPONENTS,list, TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-//                TEST_CREATED_ON, TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
-//        when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-//        LinkedHashMap<String,LinkedHashMap<String,Object>> schemaMap=new LinkedHashMap<>();
-//        LinkedHashMap<String,Object> fieldsMap=new LinkedHashMap<>();
-//        fieldsMap.put(MAX_LENGTH,1);
-//        schemaMap.put(NAME,fieldsMap);
-//        try (MockedStatic<ValidateFormUtils> mockValidateFormUtils = Mockito.mockStatic(ValidateFormUtils.class))
-//        {
-//            mockValidateFormUtils.when(() -> ValidateFormUtils.getSchema(formResponseSchemaTest.getComponents()))
-//                    .thenReturn(schemaMap);
-//            when(mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,givenData,formDataSchemaTest.getFormId(), formDataSchemaTest.getId())).thenReturn(List.of(String.valueOf(3),NAME));
-//            Assertions.assertThrows(InvalidInputException.class, () ->
-//                    mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-//        }
-//    }
-
-//    @Test
-//    void saveFormDataIntegerFieldsExceptionTest() throws JsonProcessingException
-//    {
-//        Map<String, Object> testFormMetaData = new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION, 1);
-//        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-//        Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
-//        Map<String, Object> givenData = new HashMap<>();
-//        givenData.put(NAME, NAME_VALUE);
-//        givenData.put(AGE, "abc");
-//        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,givenData,testFormMetaData);
-//        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_ID, TEST_NAME,
-//                TEST_COMPONENTS,list, TEST_PROPERTIES,TEST_TYPE_FORM,
-//                TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID, TEST_CREATED_ON, TEST_UPDATED_BY_ID,
-//                TEST_UPDATED_ON);
-//        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-//        LinkedHashMap<String,LinkedHashMap<String,Object>> schemaMap=new LinkedHashMap<>();
-//        LinkedHashMap<String,Object> fieldsMap=new LinkedHashMap<>();
-//        schemaMap.put(NAME,fieldsMap);
-//        schemaMap.put(AGE,fieldsMap);
-//        try (MockedStatic<ValidateFormUtils> mockValidateFormUtils = Mockito.mockStatic(ValidateFormUtils.class))
-//        {
-//            mockValidateFormUtils.when(() -> ValidateFormUtils.getSchema(formResponseSchemaTest.getComponents()))
-//                    .thenReturn(schemaMap);
-//            Mockito.when(mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,givenData,formDataSchemaTest.getFormId(), formDataSchemaTest.getId())).thenReturn(List.of(String.valueOf(4),NAME));
-//            Assertions.assertThrows(InvalidInputException.class, () ->
-//                    mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-//        }
-//    }
-
-//    @Test
-//    void saveFormDataMinIntegerExceptionTest() throws JsonProcessingException
-//    {
-//        Map<String, Object> testFormMetaData = new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION, 1);
-//        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-//        Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
-//        Map<String, Object> givenData = new HashMap<>();
-//        givenData.put(NAME, NAME_VALUE);
-//        givenData.put(AGE, 17);
-//        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,givenData,testFormMetaData);
-//        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,list, TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-//                TEST_CREATED_ON, TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
-//        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-//        LinkedHashMap<String,LinkedHashMap<String,Object>> schemaMap=new LinkedHashMap<>();
-//        LinkedHashMap<String,Object> fieldsMap=new LinkedHashMap<>();
-//        schemaMap.put(NAME,fieldsMap);
-//        fieldsMap.put(MIN,18);
-//        schemaMap.put(AGE,fieldsMap);
-//        try (MockedStatic<ValidateFormUtils> mockValidateFormUtils = Mockito.mockStatic(ValidateFormUtils.class))
-//        {
-//            mockValidateFormUtils.when(() -> ValidateFormUtils.getSchema(formResponseSchemaTest.getComponents()))
-//                    .thenReturn(schemaMap);
-//            Mockito.when(mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,givenData,formDataSchemaTest.getFormId(), formDataSchemaTest.getId())).thenReturn(List.of(String.valueOf(5),AGE));
-//            Assertions.assertThrows(InvalidInputException.class, () ->
-//                    mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-//        }
-//    }
-
-//    @Test
-//    void saveFormDataMaxIntegerExceptionTest() throws JsonProcessingException
-//    {
-//        Map<String, Object> testFormMetaData = new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION, 1);
-//        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-//        Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
-//        Map<String, Object> givenData = new HashMap<>();
-//        givenData.put(NAME, NAME_VALUE);
-//        givenData.put(AGE, 100);
-//        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,givenData,testFormMetaData);
-//        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,list, TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID, TEST_CREATED_ON,
-//                TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
-//        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-//        LinkedHashMap<String,LinkedHashMap<String,Object>> schemaMap=new LinkedHashMap<>();
-//        LinkedHashMap<String,Object> fieldsMap=new LinkedHashMap<>();
-//        schemaMap.put(NAME,fieldsMap);
-//        fieldsMap.put(MAX,99);
-//        schemaMap.put(AGE,fieldsMap);
-//        try (MockedStatic<ValidateFormUtils> mockValidateFormUtils = Mockito.mockStatic(ValidateFormUtils.class))
-//        {
-//            mockValidateFormUtils.when(() -> ValidateFormUtils.getSchema(formResponseSchemaTest.getComponents()))
-//                    .thenReturn(schemaMap);
-//            Mockito.when(mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,givenData,formDataSchemaTest.getFormId(), formDataSchemaTest.getId())).thenReturn(List.of(String.valueOf(7),AGE));
-//            Assertions.assertThrows(InvalidInputException.class, () ->
-//                    mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-//        }
-//    }
-
-//    @Test
-//    void saveFormDataMinWordExceptionTest() throws JsonProcessingException
-//    {
-//        Map<String, Object> testFormMetaData = new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION, 1);
-//        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-//        Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
-//        Map<String, Object> givenData = new HashMap<>();
-//        givenData.put(NAME, NAME_VALUE);
-//        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,givenData,testFormMetaData);
-//        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,list, TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID, TEST_CREATED_ON,
-//                TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
-//        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-//        LinkedHashMap<String,LinkedHashMap<String,Object>> schemaMap=new LinkedHashMap<>();
-//        LinkedHashMap<String,Object> fieldsMap=new LinkedHashMap<>();
-//        schemaMap.put(NAME,fieldsMap);
-//        fieldsMap.put(MIN_WORDS,3);
-//        try (MockedStatic<ValidateFormUtils> mockValidateFormUtils = Mockito.mockStatic(ValidateFormUtils.class))
-//        {
-//            mockValidateFormUtils.when(() -> ValidateFormUtils.getSchema(formResponseSchemaTest.getComponents()))
-//                    .thenReturn(schemaMap);
-//            Mockito.when(mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,givenData,formDataSchemaTest.getFormId(), formDataSchemaTest.getId())).thenReturn(List.of(String.valueOf(8),AGE));
-//            Assertions.assertThrows(InvalidInputException.class, () ->
-//                    mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-//        }
-//    }
-
-//    @Test
-//    void saveFormDataMaxWordExceptionTest() throws JsonProcessingException
-//    {
-//        Map<String, Object> testFormMetaData = new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION, 1);
-//        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-//        Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
-//        Map<String, Object> givenData = new HashMap<>();
-//        givenData.put(NAME, NAME_VALUE);
-//        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,givenData,testFormMetaData);
-//        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,list, TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID, TEST_CREATED_ON,
-//                TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
-//        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-//        LinkedHashMap<String,LinkedHashMap<String,Object>> schemaMap=new LinkedHashMap<>();
-//        LinkedHashMap<String,Object> fieldsMap=new LinkedHashMap<>();
-//        schemaMap.put(NAME,fieldsMap);
-//        fieldsMap.put(MAX_WORDS,1);
-//        try (MockedStatic<ValidateFormUtils> mockValidateFormUtils = Mockito.mockStatic(ValidateFormUtils.class))
-//        {
-//            mockValidateFormUtils.when(() -> ValidateFormUtils.getSchema(formResponseSchemaTest.getComponents()))
-//                    .thenReturn(schemaMap);
-//            Mockito.when(mockValidationCheckServiceImpl.allFieldsValidations(schemaMap,givenData,formDataSchemaTest.getFormId(), formDataSchemaTest.getId())).thenReturn(List.of(String.valueOf(9),NAME));
-//            Assertions.assertThrows(InvalidInputException.class, () ->
-//                    mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-//        }
-//    }
 
     @Test
     void getAllFormDataByFormIdInvalidInputException()
@@ -481,22 +189,7 @@ class FormDataServiceElasticDisabledExceptionTest
             PageRequest pageRequest = PageRequest.of(0, 2);
             Assertions.assertThrows(FormIdNotFoundException.class,()->mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, null, CREATED_ON, null));
     }
-
-    @Test
-    void getAllFormDataByFormIdAndQInvalidInputExceptionTest()
-    {
-        Map<String, Object> testFormMetaData = new HashMap<>();
-        testFormMetaData.put(FORM_VERSION, 1);
-        Map<String, Object> testFormData2 = new HashMap<>();
-        testFormData2.put(NAME_VALUE, NAME_VALUE);
-        testFormData2.put(AGE,AGE_VALUE);
-        FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
-        when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-        Assertions.assertThrows(InvalidInputException.class, () ->
-                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,EMPTY_STRING , null, null, null));
-    }
-
-        @Test
+     @Test
     void getAllFormDataByFormIdAndQIllegalArgumentSortExceptionTest()
     {
         Map<String, Object> testFormMetaData = new HashMap<>();
@@ -506,6 +199,10 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(AGE,AGE_VALUE);
         FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
         when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
+        List<String> relationsList=new ArrayList<>();
+        relationsList.add("994102731543871488");
+        relationsList.add("orderId");
+        Mockito.when(mockRelationUtils.getSplitOffRelations(anyString())).thenReturn(relationsList);
         Assertions.assertThrows(IllegalArgumentException.class, () ->
                 mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,TEST_RELATIONS,SEARCH_STRING, CREATED_ON, null));
     }
@@ -593,19 +290,4 @@ class FormDataServiceElasticDisabledExceptionTest
         Assertions.assertThrows(FormIdNotFoundException.class, () ->
                 mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_FORM_DATA_ID));
     }
-
-//    @Test
-//    void deleteFormDataByFormIdAndIdInvalidInputExceptionTest2()
-//    {
-//        Map<String, Object> testFormMetaData = new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION, 1);
-//        Map<String, Object> testFormData2 = new HashMap<>();
-//        testFormData2.put(NAME, NAME_VALUE);
-//        testFormData2.put(AGE,AGE_VALUE);
-//        FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
-//        when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-//        when(mockMongoTemplate.getCollection(any())).thenReturn(mockMongoCollection);
-//        Assertions.assertThrows(InvalidInputException.class, () ->
-//                mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_FORM_DATA_ID));
-//    }
 }

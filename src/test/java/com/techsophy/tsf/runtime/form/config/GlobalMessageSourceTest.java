@@ -4,24 +4,23 @@ import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
-import org.springframework.test.context.ActiveProfiles;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
+import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.ARGS;
+import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.KEY;
 import static org.mockito.ArgumentMatchers.any;
 
-@ActiveProfiles(TEST_ACTIVE_PROFILE)
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class GlobalMessageSourceTest
 {
     @Mock
     MessageSource mockMessageSource;
-    @MockBean
+    @Mock
     RelationUtils mockRelationUtils;
     @InjectMocks
     GlobalMessageSource mockGlobalMessageSource;

@@ -61,7 +61,10 @@ public class FormDataControllerImpl implements FormDataController
     {
         List<String> listOfFormIds=new ArrayList<>();
         listOfFormIds.add(formId);
-        listOfFormIds.addAll(relationUtils.getListOfFormIdsUsingRelations(relations));
+        if(relations!=null)
+        {
+            listOfFormIds.addAll(relationUtils.getSplitOffRelations(relations));
+        }
         checkACL(READ_RULE,listOfFormIds);
         if (StringUtils.hasText(filter))
         {
@@ -93,7 +96,8 @@ public class FormDataControllerImpl implements FormDataController
     {
         List<String> listOfFormIds=new ArrayList<>();
         listOfFormIds.add(formId);
-        listOfFormIds.addAll(relationUtils.getListOfFormIdsUsingRelations(relations));
+        List<String> listOfKeys =relationUtils.getSplitOffRelations(relations);
+        listOfFormIds.addAll(relationUtils.getSplitOffRelations(relations).subList(0, listOfKeys.size()/2));
         checkACL(READ_RULE,listOfFormIds);
         return new ApiResponse<>(formDataService.getFormDataByFormIdAndId(formId, id, relations), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
     }

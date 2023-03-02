@@ -45,16 +45,6 @@ class TokenUtilsTest
     @InjectMocks
     TokenUtils tokenUtils;
 
-//    @Order(1)
-//    @Test
-//    void getTokenFromIssuerTest() throws Exception
-//    {
-//        InputStream resource = new ClassPathResource(TOKEN_TXT_PATH).getInputStream();
-//        String result = IOUtils.toString(resource, StandardCharsets.UTF_8);
-//        String tenant = tokenUtils.getIssuerFromToken(result);
-//        assertThat(tenant).isEqualTo(TECHSOPHY_PLATFORM);
-//    }
-
     @Order(2)
     @Test
     void getTokenFromContext()
