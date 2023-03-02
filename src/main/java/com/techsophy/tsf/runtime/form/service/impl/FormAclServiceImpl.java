@@ -24,6 +24,8 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
+
 import static com.mongodb.client.model.Filters.eq;
 import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.*;
 
@@ -37,13 +39,10 @@ public class FormAclServiceImpl implements FormAclService {
     private final IdGeneratorImpl idGenerator;
     @Override
     public FormAclDto saveFormAcl(FormAclDto formAclDto) throws JsonProcessingException {
-        if(formAclDto.getId()==null) {
-            formAclDto.setId(idGenerator.nextId().toString());
-        }
-        Query query = new Query().addCriteria(Criteria.where(FORM_ID).is(formAclDto.getFormId()));
-        Update updateDefinition = new Update().set(ACL_ID,formAclDto.getAclId()).set(ID,formAclDto.getId());
-        FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true).upsert(true);
-        FormAclEntity formAclEntity = mongoTemplate.findAndModify(query,updateDefinition,options,FormAclEntity.class);
+        ObjectMapper mapper = new ObjectMapper();
+        FormAclEntity formAclEntity = mapper.convertValue(formAclDto,FormAclEntity.class);
+        formAclEntity.setId(new BigInteger(formAclDto.getFormId()));
+        formAclEntity = formAclRepository.save(formAclEntity);
         return this.objectMapper.convertValue(formAclEntity,FormAclDto.class);
     }
 
