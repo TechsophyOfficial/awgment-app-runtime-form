@@ -680,8 +680,19 @@ public class FormDataServiceImpl implements FormDataService
             prepareDocumentAggregateList(mappedArrayOfDocumentsName,  relationKeysList, relationValuesList,aggregationOperationsList);
             PaginationResponsePayload paginationResponsePayload1 = getPaginationWithMongoAndEmptySort(formId, sortBy, sortOrder, pageable, paginationResponsePayload, content, aggregationOperationsList);
             if (paginationResponsePayload1!=null) return paginationResponsePayload1;
-            FacetOperation facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA).and(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)),
-                    Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
+            FacetOperation facetOperation;
+            if(sortBy.equals("null")||sortOrder.equals("null"))
+            {
+                facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA)
+                        .and(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)),
+                                Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
+            }
+            else
+            {
+                facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA)
+                        .and(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)),
+                                Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
+            }
             aggregationOperationsList.add(facetOperation);
             List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
             Map<String,Object> dataMap=aggregateList.get(0);
@@ -991,8 +1002,12 @@ public class FormDataServiceImpl implements FormDataService
                     Criteria.where(UPDATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
                     Criteria.where(UPDATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
         }
+        if(isNotEmpty(sortBy)&&isNotEmpty(sortOrder))
+        {
+            query.with(Sort.by(Sort.Direction.fromString(sortOrder),sortBy));
+        }
         else {
-            query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
+            setQuery(query);
         }
         long totalMatchedRecords= getCount(formId, query);
         query.with(pageable);
