@@ -6,11 +6,14 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
+import com.techsophy.tsf.runtime.form.dto.DataType;
 import com.techsophy.tsf.runtime.form.dto.FormAclDto;
 import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
 import com.techsophy.tsf.runtime.form.entity.FormAclEntity;
+import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
 import com.techsophy.tsf.runtime.form.repository.FormAclRepository;
 import com.techsophy.tsf.runtime.form.service.FormAclService;
+import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +28,15 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.mongodb.client.model.Filters.eq;
+import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.LOGGED_IN_USER_ID_NOT_FOUND;
 import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.*;
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -37,15 +46,26 @@ public class FormAclServiceImpl implements FormAclService {
     private final ObjectMapper objectMapper;
     private final GlobalMessageSource globalMessageSource;
     private final IdGeneratorImpl idGenerator;
+    private final UserDetails userDetails;
     @Override
     public FormAclDto saveFormAcl(FormAclDto formAclDto) throws JsonProcessingException {
+        Map<String,Object> loggedInUserDetails =userDetails.getUserDetails().get(0);
+        if (isEmpty(String.valueOf(loggedInUserDetails.get(ID))))
+        {
+            throw new UserDetailsIdNotFoundException(LOGGED_IN_USER_ID_NOT_FOUND,globalMessageSource.get(LOGGED_IN_USER_ID_NOT_FOUND,loggedInUserDetails.get(ID).toString()));
+        }
+        BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(loggedInUserDetails.get(ID).toString()));
         ObjectMapper mapper = new ObjectMapper();
         FormAclEntity formAclEntity = mapper.convertValue(formAclDto,FormAclEntity.class);
+        //Here one to one mapping for Id and FormId
         formAclEntity.setId(new BigInteger(formAclDto.getFormId()));
+        if(formAclDto.getId()==null) {
+            formAclEntity.setCreatedOn(String.valueOf(Date.from(Instant.now())));
+            formAclEntity.setCreatedById(String.valueOf(loggedInUserId));
+        }
         formAclEntity = formAclRepository.save(formAclEntity);
         return this.objectMapper.convertValue(formAclEntity,FormAclDto.class);
     }
-
     @Override
     public FormAclDto getFormAcl(String formId) {
         FormAclEntity formAclEntity = this.formAclRepository.findByFormId(formId)
