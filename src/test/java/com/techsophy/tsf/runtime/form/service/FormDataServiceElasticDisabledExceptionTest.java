@@ -482,20 +482,6 @@ class FormDataServiceElasticDisabledExceptionTest
             Assertions.assertThrows(FormIdNotFoundException.class,()->mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, null, CREATED_ON, null));
     }
 
-    @Test
-    void getAllFormDataByFormIdAndQInvalidInputExceptionTest()
-    {
-        Map<String, Object> testFormMetaData = new HashMap<>();
-        testFormMetaData.put(FORM_VERSION, 1);
-        Map<String, Object> testFormData2 = new HashMap<>();
-        testFormData2.put(NAME_VALUE, NAME_VALUE);
-        testFormData2.put(AGE,AGE_VALUE);
-        FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
-        when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-        Assertions.assertThrows(InvalidInputException.class, () ->
-                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,EMPTY_STRING , null, null, null));
-    }
-
         @Test
     void getAllFormDataByFormIdAndQIllegalArgumentSortExceptionTest()
     {

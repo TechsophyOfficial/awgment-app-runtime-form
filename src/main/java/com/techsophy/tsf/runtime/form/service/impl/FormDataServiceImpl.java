@@ -487,7 +487,7 @@ public class FormDataServiceImpl implements FormDataService
             aggregationOperationsList.add(Aggregation.match(criteria));
             return getMapsEmptySort(formId, sortBy, sortOrder, relationalMapList, aggregationOperationsList);
         }
-        return getFormDataResponseSchemasSort(formId, sortBy, sortOrder);
+        return getFormDataResponseSchemasSort(formId, sortBy, sortOrder,criteria);
     }
 
     private List<Map<String,Object>> getContentList(Map<String, Object> dataMap)
@@ -500,9 +500,9 @@ public class FormDataServiceImpl implements FormDataService
         return this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
     }
 
-    private List<FormDataResponseSchema> getFormDataResponseSchemasSort(String formId, String sortBy, String sortOrder)
+    private List<FormDataResponseSchema> getFormDataResponseSchemasSort(String formId, String sortBy, String sortOrder,Criteria criteria)
     {
-        Query query=new Query();
+        Query query=new Query(criteria);
         checkIfBothSortByAndSortOrderGivenAsInput(sortBy, sortOrder);
         List<FormDataResponseSchema> formDataResponseSchemasList = new ArrayList<>();
         if (isEmpty(sortBy) && isEmpty(sortOrder))
@@ -646,11 +646,11 @@ public class FormDataServiceImpl implements FormDataService
                 String searchString = valuesList.get(i);  //if SearchString contains any alphabets or any special character
                 if(searchString.matches(CONTAINS_ATLEAST_ONE_ALPHABET)||searchString.matches(CONTAINS_ATLEAST_ONE_SPECIAL_CHARACTER))
                 {
-                    c1.add(new Criteria().orOperator(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
+                    c1.add(Criteria.where(keysList.get(i)).is(searchString));
                 }
                 else
                 {
-                    c1.add(new Criteria().orOperator(Criteria.where(keysList.get(i)).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    c1.add(new Criteria().orOperator(Criteria.where(keysList.get(i)).is(searchString),
                             Criteria.where(keysList.get(i)).is(Long.valueOf(searchString))));
                 }
             }
@@ -905,16 +905,11 @@ public class FormDataServiceImpl implements FormDataService
 
     private String checkValueOfQ(String q)
     {
-        String searchString;
         if(q !=null)
         {
-             searchString= URLDecoder.decode(q,StandardCharsets.UTF_8);
+             return URLDecoder.decode(q,StandardCharsets.UTF_8);
         }
-        else
-        {
-            throw new InvalidInputException(FILTER_SHOULD_BE_GIVEN_ALONG_WITH_SORT_BY_SORT_ORDER,globalMessageSource.get(FILTER_SHOULD_BE_GIVEN_ALONG_WITH_SORT_BY_SORT_ORDER));
-        }
-        return searchString;
+        return EMPTY_STRING;
     }
 
     private List<Map<String, Object>> getListWithElasticAndEmptyRelations(String formId, String relations, String q, String sortBy, String sortOrder)
