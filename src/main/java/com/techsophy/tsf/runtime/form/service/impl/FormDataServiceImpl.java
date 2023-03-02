@@ -828,7 +828,9 @@ public class FormDataServiceImpl implements FormDataService
         {
             query.with(Sort.by(Sort.Direction.fromString(sortOrder), sortBy));
         }
-        setQuery(query);
+        else {
+            setQuery(query);
+        }
         formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
         prepareFormDataResponseSchemaList(formDataResponseSchemasList, formDataDefinitionsList);
         return formDataResponseSchemasList;
