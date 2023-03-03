@@ -9,8 +9,6 @@ import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormAclDto;
 import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
 import com.techsophy.tsf.runtime.form.entity.FormAclEntity;
-import com.techsophy.tsf.runtime.form.exception.EntityIdNotFoundException;
-import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
 import com.techsophy.tsf.runtime.form.repository.FormAclRepository;
 import com.techsophy.tsf.runtime.form.service.FormAclService;
 import com.techsophy.tsf.runtime.form.utils.UserDetails;
@@ -46,19 +44,25 @@ public class FormAclServiceImpl implements FormAclService {
     private final IdGeneratorImpl idGenerator;
     private final UserDetails userDetails;
     @Override
-    public FormAclDto saveFormAcl(FormAclDto formAclDto) throws JsonProcessingException {
+    public FormAclDto saveFormAcl(FormAclDto formAclDto) {
+        FormAclEntity existFormAcl = formAclRepository.findByFormId(formAclDto.getFormId()).orElse(null);
         FormAclEntity formAclEntity = objectMapper.convertValue(formAclDto,FormAclEntity.class);
-        //Here one to one mapping for Id and FormId
-        formAclEntity.setId(new BigInteger(formAclDto.getFormId()));
-        if(formAclDto.getId()==null) {
-            String loggedInUserId = String.valueOf(userDetails.getCurrentAuditor());
+        if(existFormAcl==null)
+        {
+            //Here one to one mapping for Id and FormId
+            formAclEntity.setId(new BigInteger(formAclDto.getFormId()));
+            String loggedInUserId = userDetails.getCurrentAuditor().orElse(null);
             formAclEntity.setCreatedOn(String.valueOf(Date.from(Instant.now())));
             formAclEntity.setCreatedById(String.valueOf(loggedInUserId));
         }
-        else {
-            FormAclEntity formAclEntityDbData = formAclRepository.findById(formAclDto.getId()).orElseThrow(()->new EntityIdNotFoundException(NO_RECORD_FOUND,globalMessageSource.get(NO_RECORD_FOUND,formAclDto.getId())));
-            formAclEntity.setCreatedById(formAclEntityDbData.getCreatedById());
-            formAclEntity.setCreatedOn(formAclEntityDbData.getCreatedOn());
+        else if(!String.valueOf(existFormAcl.getId()).equalsIgnoreCase(formAclDto.getId()))
+        {
+            return null;
+        }
+        else
+        {
+            formAclEntity.setCreatedById(existFormAcl.getCreatedById());
+            formAclEntity.setCreatedOn(existFormAcl.getCreatedOn());
         }
         formAclEntity = formAclRepository.save(formAclEntity);
         return this.objectMapper.convertValue(formAclEntity,FormAclDto.class);

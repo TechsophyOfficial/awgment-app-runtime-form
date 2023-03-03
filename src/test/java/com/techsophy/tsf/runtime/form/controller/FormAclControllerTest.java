@@ -43,6 +43,16 @@ import static org.mockito.Mockito.*;
         verify(formAclService,times(1)).saveFormAcl(any());
     }
     @Test
+    void saveFormAclExceptionWithWrongId() throws Exception
+    {
+        FormAclDto formAclDto = new FormAclDto();
+        formAclDto.setId("1");
+        formAclDto.setFormId("123");
+        formAclDto.setAclId("123");
+        Mockito.when(formAclService.saveFormAcl(any())).thenReturn(null);
+        Assertions.assertThrows(EntityPathException.class,()->formAclController.saveFormAcl(formAclDto));
+    }
+    @Test
     void getFormAclSuccess() throws Exception
     {
         FormAclDto formAclDto = new FormAclDto();
