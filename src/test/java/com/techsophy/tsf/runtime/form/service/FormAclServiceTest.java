@@ -11,7 +11,6 @@ import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
 import com.techsophy.tsf.runtime.form.entity.FormAclEntity;
 import com.techsophy.tsf.runtime.form.exception.EntityIdNotFoundException;
 import com.techsophy.tsf.runtime.form.exception.EntityPathException;
-import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
 import com.techsophy.tsf.runtime.form.repository.FormAclRepository;
 import com.techsophy.tsf.runtime.form.service.impl.FormAclServiceImpl;
 import com.techsophy.tsf.runtime.form.utils.UserDetails;
@@ -28,12 +27,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.UpdateDefinition;
 import org.springframework.test.context.ActiveProfiles;
-import java.math.BigInteger;
+
 import java.util.*;
 
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
@@ -75,7 +71,8 @@ import static org.mockito.Mockito.*;
     void saveFormAclSuccessWithId() throws JsonProcessingException {
         FormAclDto formAclDto = new FormAclDto("1","1","1");
         FormAclEntity formAclEntity = new FormAclEntity("1","1");
-        Mockito.when(userDetails.getUserDetails()).thenReturn(userList);
+        Mockito.when(objectMapper.convertValue(any(),eq(FormAclEntity.class))).thenReturn(formAclEntity);
+        Mockito.when(formAclRepository.findById(any())).thenReturn(Optional.of(formAclEntity));
         Mockito.when(formAclRepository.save(any())).thenReturn(formAclEntity);
         formAclService.saveFormAcl(formAclDto);
         verify(formAclRepository,times(1)).save(any());
@@ -86,20 +83,22 @@ import static org.mockito.Mockito.*;
         formAclDto.setAclId("1");
         formAclDto.setFormId("1");
         FormAclEntity formAclEntity = new FormAclEntity("1","1");
-        Mockito.when(userDetails.getUserDetails()).thenReturn(userList);
+        Mockito.when(objectMapper.convertValue(any(),eq(FormAclEntity.class))).thenReturn(formAclEntity);
+        Mockito.when(userDetails.getCurrentAuditor()).thenReturn(Optional.of("1"));
         Mockito.when(formAclRepository.save(any())).thenReturn(formAclEntity);
         formAclService.saveFormAcl(formAclDto);
         verify(formAclRepository,times(1)).save(any());
     }
     @Test
-    void saveFormAclExceptionWithUserIdNull() throws JsonProcessingException {
-        List<Map<String, Object>> userList = new ArrayList<>();
-        Map<String, Object> map = new HashMap<>();
-        map.put(ID, "");
-        userList.add(map);
+    void saveFormAclExceptionWithIdNotFoundException() throws JsonProcessingException {
         FormAclDto formAclDto = new FormAclDto();
-        Mockito.when(userDetails.getUserDetails()).thenReturn(userList);
-        Assertions.assertThrows(UserDetailsIdNotFoundException.class,()->formAclService.saveFormAcl(formAclDto));
+        formAclDto.setId("1");
+        formAclDto.setAclId("1");
+        formAclDto.setFormId("1");
+        FormAclEntity formAclEntity = new FormAclEntity("1","1");
+        Mockito.when(objectMapper.convertValue(any(),eq(FormAclEntity.class))).thenReturn(formAclEntity);
+        Mockito.when(formAclRepository.findById(any())).thenThrow(EntityIdNotFoundException.class);
+        Assertions.assertThrows(EntityIdNotFoundException.class,()->formAclService.saveFormAcl(formAclDto));
     }
     @Test
     void getFormAclSuccess() throws JsonProcessingException {
