@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.math.BigInteger;
 @Data
 @Document(collection = "tp_formAcl")
-public class FormAclEntity {
+public class FormAclEntity extends Auditable{
 
     @Id
     private BigInteger id;

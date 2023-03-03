@@ -11,21 +11,28 @@ import com.techsophy.tsf.runtime.form.dto.PaginationResponsePayload;
 import com.techsophy.tsf.runtime.form.entity.FormAclEntity;
 import com.techsophy.tsf.runtime.form.repository.FormAclRepository;
 import com.techsophy.tsf.runtime.form.service.FormAclService;
+import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Map;
+import java.util.Optional;
+
 import static com.mongodb.client.model.Filters.eq;
-import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.*;
+import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.ENTITY_ID_NOT_FOUND_EXCEPTION;
+import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.LOGGED_IN_USER_ID_NOT_FOUND;
+import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.ID;
+import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.NO_RECORD_FOUND;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -35,18 +42,32 @@ public class FormAclServiceImpl implements FormAclService {
     private final ObjectMapper objectMapper;
     private final GlobalMessageSource globalMessageSource;
     private final IdGeneratorImpl idGenerator;
+    private final UserDetails userDetails;
     @Override
-    public FormAclDto saveFormAcl(FormAclDto formAclDto) throws JsonProcessingException {
-        if(formAclDto.getId()==null) {
-            formAclDto.setId(idGenerator.nextId().toString());
+    public FormAclDto saveFormAcl(FormAclDto formAclDto) {
+        FormAclEntity existFormAcl = formAclRepository.findByFormId(formAclDto.getFormId()).orElse(null);
+        FormAclEntity formAclEntity = objectMapper.convertValue(formAclDto,FormAclEntity.class);
+        if(existFormAcl==null)
+        {
+            //Here one to one mapping for Id and FormId
+            formAclEntity.setId(new BigInteger(formAclDto.getFormId()));
+            String loggedInUserId = userDetails.getCurrentAuditor().orElse(null);
+            formAclEntity.setCreatedOn(String.valueOf(Date.from(Instant.now())));
+            formAclEntity.setCreatedById(String.valueOf(loggedInUserId));
+
         }
-        Query query = new Query().addCriteria(Criteria.where(FORM_ID).is(formAclDto.getFormId()));
-        Update updateDefinition = new Update().set(ACL_ID,formAclDto.getAclId()).set(ID,formAclDto.getId());
-        FindAndModifyOptions options = new FindAndModifyOptions().returnNew(true).upsert(true);
-        FormAclEntity formAclEntity = mongoTemplate.findAndModify(query,updateDefinition,options,FormAclEntity.class);
+        else if(!String.valueOf(existFormAcl.getId()).equalsIgnoreCase(formAclDto.getId()))
+        {
+            return null;
+        }
+        else
+        {
+            formAclEntity.setCreatedById(existFormAcl.getCreatedById());
+            formAclEntity.setCreatedOn(existFormAcl.getCreatedOn());
+        }
+        formAclEntity = formAclRepository.save(formAclEntity);
         return this.objectMapper.convertValue(formAclEntity,FormAclDto.class);
     }
-
     @Override
     public FormAclDto getFormAcl(String formId) {
         FormAclEntity formAclEntity = this.formAclRepository.findByFormId(formId)

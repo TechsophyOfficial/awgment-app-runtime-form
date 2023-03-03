@@ -21,7 +21,12 @@ public class FormAclControllerImpl implements FormAclController {
     private final GlobalMessageSource globalMessageSource;
     @Override
     public ApiResponse<FormAclDto> saveFormAcl(FormAclDto formAclDto) throws JsonProcessingException {
-         return  new ApiResponse<>(formAclService.saveFormAcl(formAclDto),true,"formAcl created successfully");
+        FormAclDto dto = formAclService.saveFormAcl(formAclDto);
+        if(dto==null)
+        {
+            throw new EntityPathException(NO_RECORD_FOUND,globalMessageSource.get(NO_RECORD_FOUND,formAclDto.getFormId()));
+        }
+         return  new ApiResponse<>(dto,true,"formAcl created successfully");
     }
 
     @Override

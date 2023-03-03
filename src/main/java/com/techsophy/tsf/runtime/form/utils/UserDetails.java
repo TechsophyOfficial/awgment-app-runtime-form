@@ -7,15 +7,19 @@ import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
@@ -26,7 +30,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor_ = {@Autowired})
-public class UserDetails
+public class UserDetails implements AuditorAware<String>
 {
     private final GlobalMessageSource globalMessageSource;
     private TokenUtils tokenUtils;
@@ -69,6 +73,12 @@ public class UserDetails
             return userDetailsResponse;
         }
         throw new UserDetailsIdNotFoundException(USER_NOT_FOUND_BY_ID,globalMessageSource.get(USER_NOT_FOUND_BY_ID,loggedInUserId));
+    }
+    @SneakyThrows
+    @Override
+    public Optional<String> getCurrentAuditor()
+    {
+        return Optional.ofNullable(String.valueOf(getUserDetails().get(0).get(ID)));
     }
 }
 

@@ -13,8 +13,10 @@ import com.techsophy.tsf.runtime.form.exception.EntityIdNotFoundException;
 import com.techsophy.tsf.runtime.form.exception.EntityPathException;
 import com.techsophy.tsf.runtime.form.repository.FormAclRepository;
 import com.techsophy.tsf.runtime.form.service.impl.FormAclServiceImpl;
+import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import org.bson.Document;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,14 +27,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.UpdateDefinition;
 import org.springframework.test.context.ActiveProfiles;
+
 import java.math.BigInteger;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
+import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
+import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.BIGINTEGER_ID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -53,26 +55,58 @@ import static org.mockito.Mockito.*;
     DeleteResult deleteResult;
     @Mock
     IdGeneratorImpl idGenerator;
+    @Mock
+    UserDetails userDetails;
     @InjectMocks
     FormAclServiceImpl formAclService;
+    List<Map<String, Object>> userList = new ArrayList<>();
+    @BeforeEach
+    public void init()
+    {
+        Map<String, Object> map = new HashMap<>();
+        map.put(ID, BIGINTEGER_ID);
+        userList.add(map);
+    }
 
     @Test
-    void saveFormAclSuccessWithId() throws JsonProcessingException {
-        FormAclDto formAclDto = new FormAclDto();
-        formAclDto.setFormId("123");
-        formAclDto.setAclId("123");
-        formAclDto.setId("123");
+    void saveFormAclSuccessWithNoExistingData() throws JsonProcessingException {
+        FormAclDto formAclDto = new FormAclDto("1","1","1");
+        FormAclEntity formAclEntity = new FormAclEntity("1","1");
+        formAclEntity.setId(BigInteger.ONE);
+        Mockito.when(objectMapper.convertValue(any(),eq(FormAclEntity.class))).thenReturn(formAclEntity);
+        Mockito.when(formAclRepository.findByFormId(any())).thenReturn(Optional.empty());
+        Mockito.when(formAclRepository.save(any())).thenReturn(formAclEntity);
         formAclService.saveFormAcl(formAclDto);
-        Mockito.verify(mongoTemplate,Mockito.times(1)).findAndModify((Query) any(), (UpdateDefinition) any(), (FindAndModifyOptions) any(),any());
+        verify(formAclRepository,times(1)).save(any());
     }
     @Test
-    void saveFormAclSuccessWithIdNuLL() throws JsonProcessingException {
+    void saveFormAclExceptionWithWrongId() throws JsonProcessingException {
         FormAclDto formAclDto = new FormAclDto();
-        formAclDto.setFormId("123");
-        formAclDto.setAclId("123");
-        Mockito.when(idGenerator.nextId()).thenReturn(BigInteger.valueOf(1));
+        formAclDto.setId("1");
+        formAclDto.setAclId("1");
+        formAclDto.setFormId("1");
+        FormAclEntity formAclEntity = new FormAclEntity("1","1");
+        formAclEntity.setId(BigInteger.TEN);
+        Mockito.when(formAclRepository.findByFormId(any())).thenReturn(Optional.of(formAclEntity));
+        Mockito.when(objectMapper.convertValue(any(),eq(FormAclEntity.class))).thenReturn(formAclEntity);
         formAclService.saveFormAcl(formAclDto);
-        Mockito.verify(mongoTemplate,Mockito.times(1)).findAndModify((Query) any(), (UpdateDefinition) any(), (FindAndModifyOptions) any(),any());
+        Assertions.assertNull(formAclService.saveFormAcl(formAclDto));
+
+    }
+    @Test
+    void saveFormAclWithExistingData() throws JsonProcessingException {
+        FormAclDto formAclDto = new FormAclDto();
+        formAclDto.setId("1");
+        formAclDto.setAclId("1");
+        formAclDto.setFormId("1");
+        FormAclEntity formAclEntity = new FormAclEntity("1","1");
+        formAclEntity.setId(BigInteger.ONE);
+        Mockito.when(objectMapper.convertValue(any(),eq(FormAclEntity.class))).thenReturn(formAclEntity);
+        Mockito.when(formAclRepository.findByFormId(any())).thenReturn(Optional.of(formAclEntity));
+        Mockito.when(formAclRepository.save(any())).thenReturn(formAclEntity);
+        formAclService.saveFormAcl(formAclDto);
+        verify(formAclRepository,times(1)).save(any());
+
     }
     @Test
     void getFormAclSuccess() throws JsonProcessingException {
