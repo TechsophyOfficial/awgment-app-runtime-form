@@ -49,6 +49,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.CONTAINS_ONLY_NUMBER;
+import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.E11000;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.SEMICOLON;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static org.apache.commons.lang3.StringUtils.*;
@@ -79,6 +80,14 @@ public class FormDataServiceImpl implements FormDataService
     private FormService formService = null;
     private FormValidationServiceImpl formValidationServiceImpl;
 
+    private void handleMongoException(Exception e) {
+        boolean exist = e.getMessage().contains(E11000);
+        if (exist) {
+            throw new InvalidInputException(DUPLICATE_FIELD_VALUE, globalMessageSource.get(DUPLICATE_FIELD_VALUE));
+        } else {
+            throw new InvalidInputException(DUPLICATE_FIELD_VALUE, e.getMessage());
+        }
+    }
     @Override
     public FormDataResponse saveFormData(FormDataSchema formDataSchema) throws IOException
     {
@@ -100,6 +109,7 @@ public class FormDataServiceImpl implements FormDataService
         setUpdateAudit(loggedInUserId, formDataDefinition);
         if (mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formId))
             {
+
                 if (uniqueDocumentId==null|| isEmpty(uniqueDocumentId))
                 {
                     id = getNextId();
@@ -117,8 +127,13 @@ public class FormDataServiceImpl implements FormDataService
                     version= (int) mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).find(filter).iterator().next().get(VERSION);
                     version = updateVersion(version);
                     id=BigInteger.valueOf(Long.parseLong(uniqueDocumentId));
-                    mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).updateOne(filter,Updates.combine(
-                            Updates.set(FORM_DATA,formDataDefinition.getFormData()),Updates.set(VERSION,version)));
+                    try {
+                        mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).updateOne(filter,Updates.combine(
+                                Updates.set(FORM_DATA,formDataDefinition.getFormData()),Updates.set(VERSION,version)));
+                    }catch(Exception e)
+                    {
+                        handleMongoException(e);
+                    }
                     FormDataAuditSchema formDataAuditSchema = getFormDataAuditSchema(formId, 1, formDataDefinition);
                     this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
                 }
@@ -155,7 +170,12 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     private void saveToMongo(String formId, FormDataDefinition formDataDefinition) {
-        mongoTemplate.save(formDataDefinition, TP_RUNTIME_FORM_DATA + formId);
+        try{
+            mongoTemplate.save(formDataDefinition, TP_RUNTIME_FORM_DATA + formId);
+        }catch(Exception e){
+            handleMongoException(e);
+        }
+
     }
 
     private static void setUpdateAudit(BigInteger loggedInUserId, FormDataDefinition formDataDefinition) {
@@ -370,8 +390,14 @@ public class FormDataServiceImpl implements FormDataService
         formDataDefinition.setCreatedOn(String.valueOf(document.get(CREATED_ON)));
         formDataDefinition.setUpdatedById(String.valueOf(loggedInUserId));
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
-        mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).updateOne(filter,Updates.combine(
-                Updates.set(FORM_DATA,formData),Updates.set(VERSION,version),Updates.set(FORM_META_DATA,formMetaData)));
+        try {
+            mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA + formId).updateOne(filter, Updates.combine(
+                    Updates.set(FORM_DATA, formData), Updates.set(VERSION, version), Updates.set(FORM_META_DATA, formMetaData)));
+        }catch(Exception e)
+        {
+            handleMongoException(e);
+
+        }
         FormDataAuditSchema formDataAuditSchema = getFormDataAuditSchema(formId, version, formDataDefinition);
         this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
         if (elasticEnable)
@@ -617,7 +643,7 @@ public class FormDataServiceImpl implements FormDataService
     private long getCount(String formId, Query query) {
         return mongoTemplate.count(query, TP_RUNTIME_FORM_DATA + formId);
     }
-
+    
     private PaginationResponsePayload getPaginationResponsePayloadIfRelationsExists(String formId, String relations, String sort, Pageable pageable, PaginationResponsePayload paginationResponsePayload, List<Map<String, Object>> content, Criteria criteria)
     {
         String sortBy=EMPTY_STRING;
@@ -639,8 +665,19 @@ public class FormDataServiceImpl implements FormDataService
             prepareDocumentAggregateList(mappedArrayOfDocumentsName,  relationKeysList, relationValuesList,aggregationOperationsList);
             PaginationResponsePayload paginationResponsePayload1 = getPaginationWithMongoAndEmptySort(formId, sortBy, sortOrder, pageable, paginationResponsePayload, content, aggregationOperationsList);
             if (paginationResponsePayload1!=null) return paginationResponsePayload1;
-            FacetOperation facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA).and(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)),
-                    Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
+            FacetOperation facetOperation;
+            if(sortBy.equals("null")||sortOrder.equals("null"))
+            {
+                facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA)
+                        .and(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)),
+                                Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
+            }
+            else
+            {
+                facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA)
+                        .and(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)),
+                                Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
+            }
             aggregationOperationsList.add(facetOperation);
             List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
             Map<String,Object> dataMap=aggregateList.get(0);
@@ -776,7 +813,9 @@ public class FormDataServiceImpl implements FormDataService
         {
             query.with(Sort.by(Sort.Direction.fromString(sortOrder), sortBy));
         }
-        setQuery(query);
+        else {
+            setQuery(query);
+        }
         formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
         prepareFormDataResponseSchemaList(formDataResponseSchemasList, formDataDefinitionsList);
         return formDataResponseSchemasList;
@@ -853,16 +892,11 @@ public class FormDataServiceImpl implements FormDataService
 
     private String checkValueOfQ(String q)
     {
-        String searchString;
         if(q !=null)
         {
-             searchString= URLDecoder.decode(q,StandardCharsets.UTF_8);
+             return URLDecoder.decode(q,StandardCharsets.UTF_8);
         }
-        else
-        {
-            throw new InvalidInputException(FILTER_SHOULD_BE_GIVEN_ALONG_WITH_SORT_BY_SORT_ORDER,globalMessageSource.get(FILTER_SHOULD_BE_GIVEN_ALONG_WITH_SORT_BY_SORT_ORDER));
-        }
-        return searchString;
+        return EMPTY_STRING;
     }
 
     private List<Map<String, Object>> getListWithElasticAndEmptyRelations(String formId, String relations, String q, String sortBy, String sortOrder)
@@ -929,26 +963,34 @@ public class FormDataServiceImpl implements FormDataService
         PaginationResponsePayload paginationResponsePayload1 = getPaginationWithMongoAndRelations(formId, relations, sortBy, sortOrder, pageable, paginationResponsePayload, content);
         if (paginationResponsePayload1!=null) return paginationResponsePayload1;
         Query query = new Query();
-        String searchString= checkValueOfQ(q);
-        PaginationResponsePayload paginationResponsePayload2 = sortByAndSortOrderIsEmpty(formId, sortBy, sortOrder, pageable, paginationResponsePayload, content, new Criteria().orOperator(Criteria.where(UNDERSCORE_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(VERSION).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(CREATED_ON).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(CREATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(CREATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(UPDATED_ON).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(UPDATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(UPDATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
-        if (paginationResponsePayload2 != null) return paginationResponsePayload2;
-        checkIfBothSortByAndSortOrderGivenAsInput(sortBy, sortOrder);
-        query.addCriteria(new Criteria().orOperator(Criteria.where(UNDERSCORE_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(VERSION).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(CREATED_ON).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(CREATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(CREATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(UPDATED_ON).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(UPDATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-                Criteria.where(UPDATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
-        query.with(Sort.by(Sort.Direction.fromString(sortOrder), sortBy));
+        if(q!=null&&!q.isEmpty()) {
+            String searchString= checkValueOfQ(q);
+            PaginationResponsePayload paginationResponsePayload2 = sortByAndSortOrderIsEmpty(formId, sortBy, sortOrder, pageable, paginationResponsePayload, content, new Criteria().orOperator(Criteria.where(UNDERSCORE_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(VERSION).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(CREATED_ON).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(CREATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(CREATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(UPDATED_ON).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(UPDATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(UPDATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
+            if (paginationResponsePayload2 != null) return paginationResponsePayload2;
+            checkIfBothSortByAndSortOrderGivenAsInput(sortBy, sortOrder);
+            query.addCriteria(new Criteria().orOperator(Criteria.where(UNDERSCORE_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(VERSION).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(CREATED_ON).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(CREATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(CREATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(UPDATED_ON).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(UPDATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                    Criteria.where(UPDATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
+        }
+        if(isNotEmpty(sortBy)&&isNotEmpty(sortOrder))
+        {
+            query.with(Sort.by(Sort.Direction.fromString(sortOrder),sortBy));
+        }
+        else {
+            setQuery(query);
+        }
         long totalMatchedRecords= getCount(formId, query);
         query.with(pageable);
         List<FormDataDefinition> formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
@@ -1279,7 +1321,7 @@ public class FormDataServiceImpl implements FormDataService
     {
         boolean flag = false;
         long count = 0;
-        Bson filter= Filters.eq(UNDERSCORE_ID,Long.valueOf(id));
+        Bson filter= Filters.eq(UNDERSCORE_ID,id);
         checkMongoCollectionIfExistsOrNot(formId);
         try
         {

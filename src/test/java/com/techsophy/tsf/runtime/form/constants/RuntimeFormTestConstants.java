@@ -141,5 +141,6 @@ public class RuntimeFormTestConstants
     public static final String TEST = "test";
     public static final String PUT = "put";
     public static final String DELETE = "delete";
+    public static final String DUPLICATE_KEY_ERROR_CODE = "E11000 duplicate key";
 }
 

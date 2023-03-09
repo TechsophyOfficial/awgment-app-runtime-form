@@ -26,6 +26,9 @@ configurations {
 }
 
 repositories {
+    maven {
+        url "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+    }
     mavenLocal()
     mavenCentral()
 }
@@ -43,6 +46,7 @@ jib {
 }
 
 dependencies {
+    implementation 'com.techsophy:awgment-commons:0.1.1-SNAPSHOT'
     implementation 'org.springframework.boot:spring-boot-starter-web:2.6.6'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb:2.6.6'
     implementation 'org.springframework.boot:spring-boot-starter-validation:2.6.6'
@@ -64,6 +68,7 @@ dependencies {
     implementation 'com.techsophy:id-generator:2.0.0'
     implementation 'com.techsophy:multitenancy-mongo:1.0.0'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.5.0'
 
     implementation 'io.github.origin-energy:java-snapshot-testing-junit5:3.2.7'
 
@@ -82,6 +87,7 @@ dependencies {
     }
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.3.2.RELEASE'
     testImplementation 'org.mockito:mockito-inline:4.3.1'
+    testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8', version: '2.27.2'
 }
 
 publishing {
