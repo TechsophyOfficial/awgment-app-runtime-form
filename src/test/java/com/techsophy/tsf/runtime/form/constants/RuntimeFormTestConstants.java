@@ -18,7 +18,6 @@ public class RuntimeFormTestConstants
     public static final String errorCode = "123";
     public static final String TENANT = "tenant";
     public static final String TEST_FORMS_DATA_1 = "testdata/form-schema1.json";
-    public static final String TEST_FORMS_DATA_2 = "testdata/form-schema2.json";
     public static final String BASE_URL_TEST = "/form-runtime";
     public static final String VERSION_V1_TEST = "/v1";
     public static final String FORM_BY_ID_URL_TEST = "/forms/{id}";
@@ -35,7 +34,6 @@ public class RuntimeFormTestConstants
     public static final Map<String, Object> TEST_FORM_META_DATA = null;
     public static final String LOCALE_EN = "en";
     public static final String ZERO = "0";
-    public static final String FIVE = "5";
     public static final String Q = "123";
     public static final String FORM_VERSION = "formVersion";
     public static final String FORM_DATA = "formData";
@@ -45,7 +43,6 @@ public class RuntimeFormTestConstants
     public static final String DATA = "data";
     public static final String CONTENT = "content";
     public static final String AGE_VALUE = "23";
-    public static final String PERSON_AGE = "100";
     public static final String UNDERSCORE_ID_VALUE = "123";
     public static final String CREATED_BY_USER_ID = "847117072898674688";
     public static final String CREATED_BY_USER_NAME = "Kaza tejaswini";
@@ -59,7 +56,6 @@ public class RuntimeFormTestConstants
     public static final String ELASTIC_SOURCE = "elasticSource";
     public static final String GATEWAY_API = "gatewayApi";
     public static final String GATEWAY_API_VALUE = "https://dummy";
-    public static final String RESPONSE_VALUE = "{\"data\":null}";
     public static final String SUCCESS = "success";
     public static final String MESSAGE = "message";
     public static final String ELASTIC_DATA_FETCHED_SUCCESSFULLY = "Elastic data fetched successfully";
@@ -81,46 +77,12 @@ public class RuntimeFormTestConstants
     public static final String ONE = "1";
     public static final String PAGE_SIZE = "20";
     public static final String RESPONSE_VALUE_9 = " {\"data\":{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"},\"success\":true,\"message\":\"Elastic data fetched successfully\"}";
-    public static final String RESPONSE_VALUE_10 = " {\"data\":{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"},\"success\":true,\"message\":\"Elastic data fetched successfully\"}";
-    public static final String RESPONSE_VALUE_11 = " {\"data\":{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"},\"success\":true,\"message\":\"Elastic data fetched successfully\"}";
-    public static final String RESPONSE_VALUE_12 = "{\"data\":{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"},\"success\":true,\"message\":\"Elastic data fetched successfully\"}";
-    public static final String RESPONSE_VALUE_13 = "{\"data\":{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"},\"success\":true,\"message\":\"Elastic data fetched successfully\"}";
-    public static final String RESPONSE_VALUE_14 = "{\"data\":{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"},\"success\":true,\"message\":\"Elastic data fetched successfully\"}";
-    public static final String TEST_EMAIL_ADDRESS = "abc@gmail.com";
-    public static final String RESPONSE_VALUE_15 = " {\"data\":{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"},\"success\":true,\"message\":\"Elastic data fetched successfully\"}";
-    public static final String RESPONSE_VALUE_16 = "{\"data\":{\"content\":[{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"}],\"totalPages\":1,\"totalElements\":1,\"page\":0,\"size\":20,\"numberOfElements\":1},\n" +
-            "                    \"success\":true,\"message\":\"Data retrieved successfully\"}";
     public static final String RESPONSE_VALUE_17 = "{\"data\":{\"content\":[{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"}],\"totalPages\":1,\"totalElements\":1,\"page\":0,\"size\":20,\"numberOfElements\":1},\n" +
             "                    \"success\":true,\"message\":\"Data retrieved successfully\"}";
-    public static final String RESPONSE_VALUE_18 = "{\"data\":{\"content\":[{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"}],\"totalPages\":1,\"totalElements\":1,\"page\":0,\"size\":20,\"numberOfElements\":1},\n" +
-            "                    \"success\":true,\"message\":\"Data retrieved successfully\"}";
-    public static final String RESPONSE_VALUE_19 = "{\"data\":{\"content\":[{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"}],\"totalPages\":1,\"totalElements\":1,\"page\":0,\"size\":20,\"numberOfElements\":1},\n" +
-            "                    \"success\":true,\"message\":\"Data retrieved successfully\"}";
-    public static final String RESPONSE_VALUE_20 = "{\"data\":{\"content\":[{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"}],\"totalPages\":1,\"totalElements\":1,\"page\":0,\"size\":20,\"numberOfElements\":1},\n" +
-            "                    \"success\":true,\"message\":\"Data retrieved successfully\"}";
-    public static final String RESPONSE_VALUE_21 = "{\"data\":{\"content\":[{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"}],\"totalPages\":1,\"totalElements\":1,\"page\":0,\"size\":20,\"numberOfElements\":1},\n" +
-            "                    \"success\":true,\"message\":\"Data retrieved successfully\"}";
-    public static final String RESPONSE_VALUE_22 = "{\"data\":{\"content\":[{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"}],\"totalPages\":1,\"totalElements\":1,\"page\":0,\"size\":20,\"numberOfElements\":1},\n" +
-            "                    \"success\":true,\"message\":\"Data retrieved successfully\"}";
-    public static final String RESPONSE_VALUE_23 = "{\"data\":{\"content\":[{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"}],\"totalPages\":1,\"totalElements\":1,\"page\":0,\"size\":20,\"numberOfElements\":1},\n" +
-            "                    \"success\":true,\"message\":\"Data retrieved successfully\"}";
-    public static final String RESPONSE_VALUE_24 = "{\"data\":{\"content\":[{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"}],\"totalPages\":1,\"totalElements\":1,\"page\":0,\"size\":20,\"numberOfElements\":1},\n" +
-            "                    \"success\":true,\"message\":\"Data retrieved successfully\"}";
-    public static final String RESPONSE_VALUE_25 = "{\"data\":{\"content\":[{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"}],\"totalPages\":1,\"totalElements\":1,\"page\":0,\"size\":20,\"numberOfElements\":1},\n" +
-            "                    \"success\":true,\"message\":\"Data retrieved successfully\"}";
-    public static final String RESPONSE_VALUE_26 = "{\"data\":{\"content\":[{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"}],\"totalPages\":1,\"totalElements\":1,\"page\":0,\"size\":20,\"numberOfElements\":1},\n" +
-            "                    \"success\":true,\"message\":\"Data retrieved successfully\"}";
-    public static final String RESPONSE_VALUE_27 = "{\"data\":{\"content\":[{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"}],\"totalPages\":1,\"totalElements\":1,\"page\":0,\"size\":20,\"numberOfElements\":1},\n" +
-            "                    \"success\":true,\"message\":\"Data retrieved successfully\"}";
-    public static final String RESPONSE_VALUE_28 = "{\"data\":{\"content\":[{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"}],\"totalPages\":1,\"totalElements\":1,\"page\":0,\"size\":20,\"numberOfElements\":1},\n" +
-            "                    \"success\":true,\"message\":\"Data retrieved successfully\"}";
-    public static final String RESPONSE_VALUE_29 = "{\"data\":{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"},\"success\":true,\"message\":\"Elastic data fetched successfully\"}";
     public static final String RESPONSE_VALUE_30 = " {\"data\":{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"},\"success\":true,\"message\":\"Elastic data fetched successfully\"}";
     public static final String RESPONSE_VALUE_31 = " {\"data\":{\"formId\":\"928232634435125248\",\"createdByName\":\"tejaswini kaza\",\"formMetadata\":{\"formVersion\":\"101\"},\"updatedByName\":\"tejaswini kaza\",\"formData\":{\"name\":\"akhil\",\"age\":\"205\"},\"id\":\"945588115922505728\",\"updatedOn\":\"2022-02-22T07:49:35.014336Z\",\"updatedById\":\"910797699334508544\",\"version\":\"1\",\"createdOn\":\"2022-02-22T07:49:35.013250Z\",\"createdById\":\"910797699334508544\"},\"success\":true,\"message\":\"Elastic data fetched successfully\"}";
 
     //FormServiceConstants
-    public final static String MIN_LENGTH = "minLength";
-    public final static String MAX_LENGTH = "maxLength";
     public final static String TEST_TYPE_COMPONENT = "component";
     public final static String TEST_TYPE_FORM = "form";
     public static final String TEST_FORMS_DATA = "testdata/form-schema1.json";
@@ -137,8 +99,6 @@ public class RuntimeFormTestConstants
     public final static Instant TEST_CREATED_ON = Instant.now();
     public final static String TEST_UPDATED_BY_ID = "1";
     public final static Instant TEST_UPDATED_ON = Instant.now();
-    public final static String TEST_CREATED_BY_NAME = "user1";
-    public final static String TEST_UPDATED_BY_NAME = "user1";
     public static final String BIGINTEGER_ID = "847117072898674688";
     public static final String USER_FIRST_NAME = "tejaswini";
     public static final String USER_LAST_NAME = "Kaza";
@@ -149,14 +109,12 @@ public class RuntimeFormTestConstants
     public static final String TEST_SORT_BY = "createdOn";
     public static final String TEST_SORT_ORDER = "desc";
     public static final String FILTER="name:abc,id:123,formId:101";
+    public static final String FILTER_VERSION_2="{\"formData.orderId\":{\"lt\":23,\"lte\":20,\"gt\":20,\"gte\":24},\"formData.age\":{\"equals\":18},\"formData.orderName\":{\"in\":[\"order1\"]},\"formData.name\":{\"like\":\"akh\"}}";
     public static final String TEST_FILTER = "id:123,version:1";
     public static final String TEST_GROUP_BY = "formData.name";
     public static final String TEST_OPERATION = "count";
-    public static final String TEST_COUNT_VALUE = "4";
 
     //TokenUtilsTest
-    public static final String TOKEN_TXT_PATH = "testdata/token.txt";
-    public static final String TECHSOPHY_PLATFORM = "techsophy-platform";
     public static final String PREFERED_USER_NAME = "preferred_username";
     public static final String ALG = "alg";
     public static final String NONE = "none";

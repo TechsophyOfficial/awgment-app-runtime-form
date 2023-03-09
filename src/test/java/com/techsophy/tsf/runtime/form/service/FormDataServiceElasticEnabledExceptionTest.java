@@ -10,7 +10,6 @@ import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataAuditServiceImpl;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataServiceImpl;
-//import com.techsophy.tsf.runtime.form.service.impl.ValidationCheckServiceImpl;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import com.techsophy.tsf.runtime.form.utils.WebClientWrapper;
@@ -67,12 +66,8 @@ class FormDataServiceElasticEnabledExceptionTest
     Logger mockLogger;
     @Mock
     WebClient mockWebClient;
-//    @Mock
-//    ValidationCheckServiceImpl mockValidationCheckServiceImpl;
     @Mock
     FormService mockFormService;
-//    @Mock
-//    ValidateFormUtils mockValidateFormUtils;
     @Mock
     MongoTemplate mockMongoTemplate;
     @Mock
@@ -83,7 +78,6 @@ class FormDataServiceElasticEnabledExceptionTest
     FormDataServiceImpl mockFormDataServiceImpl;
 
     List<Map<String, Object>> userList = new ArrayList<>();
-    Map<String, Object> map = new HashMap<>();
 
     @BeforeEach
     public void init()
@@ -107,62 +101,6 @@ class FormDataServiceElasticEnabledExceptionTest
         map.put(DEPARTMENT, NULL);
         userList.add(map);
     }
-
-//    @Test
-//    void saveFormDataRecordNotFoundExceptionTest() throws JsonProcessingException
-//    {
-//        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-//        when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
-//        Map<String, Object> testFormMetaData = new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION, 1);
-//        Map<String, Object> testFormData = new HashMap<>();
-//        testFormData.put(NAME, NAME_VALUE);
-//        testFormData.put(AGE,AGE_VALUE);
-//        FormDataSchema formDataSchemaTest = new FormDataSchema(EMPTY_STRING, TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-//        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID,
-//                TEST_NAME, TEST_COMPONENTS,
-//                null, null,"form", TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,
-//                TEST_CREATED_ON, TEST_UPDATED_BY_ID, TEST_UPDATED_ON);
-//        when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-//        LinkedHashMap<String,Map<String,Object>> schemaMap=new LinkedHashMap<>();
-//        Map<String,Object> fieldsMap=new HashMap<>();
-//        fieldsMap.put(REQUIRED,false);
-//        fieldsMap.put(UNIQUE,false);
-//        schemaMap.put(NAME,fieldsMap);
-//        try (MockedStatic<ValidateFormUtils> mockValidateFormUtils = mockStatic(ValidateFormUtils.class))
-//        {
-//            mockValidateFormUtils.when(() -> ValidateFormUtils.getSchema(formResponseSchemaTest.getComponents()))
-//                    .thenReturn(schemaMap);
-//            when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA_+formDataSchemaTest.getFormId())).thenReturn(true);
-//            when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA_+formDataSchemaTest.getFormId())).thenReturn(mockMongoCollection);
-//            when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_ID_VALUE)));
-//            Map<String,Object> responseMapTest=new HashMap<>();
-//            LinkedHashMap<String,Object> dataMapTest =new LinkedHashMap<>();
-//            dataMapTest.put(FORM_ID,TEST_FORM_ID);
-//            dataMapTest.put(UNDERSCORE_ID,Long.parseLong(TEST_ID));
-//            dataMapTest.put(ID,TEST_ID);
-//            dataMapTest.put(VERSION,TEST_VERSION);
-//            dataMapTest.put(FORM_DATA,testFormData);
-//            dataMapTest.put(FORM_META_DATA,testFormMetaData);
-//            dataMapTest.put(CREATED_BY_NAME,CREATED_BY_USER_NAME);
-//            dataMapTest.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-//            dataMapTest.put(CREATED_BY_ID,BIGINTEGER_ID);
-//            dataMapTest.put(UPDATED_BY_ID,BIGINTEGER_ID);
-//            Date date=new Date();
-//            dataMapTest.put(CREATED_ON,date);
-//            dataMapTest.put(UPDATED_ON,date);
-//            responseMapTest.put(DATA, dataMapTest);
-//            responseMapTest.put(SUCCESS,true);
-//            responseMapTest.put(MESSAGE,ELASTIC_DATA_FETCHED_SUCCESSFULLY);
-//            when(mockWebClientWrapper.webclientRequest(any(),any(),eq(POST),any())).thenThrow(HttpServerErrorException.InternalServerError.class);
-//            List<String> stringList=new ArrayList<>();
-//            stringList.add("10");
-//            stringList.add("101");
-//            when(mockValidationCheckServiceImpl.allFieldsValidations(any(),any(),any(),any())).thenReturn(stringList);
-//            when(mockMongoTemplate.save(any(),anyString())).thenReturn(testFormData);
-//            Assertions.assertThrows(RecordUnableToSaveException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-//        }}
 
     @Test
     void getAllFormDataByFormIdEmptySortInvalidInputExceptionTest()
@@ -426,7 +364,6 @@ class FormDataServiceElasticEnabledExceptionTest
         Map<String, Object> testFormData = new HashMap<>();
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
-        Map<String,Object> responseMapTest =new HashMap<>();
         Map<String,Object> dataMapTest =new HashMap<>();
         dataMapTest.put(FORM_ID,TEST_FORM_ID);
         dataMapTest.put(ID,TEST_ID);
@@ -457,14 +394,11 @@ class FormDataServiceElasticEnabledExceptionTest
     }
 
     @Test
-    void getAllFormDataByFormIdAndIdInvalidInputExceptionTest() throws JsonProcessingException
+    void getAllFormDataByFormIdAndIdInvalidInputExceptionTest()
     {
         Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
-        String responseTest =RESPONSE_VALUE_10;
         Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),eq(GET),any())).thenThrow(new InvalidInputException("message","message"));
-        Map<String,Object> responseMapTest =new HashMap<>();
-//        Mockito.when(mockObjectMapper.readValue(responseTest, Map.class)).thenReturn(responseMapTest);
         Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.getFormDataByFormIdAndId(TEST_FORM_ID, TEST_ID,null));
     }
 

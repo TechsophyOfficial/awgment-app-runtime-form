@@ -36,12 +36,10 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.*;
-
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.CONTENT;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.DATA;
@@ -137,7 +135,6 @@ class FormDataServiceElasticDisabledTest
         FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID_VALUE,TEST_FORM_ID,
                 TEST_VERSION,testFormData,testFormMetaData);
         doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
                 String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
         Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
@@ -167,7 +164,6 @@ class FormDataServiceElasticDisabledTest
         Mockito.when(mockMongoCollection.find((Bson) any())).thenReturn(iterable);
         Mockito.when(iterable.iterator()).thenReturn(cursor);
         Mockito.when(cursor.next()).thenReturn(document);
-//        Mockito.when(mockMongoCollection.findOneAndReplace((Bson) any(),any(),any())).thenReturn(formDataMap);
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
         Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
         Assertions.assertNotNull(mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
@@ -184,7 +180,6 @@ class FormDataServiceElasticDisabledTest
         FormDataSchema formDataSchemaTest=new FormDataSchema(null,TEST_FORM_ID,
                 TEST_VERSION,testFormData,testFormMetaData);
         doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
                 String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
         Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
@@ -211,7 +206,6 @@ class FormDataServiceElasticDisabledTest
     void saveFormDataEmptyDocumentIdTest() throws IOException
     {
         doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
         Map<String, Object> testFormData = new HashMap<>();
         testFormData.put(NAME, NAME_VALUE);
@@ -277,13 +271,11 @@ class FormDataServiceElasticDisabledTest
         Mockito.when(iterable.iterator()).thenReturn(cursor);
         Mockito.when(cursor.hasNext()).thenReturn(true);
         Mockito.when(cursor.next()).thenReturn(document);
-//        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
         Assertions.assertNotNull(mockFormDataServiceImpl.updateFormData(formDataSchemaTest));
     }
 
     @Test
-    void getAllFormDataByFormIdAggregationEmptySortTest()
-    {
+    void getAllFormDataByFormIdAggregationEmptySortTest() throws JsonProcessingException {
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<Map> aggregateList=new ArrayList<>();
         Map<String,Object> map=new HashMap<>();
@@ -293,12 +285,11 @@ class FormDataServiceElasticDisabledTest
         List<Document> documentList=new ArrayList<>();
         documentList.add(document);
         Mockito.when(mockMongoTemplate.aggregate((Aggregation) any(),anyString(),eq(Document.class))).thenReturn( new AggregationResults<>(documentList,document));
-        Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,TEST_RELATIONS,FILTER,EMPTY_STRING, EMPTY_STRING));
+        Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,TEST_RELATIONS,FILTER_VERSION_2,EMPTY_STRING, EMPTY_STRING));
     }
 
     @Test
-    void getAllFormDataByFormIdAggregationSortTest()
-    {
+    void getAllFormDataByFormIdAggregationSortTest() throws JsonProcessingException {
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<Map> aggregateList=new ArrayList<>();
         Map<String,Object> map=new HashMap<>();
@@ -312,8 +303,7 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void getAllFormDataByFormIdPaginationEmptySortTest()
-    {
+    void getAllFormDataByFormIdPaginationEmptySortTest() throws JsonProcessingException {
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<Map> aggregateList=new ArrayList<>();
         Map<String,Object> map=new HashMap<>();
@@ -337,8 +327,7 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void getAllFormDataByFormIdPaginationSortTest()
-    {
+    void getAllFormDataByFormIdPaginationSortTest() throws JsonProcessingException {
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<Map> aggregateList=new ArrayList<>();
         Map<String,Object> map=new HashMap<>();
@@ -362,8 +351,7 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void getAllFormDataByFormIdFilterAndRelationsTest()
-    {
+    void getAllFormDataByFormIdFilterAndRelationsTest() throws JsonProcessingException {
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<FormDataDefinition> formDataDefinitionsList=new ArrayList<>();
         Map<String, Object> testFormData = new HashMap<>();
@@ -387,8 +375,7 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void getAllFormDataByFormIdFilterAndRelationsSortBySortOrderTest()
-    {
+    void getAllFormDataByFormIdFilterAndRelationsSortBySortOrderTest() throws JsonProcessingException {
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<FormDataDefinition> formDataDefinitionsList=new ArrayList<>();
         Map<String, Object> testFormData = new HashMap<>();
@@ -407,13 +394,11 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setUpdatedById(TEST_UPDATED_BY_ID);
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinitionsList.add(formDataDefinition);
-//        Mockito.when(mockMongoTemplate.find(any(),eq(FormDataDefinition.class),anyString())).thenReturn(formDataDefinitionsList);
         Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,EMPTY_STRING,FILTER,TEST_SORT_BY,TEST_SORT_ORDER));
     }
 
     @Test
-    void getAllFormDataByFormIdEmptySortPaginationTest()
-    {
+    void getAllFormDataByFormIdEmptySortPaginationTest() throws JsonProcessingException {
         List<FormDataDefinition> formDataDefinitionsList=new ArrayList<>();
         FormDataDefinition formDataDefinition=new FormDataDefinition();
         formDataDefinition.setId(TEST_ID_VALUE);
@@ -437,8 +422,7 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void getAllFormDataByFormIdSortPaginationTest()
-    {
+    void getAllFormDataByFormIdSortPaginationTest() throws JsonProcessingException {
         List<FormDataDefinition> formDataDefinitionsList=new ArrayList<>();
         FormDataDefinition formDataDefinition=new FormDataDefinition();
         formDataDefinition.setId(TEST_ID_VALUE);
@@ -526,7 +510,6 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setUpdatedById(TEST_UPDATED_BY_ID);
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinitionsList.add(formDataDefinition);
-//        Mockito.when(mockMongoTemplate.find(any(),eq(FormDataDefinition.class),anyString())).thenReturn(formDataDefinitionsList);
         List<Map> aggregateList=new ArrayList<>();
         Map<String,Object> map=new HashMap<>();
         map.put(UNDERSCORE_ID,TEST_ID_VALUE);
@@ -682,8 +665,6 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinitionsList.add(formDataDefinition);
         Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-//        Mockito.when(mockObjectMapper.convertValue(document.get(FORM_DATA),Map.class)).thenReturn(formDataMap);
-//        Mockito.when(mockObjectMapper.convertValue(document.get(FORM_META_DATA),Map.class)).thenReturn(testFormMetaData);
         Assertions.assertNotNull(mockFormDataServiceImpl.getFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID,EMPTY_STRING));
     }
 
@@ -848,8 +829,7 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void aggregateByFormIdFilterGroupByTest()
-    {
+    void aggregateByFormIdFilterGroupByTest() throws JsonProcessingException {
         Map<String, Object> testFormMetaData = new HashMap<>();
         testFormMetaData.put(FORM_VERSION, 1);
         Map<String, Object> testFormData = new HashMap<>();
