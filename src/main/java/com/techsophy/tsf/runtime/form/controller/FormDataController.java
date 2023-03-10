@@ -11,7 +11,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
-
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 
 @RequestMapping(BASE_URL+ VERSION_V1)
@@ -49,6 +48,5 @@ public interface FormDataController
 
     @GetMapping(FORM_DATA_AGGREGATE)
     @PreAuthorize(READ_OR_ALL_ACCESS)
-    ApiResponse<AggregationResponse>  aggregateByFormIdFilterGroupBy(@RequestParam(value = FORM_ID) String formId, @RequestParam(value = FILTER,required = false) String filter,
-                                                                     @RequestParam(value = GROUP_BY) String groupBy, @RequestParam(value = OPERATION) String operation);
+    ApiResponse<AggregationResponse>  aggregateByFormIdFilterGroupBy(@RequestParam(value = FORM_ID) String formId, @RequestParam(value = FILTER,required = false) String filter, @RequestParam(value = GROUP_BY) String groupBy, @RequestParam(value = OPERATION) String operation) throws JsonProcessingException;
 }

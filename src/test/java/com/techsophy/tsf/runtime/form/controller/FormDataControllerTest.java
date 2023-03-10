@@ -1,8 +1,8 @@
 package com.techsophy.tsf.runtime.form.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
-
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.techsophy.tsf.commons.ACLDecision;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
@@ -17,7 +17,6 @@ import com.techsophy.tsf.runtime.form.service.FormAclService;
 import com.techsophy.tsf.runtime.form.service.FormDataService;
 import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -25,15 +24,12 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.PageRequest;
-
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -246,8 +242,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void getAllFormDataByFormIdFilterTest()
-    {
+    void getAllFormDataByFormIdFilterTest() throws JsonProcessingException {
         List<FormDataResponseSchema> formDataResponseSchemaList=new ArrayList<>();
         Mockito.when(formDataService.getAllFormDataByFormId(anyString(),anyString(),any(),any(),any())).thenReturn(formDataResponseSchemaList);
         ApiResponse apiResponse=new ApiResponse(new ArrayList<>(),true,"Form data retrieved successfully");
@@ -256,8 +251,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void getAllFormDataByFormIdFilterPaginationTest()
-    {
+    void getAllFormDataByFormIdFilterPaginationTest() throws JsonProcessingException {
         PaginationResponsePayload paginationResponsePayload=new PaginationResponsePayload();
         Mockito.when(formDataService.getAllFormDataByFormId(anyString(),anyString(),any(),any(),any(),any())).thenReturn(paginationResponsePayload);
         ApiResponse apiResponse=new ApiResponse(paginationResponsePayload,true,"Form data retrieved successfully");
@@ -266,8 +260,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void getAllFormDataByFormIdFilterSortTest()
-    {
+    void getAllFormDataByFormIdFilterSortTest() throws JsonProcessingException {
         PaginationResponsePayload paginationResponsePayload=new PaginationResponsePayload();
         Mockito.when(formDataService.getAllFormDataByFormId(anyString(),anyString(),any(),any(),any(),any())).thenReturn(paginationResponsePayload);
         ApiResponse apiResponse=new ApiResponse(paginationResponsePayload,true,"Form data retrieved successfully");
@@ -276,8 +269,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void getAllFormDataByFormIdSortTest()
-    {
+    void getAllFormDataByFormIdSortTest() throws JsonProcessingException {
         List<FormDataResponseSchema> formDataResponseSchemaList=new ArrayList<>();
         Mockito.when(formDataService.getAllFormDataByFormIdAndQ("101","994102731543871488:orderId,994122561634369536:parcelId",null,CREATED_ON,DESCENDING)).thenReturn(formDataResponseSchemaList);
         ApiResponse apiResponse=new ApiResponse(formDataResponseSchemaList,true,"Form data retrieved successfully");
@@ -286,8 +278,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void getAllFormDataByFormIdSortPaginationTest()
-    {
+    void getAllFormDataByFormIdSortPaginationTest() throws JsonProcessingException {
         PaginationResponsePayload paginationResponsePayload=new PaginationResponsePayload();
         Mockito.when(formDataService.getAllFormDataByFormIdAndQ("101","994102731543871488:orderId,994122561634369536:parcelId",null,CREATED_ON,DESCENDING, PageRequest.of(0,5))).thenReturn(paginationResponsePayload);
         ApiResponse apiResponse=new ApiResponse(paginationResponsePayload,true,"Form data retrieved successfully");
@@ -296,8 +287,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void getAllFormDataByFormIdRelationsTest()
-    {
+    void getAllFormDataByFormIdRelationsTest() throws JsonProcessingException {
         PaginationResponsePayload paginationResponsePayload=new PaginationResponsePayload();
         Mockito.when(formDataService.getAllFormDataByFormId("101","994102731543871488:orderId,994122561634369536:parcelId")).thenReturn(paginationResponsePayload);
         ApiResponse apiResponse=new ApiResponse(paginationResponsePayload,true,"Form data retrieved successfully");
@@ -343,8 +333,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void aggregateByFormIdFilterGroupByTest()
-    {
+    void aggregateByFormIdFilterGroupByTest() throws JsonProcessingException {
         Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data retrieved successfully");
         AggregationResponse aggregationResponse=new AggregationResponse(new ArrayList<>());
         Mockito.when(formDataService.aggregateByFormIdFilterGroupBy(any(),anyString(),any(),anyString())).thenReturn(aggregationResponse);
