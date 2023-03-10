@@ -285,18 +285,10 @@ class FormDataServiceElasticDisabledExceptionTest
                 mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_FORM_DATA_ID));
     }
 
-//    @Test
-//    void deleteFormDataByFormIdAndIdInvalidInputExceptionTest2()
-//    {
-//        Map<String, Object> testFormMetaData = new HashMap<>();
-//        testFormMetaData.put(FORM_VERSION, 1);
-//        Map<String, Object> testFormData2 = new HashMap<>();
-//        testFormData2.put(NAME, NAME_VALUE);
-//        testFormData2.put(AGE,AGE_VALUE);
-//        FormDataSchema formDataSchemaTest = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData2, testFormMetaData);
-//        when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-//        when(mockMongoTemplate.getCollection(any())).thenReturn(mockMongoCollection);
-//        Assertions.assertThrows(InvalidInputException.class, () ->
-//                mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_FORM_DATA_ID));
-//    }
+    @Test
+    void getAllFormDataFilterJsonExceptionTest()
+    {
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+        Assertions.assertThrows(IllegalArgumentException.class,()->mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,TEST_RELATIONS,FILTER_INCORRECT_JSON,EMPTY_STRING, EMPTY_STRING));
+    }
 }

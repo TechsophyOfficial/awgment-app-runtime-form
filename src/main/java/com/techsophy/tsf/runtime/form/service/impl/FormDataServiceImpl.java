@@ -441,7 +441,8 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     @Override
-    public List getAllFormDataByFormId(String formId,String relations,String filter,String sortBy,String sortOrder) throws JsonProcessingException {
+    public List getAllFormDataByFormId(String formId,String relations,String filter,String sortBy,String sortOrder)
+    {
         if (elasticEnable&&relations==null)
         {
             List<Map<String,Object>> contentList;
@@ -488,7 +489,7 @@ public class FormDataServiceImpl implements FormDataService
         return getFormDataResponseSchemasSort(formId, sortBy, sortOrder,criteria);
     }
 
-    public Criteria getCriteria(String filter) throws JsonProcessingException
+    public Criteria getCriteria(String filter)
     {
         if(!filter.startsWith("{"))
         {
@@ -507,12 +508,18 @@ public class FormDataServiceImpl implements FormDataService
         }
         else
         {
-            return new Criteria().andOperator(
-                    new ObjectMapper()
-                            .readValue("{\"operations\":"+filter+"}", com.techsophy.tsf.runtime.form.dto.Filters.class)
-                            .getOperations().entrySet().stream()
-                            .map(entry->entry.getValue().getCriteria(entry.getKey()))
-                            .collect(Collectors.toList()));
+            try {
+                return new Criteria().andOperator(
+                        new ObjectMapper()
+                                .readValue("{\"operations\":"+filter+"}", com.techsophy.tsf.runtime.form.dto.Filters.class)
+                                .getOperations()
+                                .entrySet()
+                                .stream()
+                                .map(entry->entry.getValue().getCriteria(entry.getKey()))
+                                .collect(Collectors.toList()));
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException("Invalid filter: " + filter, e);
+            }
         }
     }
 
@@ -588,7 +595,8 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     @Override
-    public PaginationResponsePayload getAllFormDataByFormId(String formId, String relations, String filter, String sortBy, String sortOrder, Pageable pageable) throws JsonProcessingException {
+    public PaginationResponsePayload getAllFormDataByFormId(String formId, String relations, String filter, String sortBy, String sortOrder, Pageable pageable)
+    {
         PaginationResponsePayload paginationResponsePayload = new PaginationResponsePayload();
         if(elasticEnable&&relations==null)
         {
@@ -1362,7 +1370,7 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     @Override
-    public AggregationResponse aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation) throws JsonProcessingException {
+    public AggregationResponse aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation) {
         checkMongoCollectionIfExistsOrNot(formId);
         List<AggregationOperation> aggregationOperationsList = new ArrayList<>();
         if(isNotEmpty(filter))
@@ -1385,7 +1393,7 @@ public class FormDataServiceImpl implements FormDataService
         return new AggregationResponse(responseAggregationList);
     }
 
-    private void createMultipleFilterCriteria(String filter,List<AggregationOperation> aggregationOperationsList) throws JsonProcessingException
+    private void createMultipleFilterCriteria(String filter,List<AggregationOperation> aggregationOperationsList)
     {
         Criteria criteria=getCriteria(filter);
         aggregationOperationsList.add(Aggregation.match(criteria));

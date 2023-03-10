@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class InOperation  implements FilterOperation
 {
-    List<String> in;
+    List<Object> in;
 
     @Override
     public Criteria getCriteria(String field)

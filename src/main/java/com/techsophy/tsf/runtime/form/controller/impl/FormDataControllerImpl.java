@@ -114,7 +114,7 @@ public class FormDataControllerImpl implements FormDataController
     }
 
     @Override
-    public ApiResponse<AggregationResponse> aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation) throws JsonProcessingException {
+    public ApiResponse<AggregationResponse> aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation) throws JsonProcessingException
     {
         checkACL(READ_RULE, Collections.singletonList(formId));
         AggregationResponse aggregationResponse=formDataService.aggregateByFormIdFilterGroupBy(formId,filter,groupBy,operation);
