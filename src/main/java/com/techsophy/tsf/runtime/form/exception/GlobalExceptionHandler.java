@@ -12,6 +12,20 @@ import java.time.Instant;
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler
 {
+    @ExceptionHandler(ACLException.class)
+    public ResponseEntity<ApiErrorResponse> handleACLException(ACLException ex, WebRequest request)
+    {
+        ApiErrorResponse errorDetails = new ApiErrorResponse(Instant.now(), ex.getMessage(), ex.errorCode,
+                HttpStatus.FORBIDDEN, request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+    }
+    @ExceptionHandler(EntityPathException.class)
+    public ResponseEntity<ApiErrorResponse> entityPathException(EntityPathException ex, WebRequest request)
+    {
+        ApiErrorResponse errorDetails = new ApiErrorResponse(Instant.now(), ex.getMessage(), ex.errorCode,
+                HttpStatus.NOT_FOUND, request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+    }
     @ExceptionHandler(FormIdNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleFormException(FormIdNotFoundException ex, WebRequest request)
     {
@@ -32,8 +46,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler
     public ResponseEntity<ApiErrorResponse> invalidInputException(InvalidInputException ex, WebRequest request)
     {
         ApiErrorResponse errorDetails = new ApiErrorResponse(Instant.now(), ex.getMessage(), ex.errorCode,
-                HttpStatus.INTERNAL_SERVER_ERROR, request.getDescription(false));
-        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+                HttpStatus.BAD_REQUEST, request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(UserDetailsIdNotFoundException.class)

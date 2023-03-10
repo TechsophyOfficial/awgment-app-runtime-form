@@ -11,6 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.WebRequest;
 
+import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.ACCESS_DENIED;
+import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.NO_RECORD_FOUND;
+
 @ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest
 {
@@ -28,5 +31,29 @@ class GlobalExceptionHandlerTest
                 HttpStatus.INTERNAL_SERVER_ERROR, webRequest.getDescription(false));
         ResponseEntity<ApiErrorResponse> expectedResponse=  new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
         Assertions.assertEquals(expectedResponse, actualResponse);
+    }
+
+    @Test
+    void ACLExceptionTest()
+    {
+        ACLException aclException=new ACLException("errorCode",ACCESS_DENIED);
+        ResponseEntity<ApiErrorResponse> x=globalExceptionHandler.handleACLException(aclException,webRequest);
+        Assertions.assertTrue(x.getStatusCode().is4xxClientError());
+    }
+
+    @Test
+    void entityPathExceptionTest()
+    {
+        EntityPathException entityPathException=new EntityPathException("errorCode",NO_RECORD_FOUND);
+        ResponseEntity<ApiErrorResponse> x=globalExceptionHandler.entityPathException(entityPathException,webRequest);
+        Assertions.assertTrue(x.getStatusCode().is4xxClientError());
+    }
+
+    @Test
+    void invalidInputExceptionTest()
+    {
+        InvalidInputException invalidInputException=new InvalidInputException("errorCode",NO_RECORD_FOUND);
+        ResponseEntity<ApiErrorResponse> x=globalExceptionHandler.invalidInputException(invalidInputException,webRequest);
+        Assertions.assertTrue(x.getStatusCode().is4xxClientError());
     }
 }

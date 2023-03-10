@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -23,6 +24,8 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles(TEST_ACTIVE_PROFILE)
 class WebClientWrapperTest
 {
+    @MockBean
+    private RelationUtils mockRelationUtils;
     @InjectMocks
     WebClientWrapper webClientWrapper;
     private WebClient webClientMock;

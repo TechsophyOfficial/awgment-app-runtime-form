@@ -6,6 +6,7 @@ import com.techsophy.tsf.runtime.form.dto.FormDataAuditResponse;
 import com.techsophy.tsf.runtime.form.dto.FormDataAuditResponseSchema;
 import com.techsophy.tsf.runtime.form.dto.FormDataAuditSchema;
 import com.techsophy.tsf.runtime.form.service.FormDataAuditService;
+import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +46,8 @@ class FormDataAuditControllerTest
     private static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtSaveOrUpdate = jwt().authorities(new SimpleGrantedAuthority(AWGMENT_RUNTIME_FORM_CREATE_OR_UPDATE));
     private static final SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtRead = jwt().authorities(new SimpleGrantedAuthority(AWGMENT_RUNTIME_FORM_READ));
 
+    @MockBean
+    private RelationUtils mockRelationUtils;
     @MockBean
     TokenUtils mockTokenUtils;
     @Autowired
