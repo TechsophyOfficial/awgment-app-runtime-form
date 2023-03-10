@@ -9,10 +9,10 @@ import java.util.stream.Stream;
 @Data
 public class ComparatorOperation implements FilterOperation
 {
-    private Integer lt;
-    private Integer lte;
-    private Integer gt;
-    private Integer gte;
+    private Number lt;
+    private Number lte;
+    private Number gt;
+    private Number gte;
 
     @Override
     public Criteria getCriteria(String field)
