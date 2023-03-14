@@ -144,7 +144,7 @@ class FormDataServiceElasticDisabledTest
         ValidationResult validationResult=new ValidationResult("name");
         List<ValidationResult> validationResultList=new ArrayList<>();
         validationResultList.add(validationResult);
-        Mockito.when(mockFormValidationServiceImpl.validateData(formResponseSchemaTest,formDataSchemaTest,TEST_FORM_ID)).thenReturn(validationResultList);
+        Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
         Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
         Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
         Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
@@ -1068,7 +1068,7 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void aggregateByFormIdFilterGroupByTest() throws JsonProcessingException {
+    void aggregateByFormIdFilterGroupByTest() {
         Map<String, Object> testFormMetaData = new HashMap<>();
         testFormMetaData.put(FORM_VERSION, 1);
         Map<String, Object> testFormData = new HashMap<>();

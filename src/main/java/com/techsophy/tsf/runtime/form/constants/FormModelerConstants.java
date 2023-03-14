@@ -16,7 +16,7 @@ public class FormModelerConstants
     public static final String EDIT_GROUP_FORM= "edit-group-form01";
     public static final String ADD_GROUP_FORM= "add-group-form01";
     public static final String EDIT_USER_FORM= "edit-user-form01";
-    public static final String EXCEUTION_IS_FAILED="storing data using mongock is failed";
+    public static final String EXECUTION_IS_FAILED ="storing data using mongock is failed";
     public static final String TP_ADD_GROUP="TP_ADD_GROUP.json";
     public static final String TP_EDIT_USER="TP_EDIT_USER.json";
     public static final String TP_ADD_USER="TP_ADD_USER.json";
@@ -112,7 +112,6 @@ public class FormModelerConstants
     public static final String DELETE_FORM_DATA_SUCCESS="DELETE_FORM_DATA_SUCCESS";
     public static final String DELETE_ALL_FORM_DATA_SUCCESS="DELETE_ALL_FORM_DATA_SUCCESS";
     public static final String FORM="form";
-    public static final String UNIQUE="unique";
 
     /*FormSchemaConstants*/
     public static final String NAME_NOT_BLANK = "Name should not be blank";
@@ -131,7 +130,6 @@ public class FormModelerConstants
     public static final String FORM_NAME ="name";
     public static final String FORM_TYPE ="type";
     public static final String COMPONENTS="components";
-    public static final String REQUIRED="required";
 
     //FormDataService
     public static final String TP_RUNTIME_FORM_DATA ="tp_runtime_form_data_";
@@ -148,23 +146,10 @@ public class FormModelerConstants
     public static final String SLASH="/";
     public static final String PARAM_SOURCE="?source=";
     public static final String PARAM_INDEX_NAME="?indexName=";
-    public static final String PARAM_SORT_BY="?sort-by=";
-    public static final String PARAM_FILTER="?filter=";
-    public static final String AND_INDEX_NAME="&indexName=";
-    public static final String AND_SOURCE="&source=";
-    public static final String CONTENT="content";
     public static final String REGEX_PATTERN_1="^\"|\"$";
-    public static final String AND_SORT_ORDER="&sort-order=";
-    public static final String AND_Q="&q=";
-    public static final String PARAM_Q="?q=";
-    public static final String AND_FILTER="&filter=";
-    public static final String AND_PAGE="&page=";
-    public static final String AND_SIZE="&size=";
-    public static final String PARAM_PAGE="?page=";
     public static final String TOTAL_PAGES="totalPages";
     public static final String TOTAL_ELEMENTS="totalElements";
     public static final String NUMBER_OF_ELEMENTS="numberOfElements";
-    public static final String AND_PAGE_AND_SIZE="&page=0&size=";
     public static final String ELASTIC_SOURCE ="${elastic.source}";
     public static final String ELASTIC_ENABLE="${elastic.enable}";
     public static final String Q="q";
@@ -230,182 +215,6 @@ public class FormModelerConstants
             AS_STRING_REFERENCE +
         CLOSING_BRACKET_NEXT_LINE +
         "}";
-    public static final String MONGO_AGGREGATION_STAGE_PIPELINE_2 ="{\n" +
-            LOOKUP +
-            FROM_MATCH +
-            LET +
-            LOCAL_ID +
-            CLOSING_BRACKET +
-            PIPELINE +
-            MATCH +
-            EXPR +
-            OR_CONDITION +
-            EQ_EXPRESSION +
-            DOLLAR_LOCALID +
-            NEXT_LINE +
-            CONVERT +
-            INPUT +
-            TO_LONG +
-            ON_ERROR +
-            ON_NULL +
-            CLOSING_BRACKET_NEXT_LINE +
-            CLOSING_BRACKET_NEXT_LINE +
-            CLOSE_ARRAY +
-            CLOSE_BRACKET_COMMA_NEXT_LINE+
-            OPENING_BRACKET_NEXT_LINE +
-            EQ_EXPRESSION +
-            DOLLAR_LOCALID +
-            DOLLAR_STRING_REF_NEXT_LINE +
-            CLOSE_ARRAY +
-            CLOSING_BRACKET_NEXT_LINE +
-            CLOSE_ARRAY +
-            CLOSING_BRACKET_NEXT_LINE +
-            CLOSING_BRACKET_NEXT_LINE +
-            CLOSE_MAP_ARRAY_NEXT_LINE +
-            AS_STRING_REFERENCE +
-            CLOSING_BRACKET_NEXT_LINE +
-            "}";
-   public static final String MONGO_AGGREGATION_STAGE_PIPELINE_3= "{\n" +
-            LOOKUP +
-           FROM_MATCH +
-            LET +
-           LOCAL_ID +
-           CLOSING_BRACKET +
-           PIPELINE +
-           MATCH +
-           EXPR +
-           OR_CONDITION +
-            EQ_EXPRESSION +
-           DOLLAR_LOCALID +
-           NEXT_LINE +
-           CONVERT +
-           INPUT +
-           TO_LONG +
-           ON_ERROR +
-           ON_NULL +
-           CLOSING_BRACKET_NEXT_LINE +
-           CLOSING_BRACKET_NEXT_LINE +
-           CLOSE_ARRAY +
-           CLOSE_BRACKET_COMMA_NEXT_LINE +
-           OPENING_BRACKET_NEXT_LINE +
-            EQ_EXPRESSION +
-           DOLLAR_LOCALID +
-           DOLLAR_STRING_REF_NEXT_LINE +
-           CLOSE_ARRAY +
-           CLOSING_BRACKET_NEXT_LINE +
-           CLOSE_ARRAY +
-           CLOSING_BRACKET_NEXT_LINE +
-           CLOSING_BRACKET_NEXT_LINE +
-           CLOSE_MAP_ARRAY_NEXT_LINE +
-           AS_STRING_REFERENCE +
-           CLOSING_BRACKET_NEXT_LINE +
-            "}";
-   public static final String MONGO_AGGREGATION_STAGE_PIPELINE_4="{\n" +
-           LOOKUP +
-           FROM_MATCH +
-           LET +
-           LOCAL_ID +
-           CLOSING_BRACKET +
-           PIPELINE +
-           MATCH +
-           EXPR+
-           OR_CONDITION +
-           EQ_EXPRESSION +
-           DOLLAR_LOCALID +
-           NEXT_LINE +
-           CONVERT +
-           INPUT +
-           TO_LONG +
-           ON_ERROR +
-           ON_NULL +
-           CLOSING_BRACKET_NEXT_LINE +
-           CLOSING_BRACKET_NEXT_LINE +
-           CLOSE_ARRAY +
-           CLOSE_BRACKET_COMMA_NEXT_LINE +
-           OPENING_BRACKET_NEXT_LINE +
-          EQ_EXPRESSION +
-           DOLLAR_LOCALID +
-           DOLLAR_STRING_REF_NEXT_LINE +
-           CLOSE_ARRAY +
-           CLOSING_BRACKET_NEXT_LINE +
-           CLOSE_ARRAY +
-           CLOSING_BRACKET_NEXT_LINE +
-           CLOSING_BRACKET_NEXT_LINE +
-           CLOSE_MAP_ARRAY_NEXT_LINE +
-           AS_STRING_REFERENCE +
-           CLOSING_BRACKET_NEXT_LINE +
-           "}";
-    public static final String MONGO_AGGREGATION_STAGE_PIPELINE_5="{\n" +
-           LOOKUP +
-            FROM_MATCH +
-           LET +
-            LOCAL_ID +
-            CLOSING_BRACKET +
-            PIPELINE +
-            MATCH +
-            EXPR +
-            OR_CONDITION +
-           EQ_EXPRESSION +
-           DOLLAR_LOCALID +
-            NEXT_LINE +
-            CONVERT +
-            INPUT +
-            TO_LONG +
-            ON_ERROR +
-            ON_NULL +
-            CLOSING_BRACKET_NEXT_LINE +
-            CLOSING_BRACKET_NEXT_LINE +
-            CLOSE_ARRAY +
-            CLOSE_BRACKET_COMMA_NEXT_LINE +
-            OPENING_BRACKET_NEXT_LINE +
-           EQ_EXPRESSION +
-           DOLLAR_LOCALID +
-            DOLLAR_STRING_REF_NEXT_LINE +
-            CLOSE_ARRAY +
-            CLOSING_BRACKET_NEXT_LINE +
-            CLOSE_ARRAY +
-            CLOSING_BRACKET_NEXT_LINE +
-            CLOSING_BRACKET_NEXT_LINE +
-            CLOSE_MAP_ARRAY_NEXT_LINE +
-            AS_STRING_REFERENCE +
-            CLOSING_BRACKET_NEXT_LINE +
-           "}";
-  public static final String MONGO_AGGREGATION_STAGE_PIPELINE_6="{\n" +
-           LOOKUP +
-          FROM_MATCH +
-           LET +
-          LOCAL_ID +
-          CLOSING_BRACKET +
-          PIPELINE +
-          MATCH +
-          EXPR +
-          OR_CONDITION +
-           EQ_EXPRESSION +
-           DOLLAR_LOCALID +
-          NEXT_LINE +
-          CONVERT +
-          INPUT +
-          TO_LONG +
-          ON_ERROR +
-          ON_NULL +
-          CLOSING_BRACKET_NEXT_LINE +
-          CLOSING_BRACKET_NEXT_LINE +
-          CLOSE_ARRAY +
-          CLOSE_BRACKET_COMMA_NEXT_LINE +
-          OPENING_BRACKET_NEXT_LINE +
-           EQ_EXPRESSION +
-           DOLLAR_LOCALID +
-          DOLLAR_STRING_REF_NEXT_LINE +
-          CLOSE_ARRAY +
-          CLOSING_BRACKET_NEXT_LINE +
-          CLOSE_ARRAY +
-          CLOSING_BRACKET_NEXT_LINE +
-          CLOSING_BRACKET_NEXT_LINE +
-          CLOSE_MAP_ARRAY_NEXT_LINE +
-          AS_STRING_REFERENCE +
-          CLOSING_BRACKET_NEXT_LINE +
-           "}";
-    public static final String CONTAINS_ATLEAST_ONE_SPECIAL_CHARACTER =".*[!@#$%^&*()_+=]+.*";
 
     //Constants for Requestmapping
     public static final String ELASTIC_VERSION1 = "/elastic/v1";

@@ -22,6 +22,7 @@ import com.techsophy.tsf.runtime.form.utils.WebClientWrapper;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -109,7 +110,6 @@ public class FormDataServiceImpl implements FormDataService
         setUpdateAudit(loggedInUserId, formDataDefinition);
         if (mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formId))
             {
-
                 if (uniqueDocumentId==null|| isEmpty(uniqueDocumentId))
                 {
                     id = getNextId();
@@ -240,7 +240,7 @@ public class FormDataServiceImpl implements FormDataService
 
     private void saveFormDataToElastic(FormDataDefinition formDataDefinition,WebClient webClient,String uniqueDocumentId)
     {
-        if (uniqueDocumentId==null)
+        if (uniqueDocumentId==null|| StringUtils.isEmpty(uniqueDocumentId))
         {
             emptyIdSaveToElasticDB(webClient, formDataDefinition);
         }
@@ -443,34 +443,6 @@ public class FormDataServiceImpl implements FormDataService
     @Override
     public List getAllFormDataByFormId(String formId,String relations,String filter,String sortBy,String sortOrder)
     {
-        if (elasticEnable&&relations==null)
-        {
-            List<Map<String,Object>> contentList;
-            checkIfBothSortByAndSortOrderGivenAsInput(sortBy, sortOrder);
-            WebClient webClient = checkEmptyToken(tokenUtils.getTokenFromContext());
-            try
-            {
-                String response;
-                if (sortBy == null && sortOrder == null)
-                {
-                    response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_FILTER+filter+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA +formId+AND_SOURCE+elasticSource,GET,null);
-                    logger.info(response);
-                }
-                else
-                {
-                    response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+sortBy+AND_SORT_ORDER+sortOrder+AND_FILTER+filter+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA +formId+AND_SOURCE+elasticSource,GET,null);
-                    logger.info(response);
-                }
-                Map<String,Object> responseMap= getResponseMap(response);
-                Map<String,Object> dataMap= getDataMap(responseMap);
-                contentList = getContentList(dataMap);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
-            }
-            return contentList;
-        }
         checkMongoCollectionIfExistsOrNot(formId);
         Criteria criteria=getCriteria(filter);
         if (isNotEmpty(relations))
@@ -521,16 +493,6 @@ public class FormDataServiceImpl implements FormDataService
                 throw new IllegalArgumentException("Invalid filter: " + filter, e);
             }
         }
-    }
-
-    private List<Map<String,Object>> getContentList(Map<String, Object> dataMap)
-    {
-        return this.objectMapper.convertValue(dataMap.get(CONTENT), List.class);
-    }
-
-    private Map<String,Object> getDataMap(Map<String, Object> responseMap)
-    {
-        return this.objectMapper.convertValue(responseMap.get(DATA), Map.class);
     }
 
     private List<FormDataResponseSchema> getFormDataResponseSchemasSort(String formId, String sortBy, String sortOrder,Criteria criteria)
@@ -598,30 +560,6 @@ public class FormDataServiceImpl implements FormDataService
     public PaginationResponsePayload getAllFormDataByFormId(String formId, String relations, String filter, String sortBy, String sortOrder, Pageable pageable)
     {
         PaginationResponsePayload paginationResponsePayload = new PaginationResponsePayload();
-        if(elasticEnable&&relations==null)
-        {
-            List<Map<String,Object>> contentList;
-            checkIfBothSortByAndSortOrderGivenAsInput(sortBy, sortOrder);
-            WebClient webClient = checkEmptyToken(tokenUtils.getTokenFromContext());
-            try
-            {
-                String response=checkSortByAndSortOrderAndPagination(formId, filter, sortBy, sortOrder, pageable, webClient);
-                Map<String,Object> responseMap= getResponseMap(response);
-                Map<String,Object> dataMap= getDataMap(responseMap);
-                contentList = getContentList(dataMap);
-                paginationResponsePayload.setContent(contentList);
-                paginationResponsePayload.setPage(Integer.parseInt(String.valueOf(dataMap.get(PAGE))));
-                paginationResponsePayload.setSize(Integer.parseInt(String.valueOf(dataMap.get(SIZE))));
-                paginationResponsePayload.setTotalPages(Integer.parseInt(String.valueOf(dataMap.get(TOTAL_PAGES))));
-                paginationResponsePayload.setTotalElements(Long.parseLong(String.valueOf(dataMap.get(TOTAL_ELEMENTS))));
-                paginationResponsePayload.setNumberOfElements(Integer.parseInt(String.valueOf(dataMap.get(NUMBER_OF_ELEMENTS))));
-            }
-            catch (Exception e)
-            {
-                throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
-            }
-            return paginationResponsePayload;
-        }
         checkMongoCollectionIfExistsOrNot(formId);
         List<Map<String, Object>> content = new ArrayList<>();
         paginationResponsePayload.setPage(pageable.getPageNumber());
@@ -708,22 +646,6 @@ public class FormDataServiceImpl implements FormDataService
         return (List<Map<String, Object>>) dataMap.get(DATA);
     }
 
-    private String checkSortByAndSortOrderAndPagination(String formId, String filter, String sortBy, String sortOrder, Pageable pageable, WebClient webClient)
-    {
-        String response;
-        if (sortBy == null && sortOrder == null)
-        {
-            response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_FILTER+ filter +AND_PAGE+ pageable.getPageNumber()+AND_SIZE+ pageable.getPageSize()+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA + formId +AND_SOURCE+elasticSource,GET,null);
-            logger.info(response);
-        }
-        else
-        {
-            response=webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+ sortBy +AND_SORT_ORDER+ sortOrder +AND_FILTER+ filter +AND_PAGE+ pageable.getPageNumber()+AND_SIZE+ pageable.getPageSize()+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA + formId +AND_SOURCE+elasticSource,GET,null);
-            logger.info(response);
-        }
-        return response;
-    }
-
     private PaginationResponsePayload sortByAndSortOrderIsEmpty(String formId, String sortBy, String sortOrder, Pageable pageable, PaginationResponsePayload paginationResponsePayload, List<Map<String, Object>> content, Criteria criteria)
     {
         if (isEmpty(sortBy) && isEmpty(sortOrder))
@@ -793,8 +715,6 @@ public class FormDataServiceImpl implements FormDataService
 
     public List getAllFormDataByFormIdAndQ(String formId, String relations, String q, String sortBy, String sortOrder)
     {
-        List<Map<String, Object>> formDataList = getListWithElasticAndEmptyRelations(formId, relations, q, sortBy, sortOrder);
-        if(checkFormDataList(formDataList)) return formDataList;
         checkMongoCollectionIfExistsOrNot(formId);
         List<Map<String, Object>> relationalMapList1 = checkIfRelationsExists(formId, relations, sortBy, sortOrder);
         if (!relationalMapList1.isEmpty()) return relationalMapList1;
@@ -872,11 +792,6 @@ public class FormDataServiceImpl implements FormDataService
         return Collections.emptyList();
     }
 
-    private static boolean checkFormDataList(List<Map<String, Object>> formDataList)
-    {
-        return !formDataList.isEmpty();
-    }
-
     private static void prepareFormDataResponseSchemaList(List<FormDataResponseSchema> formDataResponseSchemasList, List<FormDataDefinition> formDataDefinitionsList)
     {
         formDataDefinitionsList.forEach(x->{
@@ -907,63 +822,10 @@ public class FormDataServiceImpl implements FormDataService
         return EMPTY_STRING;
     }
 
-    private List<Map<String, Object>> getListWithElasticAndEmptyRelations(String formId, String relations, String q, String sortBy, String sortOrder)
-    {
-        if (elasticEnable&& relations ==null)
-        {
-            return getFormDataList(formId, q, sortBy, sortOrder);
-        }
-        return Collections.emptyList();
-    }
-
-    private List<Map<String, Object>> getFormDataList(String formId, String q, String sortBy, String sortOrder)
-    {
-        List<Map<String,Object>> responseList=new ArrayList<>();
-        checkIfBothSortByAndSortOrderGivenAsInput(sortBy, sortOrder);
-        WebClient webClient=checkEmptyToken(tokenUtils.getTokenFromContext());
-        try
-        {
-            extractFromElastic(formId, q, sortBy, sortOrder, webClient);
-        }
-        catch (Exception e)
-        {
-            throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
-        }
-        return responseList;
-    }
-
-    private void extractFromElastic(String formId, String q, String sortBy, String sortOrder, WebClient webClient) throws JsonProcessingException
-    {
-        String response =EMPTY_STRING;
-        if (isEmpty(q) && isBlank(sortBy) && isBlank(sortOrder))
-        {
-            response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId + AND_SOURCE + elasticSource, GET, null);
-            logger.info(response);
-        }
-        if (isEmpty(q) && isNotBlank(sortBy) && isNotBlank(sortOrder))
-        {
-            response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_SORT_BY + sortBy + AND_SORT_ORDER + sortOrder + AND_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId + AND_SOURCE + elasticSource, GET, null);
-        }
-        if (isNotEmpty(q) && isBlank(sortBy) && isBlank(sortOrder))
-        {
-                response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_Q + q + AND_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId + AND_SOURCE + elasticSource, GET, null);
-                logger.info(response);
-        }
-        if (isNotEmpty(q) && isNotBlank(sortBy) && isNotBlank(sortOrder))
-        {
-            response = webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_SORT_BY + sortBy + AND_SORT_ORDER + sortOrder + AND_Q + q + AND_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId + AND_SOURCE + elasticSource, GET, null);
-        }
-        Map<String, Object> responseMap = getResponseMap(response);
-        Map<String, Object> dataMap = getDataMap(responseMap);
-        getContentList(dataMap);
-    }
-
     @Override
     public PaginationResponsePayload getAllFormDataByFormIdAndQ(String formId, String relations, String q, String sortBy, String sortOrder, Pageable pageable)
     {
         PaginationResponsePayload paginationResponsePayload = new PaginationResponsePayload();
-        PaginationResponsePayload paginationResponse = getPaginationWithElasticAndNoRelations(formId, relations, q, sortBy, sortOrder, pageable, paginationResponsePayload);
-        if (paginationResponse!=null) return paginationResponse;
         checkMongoCollectionIfExistsOrNot(formId);
         paginationResponsePayload.setPage(pageable.getPageNumber());
         paginationResponsePayload.setSize(pageable.getPageSize());
@@ -1082,72 +944,9 @@ public class FormDataServiceImpl implements FormDataService
         }
     }
 
-    private PaginationResponsePayload getPaginationWithElasticAndNoRelations(String formId, String relations, String q, String sortBy, String sortOrder, Pageable pageable, PaginationResponsePayload paginationResponsePayload)
-    {
-        if (elasticEnable&& relations ==null)
-        {
-            return getPaginationResponsePayload(formId, q, sortBy, sortOrder, pageable, paginationResponsePayload);
-        }
-        return null;
-    }
-
-    private PaginationResponsePayload getPaginationResponsePayload(String formId, String q, String sortBy, String sortOrder, Pageable pageable, PaginationResponsePayload paginationResponsePayload)
-    {
-        List<Map<String,Object>> contentList;
-        checkIfBothSortByAndSortOrderGivenAsInput(sortBy,sortOrder);
-        WebClient webClient=checkEmptyToken( tokenUtils.getTokenFromContext());
-        try
-        {
-            String response = getString(formId, q, sortBy, sortOrder, pageable, webClient);
-            Map<String,Object> responseMap= getResponseMap(response);
-            Map<String,Object> dataMap= getDataMap(responseMap);
-            contentList = getContentList(dataMap);
-            paginationResponsePayload.setContent(contentList);
-            paginationResponsePayload.setPage(Integer.parseInt(String.valueOf(dataMap.get(PAGE))));
-            paginationResponsePayload.setSize(Integer.parseInt(String.valueOf(dataMap.get(SIZE))));
-            paginationResponsePayload.setTotalPages(Integer.parseInt(String.valueOf(dataMap.get(TOTAL_PAGES))));
-            paginationResponsePayload.setTotalElements(Long.parseLong(String.valueOf(dataMap.get(TOTAL_ELEMENTS))));
-            paginationResponsePayload.setNumberOfElements(Integer.parseInt(String.valueOf(dataMap.get(NUMBER_OF_ELEMENTS))));
-        }
-        catch (Exception e)
-        {
-            throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage(), formId));
-        }
-        return paginationResponsePayload;
-    }
-
-    private String getString(String formId, String q, String sortBy, String sortOrder, Pageable pageable, WebClient webClient)
-    {
-        String response=EMPTY_STRING;
-        if (isEmpty(q) && isBlank(sortBy) && isBlank(sortOrder))
-        {
-            response =webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_PAGE+ pageable.getPageNumber()+AND_SIZE+ pageable.getPageSize()+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA + formId +AND_SOURCE+elasticSource,GET,null);
-            logger.info(response);
-        }
-        if(isEmpty(q)&&isNotBlank(sortBy)&&isNotBlank(sortOrder))
-        {
-            response =webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+ sortBy +AND_SORT_ORDER+ sortOrder +AND_PAGE+ pageable.getPageNumber()+AND_SIZE+ pageable.getPageSize()+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA + formId +AND_SOURCE+elasticSource,GET,null);
-        }
-        if(isNotEmpty(q)&& isBlank(sortBy)&& isBlank(sortOrder))
-        {
-                response =webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_Q+ q +AND_PAGE+ pageable.getPageNumber()+AND_SIZE+ pageable.getPageSize()+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA + formId +AND_SOURCE+elasticSource,GET,null);
-                logger.info(response);
-        }
-        if(isNotEmpty(q)&&isNotBlank(sortBy)&&isNotBlank(sortOrder))
-        {
-              response =webClientWrapper.webclientRequest(webClient,gatewayApi +ELASTIC_VERSION1+PARAM_SORT_BY+ sortBy +AND_SORT_ORDER+ sortOrder +AND_Q+ q +AND_PAGE+ pageable.getPageNumber()+AND_SIZE+ pageable.getPageSize()+AND_INDEX_NAME+ TP_RUNTIME_FORM_DATA + formId +AND_SOURCE+elasticSource,GET,null);
-              logger.info(response);
-        }
-        return response;
-    }
-
     public PaginationResponsePayload getAllFormDataByFormId(String formId,String relations)
     {
         PaginationResponsePayload paginationResponsePayload = new PaginationResponsePayload();
-        if (elasticEnable&&relations==null)
-        {
-            return getPaginationResponsePayload(formId, paginationResponsePayload);
-        }
         checkMongoCollectionIfExistsOrNot(formId);
         List<Map<String,Object>> content = new ArrayList<>();
         Pageable pageable = getPageable(paginationResponsePayload);
@@ -1210,54 +1009,10 @@ public class FormDataServiceImpl implements FormDataService
         paginationResponsePayload.setNumberOfElements(content.size());
     }
 
-    private PaginationResponsePayload getPaginationResponsePayload(String formId, PaginationResponsePayload paginationResponsePayload)
-    {
-        List<Map<String,Object>> contentList;
-        WebClient webClient= checkEmptyToken(tokenUtils.getTokenFromContext());
-        try
-        {
-            String response= webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId + AND_SOURCE + elasticSource + AND_PAGE_AND_SIZE + defaultPageLimit, GET, null);
-            logger.info(response);
-            Map<String, Object> responseMap = getResponseMap(response);
-            Map<String, Object> dataMap = getDataMap(responseMap);
-            contentList = getContentList(dataMap);
-            paginationResponsePayload.setContent(contentList);
-            paginationResponsePayload.setPage(Integer.parseInt(String.valueOf(dataMap.get(PAGE))));
-            paginationResponsePayload.setSize(Integer.parseInt(String.valueOf(dataMap.get(SIZE))));
-            paginationResponsePayload.setTotalPages(Integer.parseInt(String.valueOf(dataMap.get(TOTAL_PAGES))));
-            paginationResponsePayload.setTotalElements(Long.parseLong(String.valueOf(dataMap.get(TOTAL_ELEMENTS))));
-            paginationResponsePayload.setNumberOfElements(Integer.parseInt(String.valueOf(dataMap.get(NUMBER_OF_ELEMENTS))));
-        }
-        catch (Exception e)
-        {
-            throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
-        }
-        return paginationResponsePayload;
-    }
-
     @Override
     public List getFormDataByFormIdAndId(String formId, String id,String relations)
     {
         List<Map<String,Object>> responseList=new ArrayList<>();
-        if (elasticEnable&&relations==null)
-        {
-            WebClient webClient;
-            String token = tokenUtils.getTokenFromContext();
-            webClient =checkEmptyToken(token);
-            try
-            {
-                String response= webClientWrapper.webclientRequest(webClient, gatewayApi + ELASTIC_VERSION1 + SLASH + id + PARAM_INDEX_NAME + TP_RUNTIME_FORM_DATA + formId, GET, null);
-                logger.info(response);
-                Map<String,Object> responseMap = getResponseMap(response);
-                Map<String,Object> dataMap = getDataMap(responseMap);
-                responseList.add(dataMap);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
-            }
-            return responseList;
-        }
         if (isNotEmpty(relations))
         {
             return getFormDataList(formId, id, relations);
