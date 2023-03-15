@@ -1,5 +1,6 @@
 package com.techsophy.tsf.runtime.form.dto;
 
+import com.techsophy.tsf.runtime.form.entity.Status;
 import lombok.Value;
 import lombok.With;
 import javax.validation.constraints.NotBlank;
@@ -20,4 +21,5 @@ public class FormSchema
     String type;
     @NotNull(message = VERSION_NOT_BLANK) Integer version;
     Boolean isDefault;
+    Status elasticPush= Status.DISABLED;
 }

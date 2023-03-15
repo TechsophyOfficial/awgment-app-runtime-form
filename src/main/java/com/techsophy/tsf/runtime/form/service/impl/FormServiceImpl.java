@@ -44,7 +44,16 @@ public class FormServiceImpl implements FormService
             throw new UserDetailsIdNotFoundException(LOGGED_IN_USER_ID_NOT_FOUND,globalMessageSource.get(LOGGED_IN_USER_ID_NOT_FOUND,loggedInUserDetails.get(ID).toString()));
         }
         BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(loggedInUserDetails.get(ID).toString()));
-        FormDefinition formDefinition=new FormDefinition(BigInteger.valueOf(Long.parseLong(formSchema.getId())),formSchema.getName(),BigInteger.valueOf(formSchema.getVersion()),formSchema.getComponents(),formSchema.getAcls(),formSchema.getProperties(),formSchema.getType(),formSchema.getIsDefault());
+        FormDefinition formDefinition=new FormDefinition();
+        formDefinition.setId(BigInteger.valueOf(Long.parseLong(formSchema.getId())));
+        formDefinition.setName(formSchema.getName());
+        formDefinition.setVersion(BigInteger.valueOf(formSchema.getVersion()));
+        formDefinition.setComponents(formSchema.getComponents());
+        formDefinition.setAcls(formSchema.getAcls());
+        formDefinition.setProperties(formSchema.getProperties());
+        formDefinition.setType(formSchema.getType());
+        formDefinition.setIsDefault(formSchema.getIsDefault());
+        formDefinition.setElasticPush(formSchema.getElasticPush());
         formDefinition.setCreatedById(String.valueOf(loggedInUserId));
         formDefinition.setCreatedOn(String.valueOf(Date.from(Instant.now())));
         formDefinition.setUpdatedById(String.valueOf(loggedInUserId));

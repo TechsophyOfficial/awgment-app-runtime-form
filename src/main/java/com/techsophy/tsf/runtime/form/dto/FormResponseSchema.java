@@ -1,6 +1,7 @@
 package com.techsophy.tsf.runtime.form.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.techsophy.tsf.runtime.form.entity.Status;
 import lombok.Value;
 import lombok.With;
 import java.util.List;
@@ -26,4 +27,5 @@ public class FormResponseSchema
     String updatedById;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_PATTERN, timezone = TIME_ZONE)
     String updatedOn;
+    Status elasticPush;
 }

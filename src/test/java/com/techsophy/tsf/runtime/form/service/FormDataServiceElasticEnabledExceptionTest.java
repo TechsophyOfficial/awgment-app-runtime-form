@@ -10,6 +10,8 @@ import com.mongodb.client.result.InsertOneResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
+import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
+import com.techsophy.tsf.runtime.form.entity.Status;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.exception.RecordUnableToSaveException;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataAuditServiceImpl;
@@ -32,21 +34,16 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import java.time.Instant;
 import java.util.*;
 import java.util.logging.Logger;
-
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.DATA;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.ELASTIC_ENABLE;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.ELASTIC_SOURCE;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.FORM_DATA;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.SUCCESS;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.mock;
 
 @ExtendWith({MockitoExtension.class})
 class FormDataServiceElasticEnabledExceptionTest
@@ -87,7 +84,6 @@ class FormDataServiceElasticEnabledExceptionTest
     @BeforeEach
     public void init()
     {
-        ReflectionTestUtils.setField(mockFormDataServiceImpl,ELASTIC_ENABLE, true);
         ReflectionTestUtils.setField(mockFormDataServiceImpl,ELASTIC_SOURCE,true);
         ReflectionTestUtils.setField(mockFormDataServiceImpl,GATEWAY_API,GATEWAY_API_VALUE);
         Map<String, Object> map = new HashMap<>();
@@ -144,7 +140,9 @@ class FormDataServiceElasticEnabledExceptionTest
         Mockito.when(iterable.iterator()).thenReturn(cursor);
         Mockito.when(cursor.hasNext()).thenReturn(true);
         Mockito.when(cursor.next()).thenReturn(document);
-        ReflectionTestUtils.setField(mockFormDataServiceImpl, ELASTIC_ENABLE, true);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS,new ArrayList<>(),TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.ENABLED);
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         Mockito.when(mockWebClientWrapper.webclientRequest(any(),any(),eq(POST),any())).thenThrow(new RuntimeException());
         Assertions.assertThrows(RecordUnableToSaveException.class,()->mockFormDataServiceImpl.updateFormData(formDataSchemaTest));
@@ -155,6 +153,9 @@ class FormDataServiceElasticEnabledExceptionTest
     {
         when(mockTokenUtils.getTokenFromContext()).thenReturn(EMPTY_STRING);
         when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS,new ArrayList<>(),TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.ENABLED);
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteAllFormDataByFormId(TEST_FORM_ID));
     }
 
@@ -185,6 +186,9 @@ class FormDataServiceElasticEnabledExceptionTest
         responseMapTest.put(DATA, dataMapTest);
         responseMapTest.put(SUCCESS,true);
         when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS,new ArrayList<>(),TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.ENABLED);
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteAllFormDataByFormId(TEST_FORM_ID));
     }
 
@@ -196,6 +200,9 @@ class FormDataServiceElasticEnabledExceptionTest
         DeleteResult mockDeleteResult=Mockito.mock(DeleteResult.class);
         when(mockMongoCollection.deleteMany(any())).thenReturn(mockDeleteResult);
         when(mockDeleteResult.getDeletedCount()).thenReturn(Long.valueOf(1));
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS,new ArrayList<>(),TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.ENABLED);
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID));
     }
 
@@ -227,6 +234,9 @@ class FormDataServiceElasticEnabledExceptionTest
         DeleteResult mockDeleteResult=Mockito.mock(DeleteResult.class);
         when(mockMongoCollection.deleteMany(any())).thenReturn(mockDeleteResult);
         when(mockDeleteResult.getDeletedCount()).thenReturn(Long.valueOf(1));
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS,new ArrayList<>(),TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.ENABLED);
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID));
     }
 
@@ -258,6 +268,9 @@ class FormDataServiceElasticEnabledExceptionTest
         DeleteResult mockDeleteResult=Mockito.mock(DeleteResult.class);
         when(mockMongoCollection.deleteMany(any())).thenReturn(mockDeleteResult);
         when(mockDeleteResult.getDeletedCount()).thenReturn(Long.valueOf(1));
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS,new ArrayList<>(),TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.ENABLED);
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID));
     }
 }

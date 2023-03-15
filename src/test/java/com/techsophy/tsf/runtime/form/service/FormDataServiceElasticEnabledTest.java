@@ -14,6 +14,7 @@ import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
 import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
 import com.techsophy.tsf.runtime.form.dto.ValidationResult;
 import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
+import com.techsophy.tsf.runtime.form.entity.Status;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataAuditServiceImpl;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataServiceImpl;
 import com.techsophy.tsf.runtime.form.service.impl.FormValidationServiceImpl;
@@ -35,16 +36,12 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.*;
-
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.DATA;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.ELASTIC_ENABLE;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.ELASTIC_SOURCE;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.FORM_DATA;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -102,7 +99,6 @@ class FormDataServiceElasticEnabledTest
     @BeforeEach
     public void init()
     {
-        ReflectionTestUtils.setField(mockFormDataServiceImpl,ELASTIC_SOURCE,true);
         ReflectionTestUtils.setField(mockFormDataServiceImpl,GATEWAY_API,GATEWAY_API_VALUE);
         ReflectionTestUtils.setField(mockFormDataServiceImpl,"defaultPageLimit",20);
         Map<String, Object> map = new HashMap<>();
@@ -125,7 +121,9 @@ class FormDataServiceElasticEnabledTest
     @Test
     void saveFormDataEmptyUniqueDocumentIdTest() throws IOException
     {
-        ReflectionTestUtils.setField(mockFormDataServiceImpl, ELASTIC_ENABLE, true);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS,new ArrayList<>(),TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.ENABLED);
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         doReturn(userList).when(mockUserDetails).getUserDetails();
         Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
@@ -140,8 +138,6 @@ class FormDataServiceElasticEnabledTest
         ValidationResult validationResult=new ValidationResult("name");
         List<ValidationResult> validationResultList=new ArrayList<>();
         validationResultList.add(validationResult);
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
         Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
         Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),any())).thenReturn(validationResultList);
         String responseTest="{\n" +
@@ -210,7 +206,9 @@ class FormDataServiceElasticEnabledTest
     @Test
     void saveFormDataNullUniqueDocumentIdTest() throws IOException
     {
-        ReflectionTestUtils.setField(mockFormDataServiceImpl, ELASTIC_ENABLE, true);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS,new ArrayList<>(),TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.ENABLED);
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         doReturn(userList).when(mockUserDetails).getUserDetails();
         Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
@@ -225,8 +223,6 @@ class FormDataServiceElasticEnabledTest
         ValidationResult validationResult=new ValidationResult("name");
         List<ValidationResult> validationResultList=new ArrayList<>();
         validationResultList.add(validationResult);
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
         Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
         Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),any())).thenReturn(validationResultList);
         String responseTest="{\n" +
@@ -295,7 +291,9 @@ class FormDataServiceElasticEnabledTest
     @Test
     void saveFormDataUniqueDocumentIdTest() throws IOException
     {
-        ReflectionTestUtils.setField(mockFormDataServiceImpl, ELASTIC_ENABLE, true);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS,new ArrayList<>(),TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.ENABLED);
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         doReturn(userList).when(mockUserDetails).getUserDetails();
         Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
@@ -310,9 +308,6 @@ class FormDataServiceElasticEnabledTest
         ValidationResult validationResult=new ValidationResult("name");
         List<ValidationResult> validationResultList=new ArrayList<>();
         validationResultList.add(validationResult);
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON));
-        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
         Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),any())).thenReturn(validationResultList);
         String postResponse="{\n" +
                 "    \"data\": {\n" +
@@ -423,7 +418,9 @@ class FormDataServiceElasticEnabledTest
         Mockito.when(iterable.iterator()).thenReturn(cursor);
         Mockito.when(cursor.hasNext()).thenReturn(true);
         Mockito.when(cursor.next()).thenReturn(document);
-        ReflectionTestUtils.setField(mockFormDataServiceImpl, ELASTIC_ENABLE, true);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS,new ArrayList<>(),TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.ENABLED);
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         String postResponse="{\n" +
                 "    \"data\": {\n" +
@@ -440,7 +437,9 @@ class FormDataServiceElasticEnabledTest
     @Test
     void deleteAllFormDataByFormIdTest()
     {
-        ReflectionTestUtils.setField(mockFormDataServiceImpl, ELASTIC_ENABLE, true);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS,new ArrayList<>(),TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.ENABLED);
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
         String responseTest =RESPONSE_VALUE_30;
@@ -473,7 +472,6 @@ class FormDataServiceElasticEnabledTest
     @Test
     void deleteFormDataByFormIdAndIdTest()
     {
-        ReflectionTestUtils.setField(mockFormDataServiceImpl, ELASTIC_ENABLE, true);
         Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         Mockito.when(mockWebClientWrapper.createWebClient(TEST_TOKEN)).thenReturn(mockWebClient);
         String responseTest =RESPONSE_VALUE_31;
@@ -502,8 +500,11 @@ class FormDataServiceElasticEnabledTest
         Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
         Mockito.when(mockMongoCollection.deleteMany(any())).thenReturn(mockDeleteResult);
         Mockito.when(mockDeleteResult.getDeletedCount()).thenReturn(Long.valueOf(1));
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS,new ArrayList<>(),TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
+                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.ENABLED);
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID);
-        verify(mockWebClientWrapper,times(1)).webclientRequest(any(),any(),any(),any());
+              verify(mockWebClientWrapper,times(1)).webclientRequest(any(),any(),any(),any());
     }
 }
 

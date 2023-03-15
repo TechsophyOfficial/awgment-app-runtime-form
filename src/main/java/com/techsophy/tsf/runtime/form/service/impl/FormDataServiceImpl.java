@@ -11,6 +11,7 @@ import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.*;
 import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
+import com.techsophy.tsf.runtime.form.entity.Status;
 import com.techsophy.tsf.runtime.form.exception.*;
 import com.techsophy.tsf.runtime.form.service.FormDataAuditService;
 import com.techsophy.tsf.runtime.form.service.FormDataService;
@@ -67,8 +68,6 @@ public class FormDataServiceImpl implements FormDataService
     String gatewayApi;
     @Value(ELASTIC_SOURCE)
     boolean elasticSource;
-    @Value(ELASTIC_ENABLE)
-    boolean elasticEnable;
     private MongoTemplate mongoTemplate;
     private UserDetails userDetails = null;
     private GlobalMessageSource globalMessageSource = null;
@@ -155,7 +154,7 @@ public class FormDataServiceImpl implements FormDataService
                         formDataSchema.getFormData(),formDataSchema.getFormMetaData());
                 this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
             }
-            if(elasticEnable)
+            if(formResponseSchema.getElasticPush().equals(Status.ENABLED))
             {
                 WebClient webClient=checkEmptyToken(tokenUtils.getTokenFromContext());
                 saveFormDataToElastic(formDataDefinition,webClient,uniqueDocumentId);
@@ -400,7 +399,8 @@ public class FormDataServiceImpl implements FormDataService
         }
         FormDataAuditSchema formDataAuditSchema = getFormDataAuditSchema(formId, version, formDataDefinition);
         this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
-        if (elasticEnable)
+        FormResponseSchema formResponseSchema = formService.getRuntimeFormById(formId);
+        if (formResponseSchema.getElasticPush().equals(Status.ENABLED))
         {
             String token = tokenUtils.getTokenFromContext();
             log.info(LOGGED_USER + loggedInUserId);
@@ -1064,7 +1064,8 @@ public class FormDataServiceImpl implements FormDataService
         {
             throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
         }
-        if(elasticEnable)
+        FormResponseSchema formResponseSchema = formService.getRuntimeFormById(formId);
+        if(formResponseSchema.getElasticPush().equals(Status.ENABLED))
         {
             WebClient webClient= checkEmptyToken(tokenUtils.getTokenFromContext());
             try
@@ -1102,7 +1103,8 @@ public class FormDataServiceImpl implements FormDataService
         {
             throw new FormIdNotFoundException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,id));
         }
-        if(elasticEnable)
+        FormResponseSchema formResponseSchema = formService.getRuntimeFormById(formId);
+        if(formResponseSchema.getElasticPush().equals(Status.ENABLED))
         {
             WebClient webClient=checkEmptyToken(tokenUtils.getTokenFromContext());
             try

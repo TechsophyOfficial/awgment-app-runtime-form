@@ -7,6 +7,7 @@ import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
 import com.techsophy.tsf.runtime.form.dto.FormSchema;
 import com.techsophy.tsf.runtime.form.entity.FormDefinition;
+import com.techsophy.tsf.runtime.form.entity.Status;
 import com.techsophy.tsf.runtime.form.exception.EntityIdNotFoundException;
 import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
 import com.techsophy.tsf.runtime.form.repository.FormDefinitionRepository;
@@ -23,12 +24,10 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import org.springframework.core.io.ClassPathResource;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.*;
-
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -153,7 +152,7 @@ class FormServiceTest
         @Cleanup InputStream stream=new ClassPathResource(TEST_FORMS_DATA).getInputStream();
         String formDataTest =new String(stream.readAllBytes());
         FormResponseSchema formSchemaTest =new FormResponseSchema(TEST_ID,TEST_NAME,
-                TEST_COMPONENTS,list,TEST_PROPERTIES,TEST_TYPE_FORM,TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,String.valueOf(TEST_CREATED_ON),TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON));
+                TEST_COMPONENTS,list,TEST_PROPERTIES,TEST_TYPE_FORM,TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,String.valueOf(TEST_CREATED_ON),TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.DISABLED);
         FormDefinition formDefinitionTest =objectMapper.readValue(formDataTest,FormDefinition.class);
         when(mockObjectMapper.convertValue(any(),eq(FormResponseSchema.class))).thenReturn(formSchemaTest);
         when(mockFormDefinitionRepository.findById(BigInteger.valueOf(Long.parseLong(TEST_ID)))).thenReturn(java.util.Optional.ofNullable(formDefinitionTest));
@@ -239,8 +238,17 @@ class FormServiceTest
         Map<String, Object> component = new HashMap<>();
         component.put("key","value");
         FormResponseSchema formResponseSchema = new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
-                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON));
-        FormDefinition formDefinition = new FormDefinition(BigInteger.ONE,NAME,BigInteger.ONE,component,List.of(component),component,TYPE_FORM,true);
+                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID
+                ,String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON),Status.DISABLED);
+        FormDefinition formDefinition = new FormDefinition();
+        formDefinition.setId(BigInteger.ONE);
+        formDefinition.setName(NAME);
+        formDefinition.setVersion(BigInteger.ONE);
+        formDefinition.setComponents(component);
+        formDefinition.setAcls(List.of(component));
+        formDefinition.setProperties(component);
+        formDefinition.setType(TYPE);
+        formDefinition.setIsDefault(true);
         when(mockFormDefinitionRepository.existsById(BigInteger.valueOf(1))).thenReturn(true);
         when(mockFormDefinitionRepository.findById(BigInteger.valueOf(1))).thenReturn(Optional.of(formDefinition));
         when(mockObjectMapper.convertValue(any(),eq(FormResponseSchema.class))).thenReturn(formResponseSchema);
