@@ -15,7 +15,7 @@ import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.EXEC
 @ChangeUnit(id="push-to-elastic",order = "5")
 @Slf4j
 @RequiredArgsConstructor
-public class Elastic
+public class ElasticFieldMigration
 {
     private  final MongoTemplate mongo;
 

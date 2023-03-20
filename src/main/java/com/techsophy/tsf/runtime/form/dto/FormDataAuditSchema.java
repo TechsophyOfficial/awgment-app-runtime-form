@@ -1,20 +1,18 @@
 package com.techsophy.tsf.runtime.form.dto;
 
-import lombok.Value;
-import lombok.With;
+import lombok.Data;
 import javax.validation.constraints.NotBlank;
 import java.util.Map;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.FORM_ID_NOT_BLANK;
 
-@With
-@Value
+@Data
 public class FormDataAuditSchema
 {
-    String id;
-    String formDataId;
+    private final String id;
+    private final String formDataId;
     @NotBlank(message = FORM_ID_NOT_BLANK)
-    String formId;
-    Integer version;
-    Map<String,Object> formData;
-    Map<String,Object> formMetadata;
+    private final String formId;
+    private final int version;
+    private final Map<String,Object> formData;
+    private final Map<String,Object> formMetadata;
 }

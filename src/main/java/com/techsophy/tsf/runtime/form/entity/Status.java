@@ -6,5 +6,10 @@ public enum Status {
     @JsonProperty("enabled")
     ENABLED,
     @JsonProperty("disabled")
-    DISABLED
+    DISABLED;
+
+    public boolean isEnabled()
+    {
+        return this==ENABLED;
+    }
 }

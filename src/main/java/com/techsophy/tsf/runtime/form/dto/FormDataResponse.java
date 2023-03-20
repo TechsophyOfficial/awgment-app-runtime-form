@@ -1,13 +1,10 @@
 package com.techsophy.tsf.runtime.form.dto;
 
-import lombok.Value;
-import lombok.With;
+import lombok.Data;
 
-@With
-@Value
+@Data
 public class FormDataResponse
 {
-    String id;
-    Integer version;
-
+    private final String id;
+    private final int version;
 }

@@ -2,9 +2,9 @@ package com.techsophy.tsf.runtime.form.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.techsophy.tsf.runtime.form.dto.AggregationResponse;
-import com.techsophy.tsf.runtime.form.dto.FormDataResponse;
 import com.techsophy.tsf.runtime.form.dto.FormDataResponseSchema;
 import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
+import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
 import com.techsophy.tsf.runtime.form.model.ApiResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -18,10 +18,10 @@ public interface FormDataController
 {
     @PostMapping(FORM_DATA_URL)
     @PreAuthorize(CREATE_OR_ALL_ACCESS)
-    ApiResponse<FormDataResponse> saveFormData(@RequestBody @Validated FormDataSchema formDataSchema) throws IOException;
+    ApiResponse<FormDataDefinition> saveFormData(@RequestBody @Validated FormDataSchema formDataSchema) throws IOException;
 
     @PatchMapping(FORM_DATA_URL)
-    ApiResponse<FormDataResponse> updateFormData(@RequestBody @Validated FormDataSchema formDataSchema) throws JsonProcessingException;
+    ApiResponse<FormDataDefinition> updateFormData(@RequestBody @Validated FormDataSchema formDataSchema) throws JsonProcessingException;
 
     @GetMapping(FORM_DATA_URL)
     @PreAuthorize(READ_OR_ALL_ACCESS)

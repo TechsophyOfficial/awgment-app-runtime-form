@@ -18,7 +18,7 @@ class ElasticTest
     @Mock
     private MongoTemplate mongo;
     @InjectMocks
-    private Elastic elastic;
+    private ElasticFieldMigration elastic;
 
     @Test
     void testSetElasticPushField()

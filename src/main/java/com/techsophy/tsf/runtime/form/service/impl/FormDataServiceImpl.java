@@ -3,27 +3,23 @@ package com.techsophy.tsf.runtime.form.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.FindOneAndReplaceOptions;
-import com.mongodb.client.model.ReturnDocument;
-import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.*;
 import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
-import com.techsophy.tsf.runtime.form.entity.Status;
-import com.techsophy.tsf.runtime.form.exception.*;
+import com.techsophy.tsf.runtime.form.exception.EntityIdNotFoundException;
+import com.techsophy.tsf.runtime.form.exception.FormIdNotFoundException;
+import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.service.FormDataAuditService;
 import com.techsophy.tsf.runtime.form.service.FormDataService;
 import com.techsophy.tsf.runtime.form.service.FormService;
 import com.techsophy.tsf.runtime.form.utils.DocumentAggregationOperation;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
-import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import com.techsophy.tsf.runtime.form.utils.WebClientWrapper;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -41,20 +37,20 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.CONTAINS_ONLY_NUMBER;
-import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.E11000;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.SEMICOLON;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
-import static org.apache.commons.lang3.StringUtils.*;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Slf4j
 @Service
@@ -69,7 +65,6 @@ public class FormDataServiceImpl implements FormDataService
     @Value(ELASTIC_SOURCE)
     boolean elasticSource;
     private MongoTemplate mongoTemplate;
-    private UserDetails userDetails = null;
     private GlobalMessageSource globalMessageSource = null;
     private IdGeneratorImpl idGenerator = null;
     private WebClientWrapper webClientWrapper = null;
@@ -80,23 +75,10 @@ public class FormDataServiceImpl implements FormDataService
     private FormService formService = null;
     private FormValidationServiceImpl formValidationServiceImpl;
 
-    private void handleMongoException(Exception e) {
-        boolean exist = e.getMessage().contains(E11000);
-        if (exist) {
-            throw new InvalidInputException(DUPLICATE_FIELD_VALUE, globalMessageSource.get(DUPLICATE_FIELD_VALUE));
-        } else {
-            throw new InvalidInputException(DUPLICATE_FIELD_VALUE, e.getMessage());
-        }
-    }
     @Override
-    public FormDataResponse saveFormData(FormDataSchema formDataSchema) throws IOException
+    public FormDataDefinition saveFormData(FormDataSchema formDataSchema) throws IOException
     {
         String formId=formDataSchema.getFormId();
-        BigInteger id;
-        int version;
-        checkUserDetailsPresentOrNot(userDetails);
-        Map<String, Object> loggedInUserDetails = userDetails.getUserDetails().get(0);
-        BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(String.valueOf(loggedInUserDetails.get(ID))));
         FormResponseSchema formResponseSchema = formService.getRuntimeFormById(formId);
         List<ValidationResult> validationResultList= formValidationServiceImpl.validateData(formResponseSchema,formDataSchema,formId);
         StringBuilder completeMessage= new StringBuilder();
@@ -104,82 +86,34 @@ public class FormDataServiceImpl implements FormDataService
             completeMessage.append(v.getErrorCode()).append(SEMICOLON).append(v.getErrorMessage(globalMessageSource)).append(SEMICOLON);
             throw new InvalidInputException(String.valueOf(completeMessage),String.valueOf(completeMessage));
         });
-        String uniqueDocumentId = extractUniqueDocumentId(formDataSchema);
         FormDataDefinition formDataDefinition = getFormDataDefinition(formDataSchema);
-        setUpdateAudit(loggedInUserId, formDataDefinition);
-        if (mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formId))
+            if(mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formId))
             {
-                if (uniqueDocumentId==null|| isEmpty(uniqueDocumentId))
+                if(formDataDefinition.getId()==null)
                 {
-                    id = getNextId();
-                    formDataDefinition.setId(String.valueOf(id));
-                    version = 1;
-                    setVersion(formDataDefinition, version);
-                    setCreatedAudit(loggedInUserId, formDataDefinition);
-                    saveToMongo(formId, formDataDefinition);
-                    FormDataAuditSchema formDataAuditSchema = getFormDataAuditSchema(formId, version, formDataDefinition);
-                    this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
+                    formDataDefinition.setId(String.valueOf(idGenerator.nextId()));
+                    formDataDefinition.setVersion(1);
                 }
                 else
                 {
-                    Bson filter=Filters.eq(UNDERSCORE_ID,uniqueDocumentId);
-                    version= (int) mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).find(filter).iterator().next().get(VERSION);
-                    version = updateVersion(version);
-                    id=BigInteger.valueOf(Long.parseLong(uniqueDocumentId));
-                    try {
-                        mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).updateOne(filter,Updates.combine(
-                                Updates.set(FORM_DATA,formDataDefinition.getFormData()),Updates.set(VERSION,version)));
-                    }catch(Exception e)
-                    {
-                        handleMongoException(e);
-                    }
-                    FormDataAuditSchema formDataAuditSchema = getFormDataAuditSchema(formId, 1, formDataDefinition);
-                    this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
+                    Query query=new Query(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()));
+                    formDataDefinition=mongoTemplate.findOne(query,FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formId);
+                    Objects.requireNonNull(formDataDefinition).setVersion(formDataDefinition.getVersion()+1);
                 }
             }
             else
             {
-                if(uniqueDocumentId!=null)
-                {
-                    throw new InvalidInputException(PAYLOAD_SHOULD_NOT_HAVE_ID,globalMessageSource.get(PAYLOAD_SHOULD_NOT_HAVE_ID));
-                }
-                id = getNextId();
-                formDataDefinition.setId(String.valueOf(id));
-                version = 1;
-                setVersion(formDataDefinition, version);
-                setCreatedAudit(loggedInUserId, formDataDefinition);
-                saveToMongo(formId, formDataDefinition);
-                FormDataAuditSchema formDataAuditSchema = new
-                        FormDataAuditSchema(String.valueOf(getNextId()),String.valueOf(formDataDefinition.getId()),formId,version,
-                        formDataSchema.getFormData(),formDataSchema.getFormMetaData());
-                this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
+                mongoTemplate.createCollection(TP_RUNTIME_FORM_DATA + formId);
+                formDataDefinition.setId(String.valueOf(idGenerator.nextId()));
+                formDataDefinition.setVersion(1);
             }
-            if(formResponseSchema.getElasticPush().equals(Status.ENABLED))
-            {
-                WebClient webClient=checkEmptyToken(tokenUtils.getTokenFromContext());
-                saveFormDataToElastic(formDataDefinition,webClient,uniqueDocumentId);
-                updateFormDataToElastic(webClient,uniqueDocumentId,formDataDefinition);
-            }
-        return new FormDataResponse(String.valueOf(id),version);
-    }
-
-    private FormDataAuditSchema getFormDataAuditSchema(String formId, int version, FormDataDefinition formDataDefinition) {
-       return new FormDataAuditSchema(String.valueOf(getNextId()),String.valueOf(formDataDefinition.getId()), formId, version,
-                formDataDefinition.getFormData(), formDataDefinition.getFormMetaData());
-    }
-
-    private void saveToMongo(String formId, FormDataDefinition formDataDefinition) {
-        try{
-            mongoTemplate.save(formDataDefinition, TP_RUNTIME_FORM_DATA + formId);
-        }catch(Exception e){
-            handleMongoException(e);
-        }
-
-    }
-
-    private static void setUpdateAudit(BigInteger loggedInUserId, FormDataDefinition formDataDefinition) {
-        formDataDefinition.setUpdatedById(String.valueOf(loggedInUserId));
-        formDataDefinition.setUpdatedOn(String.valueOf(Date.from(Instant.now())));
+            mongoTemplate.save(formDataDefinition,TP_RUNTIME_FORM_DATA + formId);
+            FormDataAuditSchema formDataAuditSchema=new FormDataAuditSchema(
+                    String.valueOf(idGenerator.nextId()),formDataDefinition.getId(),
+                    formId,1,formDataDefinition.getFormData(),formDataDefinition.getFormMetaData()
+            );
+            this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
+            return formDataDefinition;
     }
 
     private FormDataDefinition getFormDataDefinition(FormDataSchema formDataSchema)
@@ -187,257 +121,20 @@ public class FormDataServiceImpl implements FormDataService
       return objectMapper.convertValue(formDataSchema,FormDataDefinition.class);
     }
 
-    private static void setCreatedAudit(BigInteger loggedInUserId, FormDataDefinition formDataDefinition)
-    {
-        formDataDefinition.setCreatedById(String.valueOf(loggedInUserId));
-        formDataDefinition.setCreatedOn(String.valueOf(Date.from(Instant.now())));
-    }
-
-    private BigInteger getNextId()
-    {
-        BigInteger id;
-        id=idGenerator.nextId();
-        return id;
-    }
-
-    private void updateFormDataToElastic(WebClient webClient,String uniqueDocumentId,FormDataDefinition formDataDefinition) throws JsonProcessingException
-    {
-        if(uniqueDocumentId!=null)
-        {
-            String response = fetchResponseFromElasticDB(formDataDefinition.getFormId(), webClient, uniqueDocumentId);
-            Map<String,Object> responseMap= getResponseMap(response);
-            checkResponseMapData(uniqueDocumentId, responseMap);
-            Map<String,Object> dataMap= getMap(responseMap);
-            int version= Integer.parseInt(String.valueOf(dataMap.get(VERSION)));
-            version = updateVersion(version);
-            setVersion(formDataDefinition, version);
-            formDataDefinition.setId(uniqueDocumentId);
-            formDataDefinition.setCreatedById(String.valueOf(dataMap.get(CREATED_BY_ID)));
-            formDataDefinition.setCreatedOn(String.valueOf(dataMap.get(CREATED_ON)));
-            updateElasticDocument(webClient,formDataDefinition, responseMap);
-        }
-    }
-
-    private static int updateVersion(int version) {
-        version = version +1;
-        return version;
-    }
-
-    private static void setVersion(FormDataDefinition formDataDefinition, int version) {
-        formDataDefinition.setVersion(version);
-    }
-
-    private LinkedHashMap<String,Object> getMap(Map<String, Object> responseMap)
-    {
-        return this.objectMapper.convertValue(responseMap.get(DATA), LinkedHashMap.class);
-    }
-
-    private Map<String,Object> getResponseMap(String response) throws JsonProcessingException
-    {
-        return this.objectMapper.readValue(response, Map.class);
-    }
-
-    private void saveFormDataToElastic(FormDataDefinition formDataDefinition,WebClient webClient,String uniqueDocumentId)
-    {
-        if (uniqueDocumentId==null|| StringUtils.isEmpty(uniqueDocumentId))
-        {
-            emptyIdSaveToElasticDB(webClient, formDataDefinition);
-        }
-    }
-
-    private void updateElasticDocument(WebClient webClient,FormDataDefinition formDataDefinition, Map<String, Object> responseMap)
-    {
-        String response;
-        try
-        {
-            response = postWebClientResponse(webClient, formDataDefinition);
-            logger.info(response);
-        }
-        catch (Exception e)
-        {
-            Document newDocument = new Document(responseMap);
-            Bson filter= Filters.eq(UNDERSCORE_ID,Long.valueOf(String.valueOf(formDataDefinition.getId())));
-            FindOneAndReplaceOptions findOneAndReplaceOptions = new FindOneAndReplaceOptions();
-            findOneAndReplaceOptions.returnDocument(ReturnDocument.AFTER);
-            mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA + formDataDefinition.getFormId()).findOneAndReplace(filter,newDocument,findOneAndReplaceOptions);
-            throw new RecordUnableToSaveException(UNABLE_TO_SAVE_IN_ELASTIC_AND_DB,globalMessageSource.get(UNABLE_TO_SAVE_IN_ELASTIC_AND_DB));
-        }
-    }
-
-    private String postWebClientResponse(WebClient webClient, FormDataDefinition formDataDefinition)
-    {
-        return webClientWrapper.webclientRequest(webClient,gatewayApi+ELASTIC_VERSION1+SLASH+ TP_RUNTIME_FORM_DATA + formDataDefinition.getFormId() +PARAM_SOURCE+elasticSource,POST, formDataDefinition);
-    }
-
-    private String fetchResponseFromElasticDB(String formId, WebClient webClient, String uniqueDocumentId)
-    {
-        String response;
-        try
-        {
-            response = getWebClientResponse(formId, webClient, uniqueDocumentId);
-            logger.info(response);
-        }
-        catch (Exception e)
-        {
-            logger.error(e.getMessage());
-            throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC, uniqueDocumentId));
-        }
-        return response;
-    }
-
-    private String getWebClientResponse(String formId, WebClient webClient, String uniqueDocumentId)
-    {
-        return webClientWrapper.webclientRequest(webClient,gatewayApi+ELASTIC_VERSION1+SLASH+ uniqueDocumentId +PARAM_INDEX_NAME+ TP_RUNTIME_FORM_DATA + formId,GET,null);
-    }
-
-    private void emptyIdSaveToElasticDB(WebClient webClient,FormDataDefinition formDataDefinition)
-    {
-        String response;
-        try
-        {
-            response= postWebClientResponse(webClient,formDataDefinition);
-            logger.info(response);
-        }
-        catch (Exception e)
-        {
-            logger.error(e.getMessage());
-            Bson filter= Filters.eq(UNDERSCORE_ID,Long.valueOf(String.valueOf(formDataDefinition.getId())));
-            mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA + formDataDefinition.getFormId()).deleteMany(filter);
-            throw new RecordUnableToSaveException(UNABLE_TO_SAVE_IN_ELASTIC_AND_DB,globalMessageSource.get(UNABLE_TO_SAVE_IN_ELASTIC_AND_DB));
-        }
-    }
-
-    private void checkResponseMapData(String uniqueDocumentId, Map<String, Object> responseMap)
-    {
-        if(responseMap.get(DATA)==null)
-        {
-            throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC, uniqueDocumentId));
-        }
-    }
-
-    private static String extractUniqueDocumentId(FormDataSchema formDataSchema)
-    {
-        String uniqueDocumentId = getUniqueDocumentId(formDataSchema);
-        if (isEmpty(uniqueDocumentId)&&formDataSchema.getFormData().get(ID)!=null)
-        {
-            uniqueDocumentId = String.valueOf(formDataSchema.getFormData().get(ID));
-        }
-        return uniqueDocumentId;
-    }
-
-    private static String getUniqueDocumentId(FormDataSchema formDataSchema) {
-        return formDataSchema.getId();
-    }
-
-    private void checkUserDetailsPresentOrNot(UserDetails userDetails) throws JsonProcessingException
-    {
-        Map<String, Object> loggedInUserDetails=userDetails.getUserDetails().get(0);
-        if (isEmpty(String.valueOf(loggedInUserDetails.get(ID))))
-        {
-            throw new UserDetailsIdNotFoundException(LOGGED_IN_USER_ID_NOT_FOUND,globalMessageSource.get(LOGGED_IN_USER_ID_NOT_FOUND,String.valueOf(loggedInUserDetails.get(ID))));
-        }
-    }
-
     @Override
-    public FormDataResponse updateFormData(FormDataSchema formDataSchema) throws JsonProcessingException
+    public FormDataDefinition updateFormData(FormDataSchema formDataSchema)
     {
-        String formId=formDataSchema.getFormId();
-        String id = getUniqueDocumentId(formDataSchema);
-        checkIfFormIdIsEmpty(formDataSchema, formId);
-        checkIfIdIsEmpty(id);
-        checkMongoCollectionIfExistsOrNot(formDataSchema.getFormId());
-        checkUserDetailsPresentOrNot(userDetails);
-        Map<String, Object> loggedInUserDetails = userDetails.getUserDetails().get(0);
-        BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(String.valueOf(loggedInUserDetails.get(ID))));
-        Bson filter=Filters.eq(UNDERSCORE_ID,formDataSchema.getId());
-        Document document=new Document();
-        if(mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).find(filter).iterator().hasNext())
-        {
-            document=mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).find(filter).iterator().next();
-        }
-        int version=0;
-        Map<String,Object> formData=new HashMap<>();
-        Map<String,Object> formMetaData=new HashMap<>();
-        FormDataDefinition formDataDefinition=new FormDataDefinition();
-        if(document.get(VERSION)!=null)
-        {
-            version= (int) document.get(VERSION);
-        }
-        version = updateVersion(version);
-        setVersion(formDataDefinition, version);
-        formDataDefinition.setId(id);
-        formDataDefinition.setFormId(formId);
-        if(document.get(FORM_DATA)!=null)
-        {
-            formData= (Map<String, Object>) document.get(FORM_DATA);
-        }
-        if(formDataSchema.getFormData()!=null)
-        {
-            formData.putAll(formDataSchema.getFormData());
-        }
-        formDataDefinition.setFormData(formData);
-        if(document.get(FORM_META_DATA)!=null)
-        {
-            formMetaData= (Map<String, Object>) document.get(FORM_META_DATA);
-        }
-        if(formDataSchema.getFormMetaData()!=null)
-        {
-            formMetaData.putAll(formDataSchema.getFormMetaData());
-        }
-        formDataDefinition.setFormMetaData(formMetaData);
-        formDataDefinition.setCreatedById(String.valueOf(document.get(CREATED_BY_ID)));
-        formDataDefinition.setCreatedOn(String.valueOf(document.get(CREATED_ON)));
-        formDataDefinition.setUpdatedById(String.valueOf(loggedInUserId));
-        formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
-        try {
-            mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA + formId).updateOne(filter, Updates.combine(
-                    Updates.set(FORM_DATA, formData), Updates.set(VERSION, version), Updates.set(FORM_META_DATA, formMetaData)));
-        }catch(Exception e)
-        {
-            handleMongoException(e);
-
-        }
-        FormDataAuditSchema formDataAuditSchema = getFormDataAuditSchema(formId, version, formDataDefinition);
-        this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
-        FormResponseSchema formResponseSchema = formService.getRuntimeFormById(formId);
-        if (formResponseSchema.getElasticPush().equals(Status.ENABLED))
-        {
-            String token = tokenUtils.getTokenFromContext();
-            log.info(LOGGED_USER + loggedInUserId);
-            log.info(TOKEN+token);
-            WebClient webClient= checkEmptyToken(token);
-            String response;
-            log.info(GATEWAY+gatewayApi);
-            try
-            {
-                response=postWebClientResponse(webClient,formDataDefinition);
-                logger.info(response);
-            }
-            catch (Exception e)
-            {
-                logger.error(e.getMessage());
-                filter= Filters.eq(UNDERSCORE_ID,Long.valueOf(String.valueOf(formDataDefinition.getId())));
-                mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA + formDataDefinition.getFormId()).deleteMany(filter);
-                throw new RecordUnableToSaveException(UNABLE_TO_SAVE_IN_ELASTIC_AND_DB,globalMessageSource.get(UNABLE_TO_SAVE_IN_ELASTIC_AND_DB));
-            }
-        }
-        return new FormDataResponse(id,version);
-    }
-
-    private void checkIfIdIsEmpty(String id)
-    {
-        if(isEmpty(id))
-        {
-            throw new InvalidInputException(ID_CANNOT_BE_EMPTY,globalMessageSource.get(ID_CANNOT_BE_EMPTY));
-        }
-    }
-
-    private void checkIfFormIdIsEmpty(FormDataSchema formDataSchema, String formId)
-    {
-        if (isEmpty(formDataSchema.getFormId()))
-        {
-            throw new InvalidInputException(FORM_ID_CANNOT_BE_EMPTY,globalMessageSource.get(FORM_ID_CANNOT_BE_EMPTY, formId));
-        }
+        Query query=new Query(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()));
+        FormDataDefinition formDataDefinition=mongoTemplate.findOne(query,FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formDataSchema.getFormId());
+           if(formDataDefinition==null)
+           {
+               throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC));
+           }
+           formDataDefinition.setVersion(formDataDefinition.getVersion()+1);
+           Optional.ofNullable(formDataSchema.getFormData()).ifPresent(formDataDefinition::setFormData);
+           Optional.ofNullable(formDataSchema.getFormMetaData()).ifPresent(formDataDefinition::setFormMetaData);
+           mongoTemplate.save(formDataDefinition,TP_RUNTIME_FORM_DATA + formDataSchema.getFormId());
+           return formDataDefinition;
     }
 
     @Override
@@ -1064,9 +761,6 @@ public class FormDataServiceImpl implements FormDataService
         {
             throw new InvalidInputException(e.getMessage(), globalMessageSource.get(e.getMessage()));
         }
-        FormResponseSchema formResponseSchema = formService.getRuntimeFormById(formId);
-        if(formResponseSchema.getElasticPush().equals(Status.ENABLED))
-        {
             WebClient webClient= checkEmptyToken(tokenUtils.getTokenFromContext());
             try
             {
@@ -1077,7 +771,6 @@ public class FormDataServiceImpl implements FormDataService
             {
                 throw new InvalidInputException(e.getMessage(),globalMessageSource.get(e.getMessage()));
             }
-        }
     }
 
     @Override
@@ -1103,9 +796,6 @@ public class FormDataServiceImpl implements FormDataService
         {
             throw new FormIdNotFoundException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,id));
         }
-        FormResponseSchema formResponseSchema = formService.getRuntimeFormById(formId);
-        if(formResponseSchema.getElasticPush().equals(Status.ENABLED))
-        {
             WebClient webClient=checkEmptyToken(tokenUtils.getTokenFromContext());
             try
             {
@@ -1123,7 +813,6 @@ public class FormDataServiceImpl implements FormDataService
             {
                 logger.error(e.getMessage());
             }
-        }
     }
 
     @Override
