@@ -12,7 +12,6 @@ import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
 import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
 import com.techsophy.tsf.runtime.form.dto.ValidationResult;
 import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
-import com.techsophy.tsf.runtime.form.entity.Status;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataAuditServiceImpl;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataServiceImpl;
@@ -37,9 +36,11 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
+
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.DATA;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.DEFAULT_PAGE_LIMIT;
@@ -126,9 +127,8 @@ class FormDataServiceElasticDisabledTest
     @Test
     void saveFormDataValidationExceptionTest()
     {
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON),Status.DISABLED);
-        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
+        FormResponseSchema formResponseSchema=new FormResponseSchema();
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchema);
         FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
         ValidationResult validationResult=new ValidationResult("name","name field cannot be empty");
         List<ValidationResult> validationResultList=new ArrayList<>();
@@ -140,8 +140,7 @@ class FormDataServiceElasticDisabledTest
     @Test
     void saveFormDataNewCollectionTest() throws IOException
     {
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON),Status.DISABLED);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
         Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
         ValidationResult validationResult=new ValidationResult("name");
@@ -157,8 +156,7 @@ class FormDataServiceElasticDisabledTest
     @Test
     void saveFormDataCreateNewRecordSameCollectionTest() throws IOException
     {
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON),Status.DISABLED);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
         Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
         ValidationResult validationResult=new ValidationResult("name");
@@ -174,8 +172,7 @@ class FormDataServiceElasticDisabledTest
     @Test
     void saveFormDataCreateUpdateRecordSameCollectionTest() throws IOException
     {
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON),Status.DISABLED);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
         Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
         FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
         ValidationResult validationResult=new ValidationResult("name");

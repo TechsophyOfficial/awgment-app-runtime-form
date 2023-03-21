@@ -78,28 +78,29 @@ public class FormServiceImpl implements FormService
         if(isEmpty(type))
         {
             return this.formDefinitionRepository.findAll().stream()
-                    .map(formio ->
-                    {
-                        FormResponseSchema formSchema = this.objectMapper.convertValue(formio,FormResponseSchema.class);
-                        if (!content)
+                    .map(formio->this.objectMapper.convertValue(formio,FormResponseSchema.class))
+                    .map(formSchema->{
+                        if(content)
                         {
-                            return formSchema.withComponents(null);
+                            return formSchema;
                         }
+                        formSchema.setComponents(null);
                         return formSchema;
                     });
         }
         else
         {
-        return this.formDefinitionRepository.findByType(type).stream()
-                .map(formio ->
-                {
-                    FormResponseSchema formSchema = this.objectMapper.convertValue(formio, FormResponseSchema.class);
-                    if (!content)
-                    {
-                        return formSchema.withComponents(null);
-                    }
-                    return formSchema;
-                });
+            return this.formDefinitionRepository.findByType(type).stream()
+                    .map(formio->
+                            this.objectMapper.convertValue(formio,FormResponseSchema.class))
+                    .map(formSchema->{
+                        if(content)
+                        {
+                            return formSchema;
+                        }
+                        formSchema.setComponents(null);
+                        return formSchema;
+                    });
     }}
 
     @Override
@@ -119,16 +120,22 @@ public class FormServiceImpl implements FormService
     {
         if(StringUtils.isNotEmpty(type))
         {
-            return this.formDefinitionRepository.findByNameOrIdAndType(idOrNameLike,type).stream().map(formio ->
-            {
-                FormResponseSchema formSchema = this.objectMapper.convertValue(formio, FormResponseSchema.class);
-                return formSchema.withComponents(null);
-            });
+            return this.formDefinitionRepository
+                    .findByNameOrIdAndType(idOrNameLike,type)
+                    .stream()
+                    .map(formio ->{
+                        FormResponseSchema formSchema = this.objectMapper.convertValue(formio, FormResponseSchema.class);
+                        formSchema.setComponents(null);
+                        return formSchema;
+                    });
         }
-        return this.formDefinitionRepository.findByNameOrId(idOrNameLike).stream().map(formio ->
-        {
-            FormResponseSchema formSchema = this.objectMapper.convertValue(formio,FormResponseSchema.class);
-            return formSchema.withComponents(null);
-        });
+        return this.formDefinitionRepository
+                .findByNameOrId(idOrNameLike)
+                .stream()
+                .map(formio ->{
+                    FormResponseSchema formSchema = this.objectMapper.convertValue(formio, FormResponseSchema.class);
+                    formSchema.setComponents(null);
+                    return formSchema;
+                });
+        }
     }
-}

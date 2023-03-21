@@ -7,7 +7,6 @@ import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
 import com.techsophy.tsf.runtime.form.dto.FormSchema;
 import com.techsophy.tsf.runtime.form.entity.FormDefinition;
-import com.techsophy.tsf.runtime.form.entity.Status;
 import com.techsophy.tsf.runtime.form.exception.EntityIdNotFoundException;
 import com.techsophy.tsf.runtime.form.exception.UserDetailsIdNotFoundException;
 import com.techsophy.tsf.runtime.form.repository.FormDefinitionRepository;
@@ -151,8 +150,7 @@ class FormServiceTest
         ObjectMapper objectMapper=new ObjectMapper();
         @Cleanup InputStream stream=new ClassPathResource(TEST_FORMS_DATA).getInputStream();
         String formDataTest =new String(stream.readAllBytes());
-        FormResponseSchema formSchemaTest =new FormResponseSchema(TEST_ID,TEST_NAME,
-                TEST_COMPONENTS,list,TEST_PROPERTIES,TEST_TYPE_FORM,TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID,String.valueOf(TEST_CREATED_ON),TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON), Status.DISABLED);
+        FormResponseSchema formSchemaTest =new FormResponseSchema();
         FormDefinition formDefinitionTest =objectMapper.readValue(formDataTest,FormDefinition.class);
         when(mockObjectMapper.convertValue(any(),eq(FormResponseSchema.class))).thenReturn(formSchemaTest);
         when(mockFormDefinitionRepository.findById(BigInteger.valueOf(Long.parseLong(TEST_ID)))).thenReturn(java.util.Optional.ofNullable(formDefinitionTest));
@@ -237,9 +235,7 @@ class FormServiceTest
     {
         Map<String, Object> component = new HashMap<>();
         component.put("key","value");
-        FormResponseSchema formResponseSchema = new FormResponseSchema(TEST_ID, TEST_NAME, TEST_COMPONENTS,
-                list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE,TEST_CREATED_BY_ID
-                ,String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID,String.valueOf(TEST_UPDATED_ON),Status.DISABLED);
+        FormResponseSchema formResponseSchema = new FormResponseSchema();
         FormDefinition formDefinition = new FormDefinition();
         formDefinition.setId(BigInteger.ONE);
         formDefinition.setName(NAME);
