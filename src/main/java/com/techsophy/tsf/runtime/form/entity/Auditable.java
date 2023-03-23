@@ -14,6 +14,4 @@ public class Auditable
     private String updatedById;
     @LastModifiedDate
     private String updatedOn;
-    @Version
-    private int auditVersion;
 }

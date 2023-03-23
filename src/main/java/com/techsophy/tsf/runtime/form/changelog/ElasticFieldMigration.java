@@ -12,7 +12,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
-import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.ELASTIC_ENABLE;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.EXECUTION_IS_FAILED;
 
 @ChangeUnit(id="push-to-elastic",order = "5")
@@ -20,19 +19,17 @@ import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.EXEC
 @RequiredArgsConstructor
 public class ElasticFieldMigration
 {
-    @Value(ELASTIC_ENABLE)
+    @Value("${elastic.enable}")
     private boolean elasticEnable;
     private  final MongoTemplate mongo;
 
     @Execution
     public void setElasticPushField()
     {
-        if(elasticEnable)
-        {
-            Query query = new Query();
-            Update update = new Update().set("elasticPush", Status.ENABLED);
-            mongo.updateMulti(query, update, FormDefinition.class);
-        }
+        Query query = new Query();
+        Update update = new Update();
+        update.set("elasticPush",elasticEnable?Status.ENABLED:Status.DISABLED);
+        mongo.updateMulti(query, update, FormDefinition.class);
     }
 
     @RollbackExecution

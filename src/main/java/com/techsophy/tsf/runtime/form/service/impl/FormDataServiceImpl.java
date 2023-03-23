@@ -16,6 +16,7 @@ import com.techsophy.tsf.runtime.form.service.FormDataService;
 import com.techsophy.tsf.runtime.form.service.FormService;
 import com.techsophy.tsf.runtime.form.utils.DocumentAggregationOperation;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
+import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import com.techsophy.tsf.runtime.form.utils.WebClientWrapper;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -39,8 +40,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -74,6 +77,7 @@ public class FormDataServiceImpl implements FormDataService
     private static final Logger logger = LoggerFactory.getLogger(FormDataServiceImpl.class);
     private FormService formService = null;
     private FormValidationServiceImpl formValidationServiceImpl;
+    private UserDetails userDetails;
 
     @Override
     public FormDataDefinition saveFormData(FormDataSchema formDataSchema) throws IOException
@@ -87,12 +91,18 @@ public class FormDataServiceImpl implements FormDataService
             throw new InvalidInputException(String.valueOf(completeMessage),String.valueOf(completeMessage));
         });
         FormDataDefinition formDataDefinition = getFormDataDefinition(formDataSchema);
-            if(mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formId))
+        Map<String, Object> loggedInUserDetails = userDetails.getUserDetails().get(0);
+        BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(loggedInUserDetails.get(ID).toString()));
+        formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
+        formDataDefinition.setUpdatedById(String.valueOf(loggedInUserId));
+        if(mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formId))
             {
                 if(formDataDefinition.getId()==null)
                 {
                     formDataDefinition.setId(String.valueOf(idGenerator.nextId()));
                     formDataDefinition.setVersion(1);
+                    formDataDefinition.setCreatedById(String.valueOf(loggedInUserId));
+                    formDataDefinition.setCreatedOn(String.valueOf(Instant.now()));
                 }
                 else
                 {
@@ -106,6 +116,8 @@ public class FormDataServiceImpl implements FormDataService
                 mongoTemplate.createCollection(TP_RUNTIME_FORM_DATA + formId);
                 formDataDefinition.setId(String.valueOf(idGenerator.nextId()));
                 formDataDefinition.setVersion(1);
+                formDataDefinition.setCreatedById(String.valueOf(loggedInUserId));
+                formDataDefinition.setCreatedOn(String.valueOf(Instant.now()));
             }
             mongoTemplate.save(formDataDefinition,TP_RUNTIME_FORM_DATA + formId);
             FormDataAuditSchema formDataAuditSchema=new FormDataAuditSchema(

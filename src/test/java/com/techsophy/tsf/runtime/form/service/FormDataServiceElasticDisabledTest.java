@@ -148,6 +148,7 @@ class FormDataServiceElasticDisabledTest
         validationResultList.add(validationResult);
         Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
+        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
         mockFormDataServiceImpl.saveFormData(formDataSchema);
         Mockito.verify(mockMongoTemplate,times(1)).createCollection(anyString());
         Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
@@ -165,6 +166,7 @@ class FormDataServiceElasticDisabledTest
         Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
         mockFormDataServiceImpl.saveFormData(formDataSchema);
         Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
@@ -184,6 +186,7 @@ class FormDataServiceElasticDisabledTest
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(formDataDefinition);
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(formDataDefinition);
+        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
         mockFormDataServiceImpl.saveFormData(formDataSchema);
         Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
