@@ -29,7 +29,8 @@ class FormDataElasticServiceTest
         FormDataElasticServiceImpl mockFormDataElasticServiceImpl=
                 new FormDataElasticServiceImpl(mockWebClientWrapper,mockTokenUtils,gatewayURL,elasticSource);
         FormDataDefinition formDataDefinition=new FormDataDefinition();
-        Assertions.assertDoesNotThrow(()->mockFormDataElasticServiceImpl.saveOrUpdateToElastic(formDataDefinition));
+        mockFormDataElasticServiceImpl.saveOrUpdateToElastic(formDataDefinition);
+        Mockito.verify(mockWebClientWrapper,Mockito.times(1)).webclientRequest(any(),anyString(),anyString(),any());
     }
 
     @Test
