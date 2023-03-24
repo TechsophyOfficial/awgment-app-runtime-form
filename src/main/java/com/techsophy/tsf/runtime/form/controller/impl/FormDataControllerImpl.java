@@ -6,6 +6,7 @@ import com.techsophy.tsf.commons.ACLEvaluator;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.FormDataController;
 import com.techsophy.tsf.runtime.form.dto.*;
+import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
 import com.techsophy.tsf.runtime.form.exception.ACLException;
 import com.techsophy.tsf.runtime.form.model.ApiResponse;
 import com.techsophy.tsf.runtime.form.service.FormAclService;
@@ -41,19 +42,19 @@ public class FormDataControllerImpl implements FormDataController
     private String gatewayUrl;
 
     @Override
-    public ApiResponse<FormDataResponse> saveFormData(FormDataSchema formDataSchema) throws IOException
+    public ApiResponse<FormDataDefinition> saveFormData(FormDataSchema formDataSchema) throws IOException
     {
         checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
-        FormDataResponse formDataResponse=formDataService.saveFormData(formDataSchema);
-        return new ApiResponse<>(formDataResponse,true,globalMessageSource.get(SAVE_FORM_DATA_SUCCESS));
+        FormDataDefinition formDataDefinition =formDataService.saveFormData(formDataSchema);
+        return new ApiResponse<>(formDataDefinition,true,globalMessageSource.get(SAVE_FORM_DATA_SUCCESS));
     }
 
     @Override
-    public ApiResponse<FormDataResponse> updateFormData(FormDataSchema formDataSchema) throws JsonProcessingException
+    public ApiResponse<FormDataDefinition> updateFormData(FormDataSchema formDataSchema) throws JsonProcessingException
     {
          checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
-         FormDataResponse formDataResponse=formDataService.updateFormData(formDataSchema);
-         return new ApiResponse<>(formDataResponse,true,globalMessageSource.get(UPDATE_FORM_DATA_SUCCESS));
+         FormDataDefinition formDataDefinition=formDataService.updateFormData(formDataSchema);
+         return new ApiResponse<>(formDataDefinition,true,globalMessageSource.get(UPDATE_FORM_DATA_SUCCESS));
     }
 
     @Override

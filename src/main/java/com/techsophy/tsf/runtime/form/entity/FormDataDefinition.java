@@ -1,15 +1,14 @@
 package com.techsophy.tsf.runtime.form.entity;
 
 import lombok.*;
+import org.springframework.data.annotation.Id;
 import java.util.Map;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-@With
-@NoArgsConstructor
-@AllArgsConstructor
 public class FormDataDefinition extends Auditable
 {
+    @Id
     private String id;
     private String formId;
     private int version;

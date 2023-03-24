@@ -2,15 +2,16 @@ package com.techsophy.tsf.runtime.form.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.techsophy.tsf.runtime.form.dto.*;
+import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
 import org.springframework.data.domain.Pageable;
 import java.io.IOException;
 import java.util.List;
 
 public interface FormDataService
 {
-    FormDataResponse saveFormData(FormDataSchema formDataSchema) throws IOException;
+    FormDataDefinition saveFormData(FormDataSchema formDataSchema) throws IOException;
 
-    FormDataResponse updateFormData(FormDataSchema formDataSchema) throws JsonProcessingException;
+    FormDataDefinition updateFormData(FormDataSchema formDataSchema) throws JsonProcessingException;
 
     List<FormDataResponseSchema> getAllFormDataByFormId(String formId,String relations,String filter,String sortBy, String sortOrder) throws JsonProcessingException;
 

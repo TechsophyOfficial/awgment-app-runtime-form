@@ -13,7 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.*;
 
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.CHILDREN;
-import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
+import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.EMPTY_STRING;
+import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.ID;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 
 @ExtendWith({MockitoExtension.class})
@@ -42,11 +43,10 @@ class FormValidationServiceTest
         componentList.add(component);
         components.put("display","form");
         components.put("components",componentList);
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME,components, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
-        FormDataSchema formDataSchemaTest=new FormDataSchema(EMPTY_STRING,TEST_FORM_ID,
-                TEST_VERSION,testFormData,testFormMetaData);
-        Assertions.assertNotNull(formValidationService.validateData(formResponseSchemaTest,formDataSchemaTest,TEST_FORM_ID));
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
+        formResponseSchemaTest.setComponents(components);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        Assertions.assertNotNull(formValidationService.validateData(formResponseSchemaTest,formDataSchema,TEST_FORM_ID));
     }
 
     @Test

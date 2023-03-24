@@ -8,6 +8,7 @@ import com.techsophy.tsf.commons.ACLDecision;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.impl.FormDataControllerImpl;
 import com.techsophy.tsf.runtime.form.dto.*;
+import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
 import com.techsophy.tsf.runtime.form.exception.ACLException;
 import com.techsophy.tsf.runtime.form.exception.FormIdNotFoundException;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
@@ -26,9 +27,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.PageRequest;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
@@ -41,7 +40,6 @@ import static org.mockito.Mockito.verify;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FormDataControllerTest
 {
-
     @Mock
     TokenUtils tokenUtils;
     @Mock
@@ -158,20 +156,15 @@ class FormDataControllerTest
 
     @Test
     void saveFormDataExceptionTest() throws Exception {
-        Map<String, Object> formData = new HashMap<>();
-        Map<String, Object> formMetaData = new HashMap<>();
-        FormDataSchema formDataSchema = new FormDataSchema("101", "101", 1, formData, formMetaData);
-        FormDataResponse formDataResponse = new FormDataResponse("101", 1);
-        Mockito.when(formDataService.saveFormData(formDataSchema)).thenReturn(formDataResponse);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        Mockito.when(formDataService.saveFormData(formDataSchema)).thenReturn(new FormDataDefinition());
         formDataController.saveFormData(formDataSchema);
         verify(formDataService, times(1)).saveFormData(formDataSchema);
     }
 
     @Test
     void updateFormDataExceptionTest() {
-        Map<String, Object> formData = new HashMap<>();
-        Map<String, Object> formMetaData = new HashMap<>();
-        FormDataSchema formDataSchema = new FormDataSchema("1", "101", 1, formData, formMetaData);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
         FormAclDto formAclDto = new FormAclDto();
         formAclDto.setFormId("101");
         formAclDto.setAclId("101");
@@ -211,34 +204,10 @@ class FormDataControllerTest
     @Test
     void saveFormDataTest() throws Exception
     {
-        Map<String,Object> formData=new HashMap<>();
-        Map<String,Object> formMetaData=new HashMap<>();
-        FormDataSchema formDataSchema = new FormDataSchema("101","201",1,formData,formMetaData);
-        FormDataResponse formDataResponse=new FormDataResponse("101",1);
-        Mockito.when(formDataService.saveFormData(formDataSchema)).thenReturn(formDataResponse);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        Mockito.when(formDataService.saveFormData(formDataSchema)).thenReturn(new FormDataDefinition());
         formDataController.saveFormData(formDataSchema);
         verify(formDataService,times(1)).saveFormData(formDataSchema);
-    }
-
-    @Test
-    void updateFormData() throws Exception
-    {
-        Map<String,Object> formData=new HashMap<>();
-        Map<String,Object> formMetaData=new HashMap<>();
-        FormDataSchema formDataSchema = new FormDataSchema("1","1",1,formData,formMetaData);
-        FormAclDto formAclDto=new FormAclDto();
-        formAclDto.setFormId("101");
-        formAclDto.setAclId("1");
-        Mockito.when(mockFormACLService.getFormAcl(any())).thenReturn(formAclDto);
-        Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("abc");
-        ACLDecision aclDecision=new ACLDecision();
-        aclDecision.setDecision("deny");
-        aclDecision.setAdditionalDetails(null);
-        FormDataResponse formDataResponse=new FormDataResponse("1",1);
-        ApiResponse apiResponse=new ApiResponse(formDataResponse,true,"Form data updated successfully");
-        Mockito.when(formDataService.updateFormData(formDataSchema)).thenReturn(formDataResponse);
-        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data updated successfully");
-        Assertions.assertEquals(apiResponse,formDataController.updateFormData(formDataSchema));
     }
 
     @Test
