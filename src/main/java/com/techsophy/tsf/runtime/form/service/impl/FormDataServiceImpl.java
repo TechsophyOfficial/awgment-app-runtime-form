@@ -107,8 +107,8 @@ public class FormDataServiceImpl implements FormDataService
                 else
                 {
                     Query query=new Query(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()));
-                    formDataDefinition=mongoTemplate.findOne(query,FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formId);
-                    Objects.requireNonNull(formDataDefinition).setVersion(formDataDefinition.getVersion()+1);
+                    Optional<FormDataDefinition> existingFormDataDefinition=Optional.ofNullable(mongoTemplate.findOne(query,FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formId));
+                    Objects.requireNonNull(formDataDefinition).setVersion(existingFormDataDefinition.orElseThrow().getVersion()+1);
                 }
             }
             else
@@ -726,7 +726,7 @@ public class FormDataServiceImpl implements FormDataService
         {
             return getFormDataList(formId, id, relations);
         }
-        Bson filter = Filters.eq(UNDERSCORE_ID, Long.valueOf(id));
+        Bson filter = Filters.eq(UNDERSCORE_ID,id);
         checkMongoCollectionIfExistsOrNot(formId);
         try
         {

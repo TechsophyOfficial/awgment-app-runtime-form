@@ -172,6 +172,25 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
+    void saveFormDataCreateNewRecordSameCollectionNotFoundExceptionTest() throws IOException
+    {
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        ValidationResult validationResult=new ValidationResult("name");
+        List<ValidationResult> validationResultList=new ArrayList<>();
+        validationResultList.add(validationResult);
+        Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
+        FormDataDefinition formDataDefinition=new FormDataDefinition();
+        formDataDefinition.setId("101");
+        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(formDataDefinition);
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+        Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(null);
+        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
+        Assertions.assertThrows(RuntimeException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema));
+    }
+
+    @Test
     void saveFormDataCreateUpdateRecordSameCollectionTest() throws IOException
     {
         FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
