@@ -87,8 +87,7 @@ public class FormDataServiceImpl implements FormDataService
             int endIndex = msg.indexOf(DUP_KEY);
             String extractedString = msg.substring(startIndex, endIndex).trim();
             throw new InvalidInputException(DUPLICATE_FIELD_VALUE, globalMessageSource.get(DUPLICATE_FIELD_VALUE,extractedString));
-        }
-        else {
+        } else {
             throw new InvalidInputException(DUPLICATE_FIELD_VALUE, e.getMessage());
         }
     }
