@@ -1,6 +1,8 @@
 package com.techsophy.tsf.runtime.form.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -134,6 +136,16 @@ class FormDataServiceElasticDisabledTest
         List<ValidationResult> validationResultList=new ArrayList<>();
         validationResultList.add(validationResult);
         Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
+        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema));
+    }
+    @Test
+    void saveFormDataValidationExceptionTest1() throws JsonProcessingException {
+        FormDataDefinition formDataDefinition = new FormDataDefinition();
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        ValidationResult validationResult=new ValidationResult("name","name field cannot be empty");
+        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
+        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
+        Mockito.when(mockMongoTemplate.save(any(),anyString())).thenThrow(new MongoException(" E11000 Duplicate key index : officialEmail dup key"));
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema));
     }
 

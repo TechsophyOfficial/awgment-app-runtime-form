@@ -49,9 +49,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
-import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.CONTAINS_ONLY_NUMBER;
-import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.SEMICOLON;
+import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
+import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.DATA;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -78,6 +78,19 @@ public class FormDataServiceImpl implements FormDataService
     private FormService formService = null;
     private FormValidationServiceImpl formValidationServiceImpl;
     private UserDetails userDetails;
+
+    private void handleMongoException(Exception e) {
+        boolean exist = e.getMessage().contains(E11000);
+        if (exist) {
+            String msg = e.getMessage();
+            int startIndex = msg.indexOf(INDEX)+INDEX.length();
+            int endIndex = msg.indexOf(DUP_KEY);
+            String extractedString = msg.substring(startIndex, endIndex).trim();
+            throw new InvalidInputException(DUPLICATE_FIELD_VALUE, globalMessageSource.get(DUPLICATE_FIELD_VALUE,extractedString));
+        } else {
+            throw new InvalidInputException(DUPLICATE_FIELD_VALUE, e.getMessage());
+        }
+    }
 
     @Override
     public FormDataDefinition saveFormData(FormDataSchema formDataSchema) throws IOException
@@ -119,13 +132,21 @@ public class FormDataServiceImpl implements FormDataService
                 formDataDefinition.setCreatedById(String.valueOf(loggedInUserId));
                 formDataDefinition.setCreatedOn(String.valueOf(Instant.now()));
             }
-            mongoTemplate.save(formDataDefinition,TP_RUNTIME_FORM_DATA + formId);
+            saveToMongo(formId,formDataDefinition);
             FormDataAuditSchema formDataAuditSchema=new FormDataAuditSchema(
                     String.valueOf(idGenerator.nextId()),formDataDefinition.getId(),
                     formId,1,formDataDefinition.getFormData(),formDataDefinition.getFormMetaData()
             );
             this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
             return formDataDefinition;
+    }
+
+    private void saveToMongo(String formId, FormDataDefinition formDataDefinition) {
+        try{
+            mongoTemplate.save(formDataDefinition, TP_RUNTIME_FORM_DATA + formId);
+        }catch(Exception e){
+            handleMongoException(e);
+        }
     }
 
     private FormDataDefinition getFormDataDefinition(FormDataSchema formDataSchema)
@@ -145,7 +166,7 @@ public class FormDataServiceImpl implements FormDataService
            formDataDefinition.setVersion(formDataDefinition.getVersion()+1);
            Optional.ofNullable(formDataSchema.getFormData()).ifPresent(formDataDefinition::setFormData);
            Optional.ofNullable(formDataSchema.getFormMetaData()).ifPresent(formDataDefinition::setFormMetaData);
-           mongoTemplate.save(formDataDefinition,TP_RUNTIME_FORM_DATA + formDataSchema.getFormId());
+           saveToMongo(formDataSchema.getFormId(),formDataDefinition);
            return formDataDefinition;
     }
 
