@@ -1,8 +1,8 @@
 package com.techsophy.tsf.runtime.form.controller.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.techsophy.tsf.commons.ACLDecision;
-import com.techsophy.tsf.commons.ACLEvaluator;
+import com.techsophy.tsf.commons.acl.ACLDecision;
+import com.techsophy.tsf.commons.acl.ACLEvaluatorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.FormDataController;
 import com.techsophy.tsf.runtime.form.dto.*;
@@ -128,18 +128,18 @@ public class FormDataControllerImpl implements FormDataController
                FormAclDto dto = formAclService.getFormAcl(x);
                if(dto==null) return;
                String aclId = dto.getAclId();
-                ACLEvaluator aclEvaluator=new ACLEvaluator(aclId,null,gatewayUrl);
+                ACLEvaluatorImpl aclEvaluator=new ACLEvaluatorImpl(gatewayUrl);
                 ACLDecision decision =null;
                 switch (rule)
                 {
                     case READ_RULE:
-                        decision = aclEvaluator.getRead(tokenUtils.getTokenFromContext());
+                        decision = aclEvaluator.getRead(aclId,tokenUtils.getTokenFromContext(),null);
                         break;
                     case UPDATE_RULE:
-                        decision = aclEvaluator.getUpdate(tokenUtils.getTokenFromContext());
+                        decision = aclEvaluator.getUpdate(aclId,tokenUtils.getTokenFromContext(),null);
                         break;
                     case DELETE_RULE:
-                        decision = aclEvaluator.getDelete(tokenUtils.getTokenFromContext());
+                        decision = aclEvaluator.getDelete(aclId,tokenUtils.getTokenFromContext(),null);
                         break;
                     default: break;
                 }
