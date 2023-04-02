@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.techsophy.tsf.commons.ACLDecision;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.impl.FormDataControllerImpl;
 import com.techsophy.tsf.runtime.form.dto.*;
@@ -169,9 +168,6 @@ class FormDataControllerTest
         formAclDto.setFormId("101");
         formAclDto.setAclId("101");
         Mockito.when(mockFormACLService.getFormAcl(any())).thenReturn(formAclDto);
-        ACLDecision aclDecision = new ACLDecision();
-        aclDecision.setDecision("deny");
-        aclDecision.setAdditionalDetails(null);
         Assertions.assertThrows(ACLException.class, () -> formDataController.updateFormData(formDataSchema));
     }
 
@@ -208,6 +204,15 @@ class FormDataControllerTest
         Mockito.when(formDataService.saveFormData(formDataSchema)).thenReturn(new FormDataDefinition());
         formDataController.saveFormData(formDataSchema);
         verify(formDataService,times(1)).saveFormData(formDataSchema);
+    }
+
+    @Test
+    void updateFormDataTest() throws Exception
+    {
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        Mockito.when(formDataService.updateFormData(formDataSchema)).thenReturn(new FormDataDefinition());
+        formDataController.updateFormData(formDataSchema);
+        verify(formDataService,times(1)).updateFormData(formDataSchema);
     }
 
     @Test

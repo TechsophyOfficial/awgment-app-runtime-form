@@ -15,12 +15,9 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -78,7 +75,7 @@ public class UserDetails implements AuditorAware<String>
     @Override
     public Optional<String> getCurrentAuditor()
     {
-        return Optional.ofNullable(String.valueOf(getUserDetails().get(0).get(ID)));
+        return new com.techsophy.tsf.commons.user.UserDetails(gatewayApi).getUserId();
     }
 }
 
