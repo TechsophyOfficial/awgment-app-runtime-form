@@ -225,8 +225,9 @@ class FormDataServiceElasticDisabledTest
     @Test
     void updateFormDataTest()
     {
-        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,new HashMap<>(),TEST_FORM_META_DATA);
         FormDataDefinition formDataDefinition=new FormDataDefinition();
+        formDataDefinition.setFormData(new HashMap<>());
         formDataDefinition.setId("101");
         Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(formDataDefinition);
         mockFormDataServiceImpl.updateFormData(formDataSchema);
