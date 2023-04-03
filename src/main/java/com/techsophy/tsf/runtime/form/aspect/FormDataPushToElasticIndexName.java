@@ -32,7 +32,7 @@ public class FormDataPushToElasticIndexName {
             map.put("aclId",formAclDto.getAclId());
             String token= tokenUtils.getTokenFromContext();
             var client = webClientWrapper.createWebClient(token);
-            String response = webClientWrapper.webclientRequest(client,gatewayApi+"/elastic/v1/acl",POST,map);
+             webClientWrapper.webclientRequest(client,gatewayApi+"/elastic/v1/acl",POST,map);
         }
     }
     @AfterReturning(pointcut="execution(* com.techsophy.tsf.runtime.form.service.impl.FormAclServiceImpl.deleteFormAcl(..)) && args(indexName)")
@@ -40,7 +40,7 @@ public class FormDataPushToElasticIndexName {
     {
         String token= tokenUtils.getTokenFromContext();
         var client = webClientWrapper.createWebClient(token);
-        String response = webClientWrapper.webclientRequest(client,gatewayApi+"/elastic/v1/"+TP_RUNTIME_FORM_DATA+indexName+"/acl",DELETE,null);
+        webClientWrapper.webclientRequest(client,gatewayApi+"/elastic/v1/"+TP_RUNTIME_FORM_DATA+indexName+"/acl",DELETE,null);
     }
 
 }

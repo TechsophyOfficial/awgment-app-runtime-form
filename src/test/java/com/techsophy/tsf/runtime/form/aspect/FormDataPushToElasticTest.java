@@ -5,7 +5,6 @@ import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import com.techsophy.tsf.runtime.form.utils.WebClientWrapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -19,7 +18,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
-public class FormDataPushToElasticIndexNameTestClass {
+ class FormDataPushToElasticTest {
 
     @Mock
     WebClientWrapper webClientWrapper;
@@ -29,7 +28,7 @@ public class FormDataPushToElasticIndexNameTestClass {
     FormDataPushToElasticIndexName formDataPushToElasticIndexName;
 
     @Test
-     public void afterSaveFormAclController()
+      void afterSaveFormAclController()
     {
         FormAclDto formAclDto = new FormAclDto();
         formAclDto.setId("12");
@@ -43,7 +42,7 @@ public class FormDataPushToElasticIndexNameTestClass {
         verify(webClientWrapper,times(1)).webclientRequest(any(),anyString(),any(),any());
     }
     @Test
-    public void afterDeleteFormAclController()
+     void afterDeleteFormAclController()
     {
         FormAclDto formAclDto = new FormAclDto();
         formAclDto.setId("12");
