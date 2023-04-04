@@ -1,5 +1,6 @@
 package com.techsophy.tsf.runtime.form.aspect;
 
+import com.techsophy.tsf.commons.user.UserDetails;
 import com.techsophy.tsf.runtime.form.dto.FormAclDto;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import com.techsophy.tsf.runtime.form.utils.WebClientWrapper;
@@ -11,6 +12,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -34,7 +37,6 @@ import static org.mockito.Mockito.*;
         formAclDto.setId("12");
         formAclDto.setFormId("23131");
         formAclDto.setAclId("34");
-        Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("abc");
         WebClient webClient= WebClient.builder().build();
         when(webClientWrapper.createWebClient(any())).thenReturn(webClient);
         when(webClientWrapper.webclientRequest(any(),anyString(),any(),any())).thenReturn("abc");
