@@ -27,22 +27,19 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
-
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.DATA;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.DEFAULT_PAGE_LIMIT;
@@ -56,6 +53,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith({MockitoExtension.class})
 class FormDataServiceElasticDisabledTest
 {
+    @Captor
+    ArgumentCaptor<Query> queryArgumentCaptor;
     @Mock
     MongoTemplate mockMongoTemplate;
     @Mock
@@ -214,9 +213,10 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setId("101");
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(formDataDefinition);
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
-        Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(formDataDefinition);
+        Mockito.when(mockMongoTemplate.findOne(queryArgumentCaptor.capture(),any(),anyString())).thenReturn(formDataDefinition);
         Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
         mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil");
+        Assertions.assertEquals("Query: { \"$and\" : [{ \"_id\" : \"1\"}, { \"$and\" : [{ \"formData.name\" : \"akhil\"}]}]}, Fields: {}, Sort: {}",queryArgumentCaptor.getValue().toString());
         Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
 
@@ -246,8 +246,9 @@ class FormDataServiceElasticDisabledTest
         FormDataDefinition formDataDefinition=new FormDataDefinition();
         formDataDefinition.setFormData(new HashMap<>());
         formDataDefinition.setId("101");
-        Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(formDataDefinition);
+        Mockito.when(mockMongoTemplate.findOne(queryArgumentCaptor.capture(),any(),anyString())).thenReturn(formDataDefinition);
         mockFormDataServiceImpl.updateFormData(formDataSchema,"formData.name:akhil");
+        Assertions.assertEquals("Query: { \"$and\" : [{ \"_id\" : \"1\"}, { \"$and\" : [{ \"formData.name\" : \"akhil\"}]}]}, Fields: {}, Sort: {}",queryArgumentCaptor.getValue().toString());
         Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
 
@@ -725,7 +726,6 @@ class FormDataServiceElasticDisabledTest
         Map<String, Object> testFormData = new HashMap<>();
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
-//        FormDataSchema formDataSchemaTest = new FormDataSchema();
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         FormDataDefinition formDataDefinitionTest=new FormDataDefinition();
         formDataDefinitionTest.setCreatedById(TEST_CREATED_BY_ID);
