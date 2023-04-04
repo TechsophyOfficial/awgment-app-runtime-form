@@ -123,10 +123,14 @@ public class FormDataServiceImpl implements FormDataService
                 {
                     Query query=StringUtils.isNotBlank(filter)?new Query(new Criteria().andOperator(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()),
                             getCriteria(filter))):new Query(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()));
-                    Optional<FormDataDefinition> existingFormDataDefinition=Optional.ofNullable(mongoTemplate.findOne(query,FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formId));
-                    Objects.requireNonNull(formDataDefinition).setCreatedById(existingFormDataDefinition.orElseThrow().getCreatedById());
-                    Objects.requireNonNull(formDataDefinition).setCreatedOn(existingFormDataDefinition.orElseThrow().getCreatedOn());
-                    Objects.requireNonNull(formDataDefinition).setVersion(existingFormDataDefinition.orElseThrow().getVersion()+1);
+                    FormDataDefinition existingFormDataDefinition=mongoTemplate.findOne(query,FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formId);
+                    if(existingFormDataDefinition==null)
+                    {
+                        throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,formDataSchema.getId()));
+                    }
+                    formDataDefinition.setCreatedById(existingFormDataDefinition.getCreatedById());
+                    formDataDefinition.setCreatedOn(existingFormDataDefinition.getCreatedOn());
+                    formDataDefinition.setVersion(existingFormDataDefinition.getVersion()+1);
                 }
             }
             else
