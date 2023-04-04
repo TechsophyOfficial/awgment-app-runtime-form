@@ -21,6 +21,7 @@ import com.techsophy.tsf.runtime.form.utils.WebClientWrapper;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -94,7 +95,7 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     @Override
-    public FormDataDefinition saveFormData(FormDataSchema formDataSchema) throws IOException
+    public FormDataDefinition saveFormData(FormDataSchema formDataSchema, String filter) throws IOException
     {
         String formId=formDataSchema.getFormId();
         FormResponseSchema formResponseSchema = formService.getRuntimeFormById(formId);
@@ -120,8 +121,11 @@ public class FormDataServiceImpl implements FormDataService
                 }
                 else
                 {
-                    Query query=new Query(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()));
+                    Query query=StringUtils.isNotBlank(filter)?new Query(new Criteria().andOperator(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()),
+                            getCriteria(filter))):new Query(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()));
                     Optional<FormDataDefinition> existingFormDataDefinition=Optional.ofNullable(mongoTemplate.findOne(query,FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formId));
+                    Objects.requireNonNull(formDataDefinition).setCreatedById(existingFormDataDefinition.orElseThrow().getCreatedById());
+                    Objects.requireNonNull(formDataDefinition).setCreatedOn(existingFormDataDefinition.orElseThrow().getCreatedOn());
                     Objects.requireNonNull(formDataDefinition).setVersion(existingFormDataDefinition.orElseThrow().getVersion()+1);
                 }
             }
@@ -156,13 +160,14 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     @Override
-    public FormDataDefinition updateFormData(FormDataSchema formDataSchema)
+    public FormDataDefinition updateFormData(FormDataSchema formDataSchema,String filter)
     {
-        Query query=new Query(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()));
+        Query query=StringUtils.isNotBlank(filter)?new Query(new Criteria().andOperator(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()),
+                getCriteria(filter))):new Query(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()));
         FormDataDefinition formDataDefinition=mongoTemplate.findOne(query,FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formDataSchema.getFormId());
         if(formDataDefinition==null)
         {
-            throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC));
+            throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,formDataSchema.getId()));
         }
         formDataDefinition.setVersion(formDataDefinition.getVersion()+1);
         Map<String,Object> modifiedFormData=formDataDefinition.getFormData();

@@ -136,17 +136,15 @@ class FormDataServiceElasticDisabledTest
         List<ValidationResult> validationResultList=new ArrayList<>();
         validationResultList.add(validationResult);
         Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
-        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema));
+        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil"));
     }
     @Test
     void saveFormDataValidationExceptionTest1() throws JsonProcessingException {
-        FormDataDefinition formDataDefinition = new FormDataDefinition();
         FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
-        ValidationResult validationResult=new ValidationResult("name","name field cannot be empty");
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
         Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
         Mockito.when(mockMongoTemplate.save(any(),anyString())).thenThrow(new MongoException(" E11000 Duplicate key index : officialEmail dup key"));
-        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema));
+        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil"));
     }
 
     @Test
@@ -161,7 +159,7 @@ class FormDataServiceElasticDisabledTest
         Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
         Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
-        mockFormDataServiceImpl.saveFormData(formDataSchema);
+        mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil");
         Mockito.verify(mockMongoTemplate,times(1)).createCollection(anyString());
         Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
@@ -179,7 +177,7 @@ class FormDataServiceElasticDisabledTest
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
-        mockFormDataServiceImpl.saveFormData(formDataSchema);
+        mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil");
         Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
 
@@ -199,7 +197,7 @@ class FormDataServiceElasticDisabledTest
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(null);
         Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
-        Assertions.assertThrows(RuntimeException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema));
+        Assertions.assertThrows(RuntimeException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil"));
     }
 
     @Test
@@ -218,7 +216,7 @@ class FormDataServiceElasticDisabledTest
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(formDataDefinition);
         Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
-        mockFormDataServiceImpl.saveFormData(formDataSchema);
+        mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil");
         Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
 
@@ -230,7 +228,7 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setFormData(new HashMap<>());
         formDataDefinition.setId("101");
         Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(formDataDefinition);
-        mockFormDataServiceImpl.updateFormData(formDataSchema);
+        mockFormDataServiceImpl.updateFormData(formDataSchema,"formData.name:akhil");
         Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
 

@@ -42,18 +42,18 @@ public class FormDataControllerImpl implements FormDataController
     private String gatewayUrl;
 
     @Override
-    public ApiResponse<FormDataDefinition> saveFormData(FormDataSchema formDataSchema) throws IOException
+    public ApiResponse<FormDataDefinition> saveFormData(FormDataSchema formDataSchema, String filter) throws IOException
     {
         checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
-        FormDataDefinition formDataDefinition =formDataService.saveFormData(formDataSchema);
+        FormDataDefinition formDataDefinition =formDataService.saveFormData(formDataSchema,filter);
         return new ApiResponse<>(formDataDefinition,true,globalMessageSource.get(SAVE_FORM_DATA_SUCCESS));
     }
 
     @Override
-    public ApiResponse<FormDataDefinition> updateFormData(FormDataSchema formDataSchema) throws JsonProcessingException
+    public ApiResponse<FormDataDefinition> updateFormData(FormDataSchema formDataSchema, String filter) throws JsonProcessingException
     {
          checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
-         FormDataDefinition formDataDefinition=formDataService.updateFormData(formDataSchema);
+         FormDataDefinition formDataDefinition=formDataService.updateFormData(formDataSchema,filter);
          return new ApiResponse<>(formDataDefinition,true,globalMessageSource.get(UPDATE_FORM_DATA_SUCCESS));
     }
 
