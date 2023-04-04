@@ -160,15 +160,16 @@ public class FormDataServiceImpl implements FormDataService
     {
         Query query=new Query(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()));
         FormDataDefinition formDataDefinition=mongoTemplate.findOne(query,FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formDataSchema.getFormId());
-           if(formDataDefinition==null)
-           {
-               throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC));
-           }
-           formDataDefinition.setVersion(formDataDefinition.getVersion()+1);
-           Optional.ofNullable(formDataSchema.getFormData()).ifPresent(formDataDefinition::setFormData);
-           Optional.ofNullable(formDataSchema.getFormMetaData()).ifPresent(formDataDefinition::setFormMetaData);
-           saveToMongo(formDataSchema.getFormId(),formDataDefinition);
-           return formDataDefinition;
+        if(formDataDefinition==null)
+        {
+            throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC));
+        }
+        formDataDefinition.setVersion(formDataDefinition.getVersion()+1);
+        Map<String,Object> modifiedFormData=formDataDefinition.getFormData();
+        modifiedFormData.putAll(formDataSchema.getFormData());
+        Optional.ofNullable(formDataSchema.getFormMetaData()).ifPresent(formDataDefinition::setFormMetaData);
+        saveToMongo(formDataSchema.getFormId(),formDataDefinition);
+        return formDataDefinition;
     }
 
     @Override
