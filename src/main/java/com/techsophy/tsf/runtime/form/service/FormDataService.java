@@ -9,9 +9,9 @@ import java.util.List;
 
 public interface FormDataService
 {
-    FormDataDefinition saveFormData(FormDataSchema formDataSchema) throws IOException;
+    FormDataDefinition saveFormData(FormDataSchema formDataSchema,String filter) throws IOException;
 
-    FormDataDefinition updateFormData(FormDataSchema formDataSchema) throws JsonProcessingException;
+    FormDataDefinition updateFormData(FormDataSchema formDataSchema,String filter) throws JsonProcessingException;
 
     List<FormDataResponseSchema> getAllFormDataByFormId(String formId,String relations,String filter,String sortBy, String sortOrder) throws JsonProcessingException;
 
