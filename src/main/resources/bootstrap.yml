@@ -1,6 +1,0 @@
-spring.application.name: tp-app-runtime-form
-spring.profiles.active: dev
-spring.cloud.config.uri: ${GATEWAY_URI}/config-server
-management.endpoints.web.exposure.include: refresh
-management.endpoints.web.base-path: /form-runtime
-management.endpoints.web.path-mapping.refresh: refresh

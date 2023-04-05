@@ -1,0 +1,27 @@
+springdoc:
+version: '@springdoc.version@'
+api-docs:
+  path: /form-modeler/v3/api-docs
+keycloak:
+  issuer-uri:  https://keycloak-tsplatform.techsophy.com/auth/realms/
+gateway:
+  uri: https://api-gateway.techsophy.com/api
+
+database:
+  url: mongodb+srv://root:root@sandbox.vguvh.mongodb.net/test
+  name: techsophy-platform
+
+default:
+  pagelimit: 5
+
+elastic:
+  enable: true
+  source: true
+
+logging:
+  level:
+    root: info
+
+mongock:
+  migration-scan-package:
+    - com.techsophy.tsf.runtime.form.changelog

@@ -9,8 +9,8 @@ import com.techsophy.tsf.runtime.form.model.ApiResponse;
 import com.techsophy.tsf.runtime.form.service.FormAclService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
-
 import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.NO_RECORD_FOUND;
 
 @RestController
@@ -20,7 +20,8 @@ public class FormAclControllerImpl implements FormAclController {
     private final FormAclService formAclService;
     private final GlobalMessageSource globalMessageSource;
     @Override
-    public ApiResponse<FormAclDto> saveFormAcl(FormAclDto formAclDto) throws JsonProcessingException {
+    @Transactional
+    public ApiResponse<FormAclDto> saveFormAcl(FormAclDto formAclDto) {
         FormAclDto dto = formAclService.saveFormAcl(formAclDto);
         if(dto==null)
         {
@@ -30,7 +31,8 @@ public class FormAclControllerImpl implements FormAclController {
     }
 
     @Override
-    public ApiResponse<FormAclDto> getFormAcl(String formId) throws JsonProcessingException {
+    @Transactional
+    public ApiResponse<FormAclDto> getFormAcl(String formId) {
         FormAclDto dto = formAclService.getFormAcl(formId);
         if(dto == null){
             throw new EntityPathException(NO_RECORD_FOUND,globalMessageSource.get(NO_RECORD_FOUND,formId));
@@ -39,11 +41,13 @@ public class FormAclControllerImpl implements FormAclController {
     }
 
     @Override
+    @Transactional
     public ApiResponse getAllFormsAcl(Long page, Long size) throws JsonProcessingException {
         return new ApiResponse<>(formAclService.getAllFormsAcl(page,size),true,"All FormsAcl data get successfully");
     }
 
     @Override
+    @Transactional
     public ApiResponse deleteFormAcl(String formId) throws JsonProcessingException {
 
        Long count = formAclService.deleteFormAcl(formId);

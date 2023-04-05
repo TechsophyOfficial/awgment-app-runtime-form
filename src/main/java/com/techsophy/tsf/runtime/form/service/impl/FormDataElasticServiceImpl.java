@@ -27,7 +27,7 @@ public class FormDataElasticServiceImpl implements FormDataElasticService
     public void saveOrUpdateToElastic(FormDataDefinition formDataDefinition)
     {
         try {
-            webClientWrapper.webclientRequest(webClientWrapper.createWebClient(tokenUtils.getTokenFromContext()),
+            webClientWrapper.webclientRequest(webClientWrapper.createWebClient("Bearer "+tokenUtils.getTokenFromContext()),
                     gatewayApi+ELASTIC_VERSION1+SLASH+ TP_RUNTIME_FORM_DATA +formDataDefinition.getFormId() +PARAM_SOURCE+elasticSource,POST,
                     formDataDefinition);
         }

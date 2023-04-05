@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
@@ -42,6 +43,7 @@ public class FormDataControllerImpl implements FormDataController
     private String gatewayUrl;
 
     @Override
+    @Transactional
     public ApiResponse<FormDataDefinition> saveFormData(FormDataSchema formDataSchema, String filter) throws IOException
     {
         checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
@@ -50,6 +52,7 @@ public class FormDataControllerImpl implements FormDataController
     }
 
     @Override
+    @Transactional
     public ApiResponse<FormDataDefinition> updateFormData(FormDataSchema formDataSchema, String filter) throws JsonProcessingException
     {
          checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
@@ -99,6 +102,8 @@ public class FormDataControllerImpl implements FormDataController
         return new ApiResponse<>(formDataService.getFormDataByFormIdAndId(formId, id, relations), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
     }
 
+    @Override
+    @Transactional
     public ApiResponse<Void> deleteAllFormDataByFormId(String formId)
     {
         checkACL(DELETE_RULE, Collections.singletonList(formId));
@@ -107,6 +112,7 @@ public class FormDataControllerImpl implements FormDataController
     }
 
     @Override
+    @Transactional
     public ApiResponse<Void> deleteFormDataByFormIdAndId(String formId, String id)
     {
         checkACL(DELETE_RULE, Collections.singletonList(formId));
