@@ -18,10 +18,10 @@ public interface FormDataController
 {
     @PostMapping(FORM_DATA_URL)
     @PreAuthorize(CREATE_OR_ALL_ACCESS)
-    ApiResponse<FormDataDefinition> saveFormData(@RequestBody @Validated FormDataSchema formDataSchema) throws IOException;
+    ApiResponse<FormDataDefinition> saveFormData(@RequestBody @Validated FormDataSchema formDataSchema,@RequestParam(value=FILTER,required = false) String filter) throws IOException;
 
     @PatchMapping(FORM_DATA_URL)
-    ApiResponse<FormDataDefinition> updateFormData(@RequestBody @Validated FormDataSchema formDataSchema) throws JsonProcessingException;
+    ApiResponse<FormDataDefinition> updateFormData(@RequestBody @Validated FormDataSchema formDataSchema,@RequestParam(value=FILTER,required = false) String filter) throws JsonProcessingException;
 
     @GetMapping(FORM_DATA_URL)
     @PreAuthorize(READ_OR_ALL_ACCESS)
