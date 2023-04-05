@@ -19,11 +19,8 @@ import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 @Component
 @RequiredArgsConstructor
 public class ElasticAclAspect {
-    private final WebClientWrapper webClientWrapper;
-    private final TokenUtils tokenUtils;
     private final FormDataElasticServiceImpl formDataElasticService;
     private final ObjectMapper objectMapper;
-
 
     @AfterReturning(pointcut="execution(* com.techsophy.tsf.runtime.form.service.impl.FormAclServiceImpl.saveFormAcl(..))",returning = "formAclDto")
    public void afterSaveFormAclController(FormAclDto formAclDto)
