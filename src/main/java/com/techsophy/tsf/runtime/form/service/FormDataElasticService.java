@@ -9,5 +9,5 @@ public interface FormDataElasticService
 
     void  saveACL(ELasticAcl eLasticAcl);
 
-   void deleteACL(String indexName);
+    void deleteACL(String indexName);
 }
