@@ -20,14 +20,14 @@ import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 @RequiredArgsConstructor
 public class ElasticAclAspect {
     private final FormDataElasticServiceImpl formDataElasticService;
-    private final ObjectMapper objectMapper;
+    private ObjectMapper objectMapper =  new ObjectMapper();
 
     @AfterReturning(pointcut="execution(* com.techsophy.tsf.runtime.form.service.impl.FormAclServiceImpl.saveFormAcl(..))",returning = "formAclDto")
    public void afterSaveFormAclController(FormAclDto formAclDto)
     {
             Map<String,Object> map = new HashMap<>();
             map.put(ID,formAclDto.getId());
-            map.put(INDEX_NAME,TP_RUNTIME_FORM_DATA+formAclDto.getFormId());
+            map.put(INDEX_NAME,FormDataElasticServiceImpl.formIdToIndexName(formAclDto.getFormId()));
             map.put(ACL_ID,formAclDto.getAclId());
             ELasticAcl eLasticAcl = this.objectMapper.convertValue(map,ELasticAcl.class);
             formDataElasticService.saveACL(eLasticAcl);
@@ -35,7 +35,7 @@ public class ElasticAclAspect {
     @AfterReturning(pointcut="execution(* com.techsophy.tsf.runtime.form.service.impl.FormAclServiceImpl.deleteFormAcl(..)) && args(formId)")
     void afterDeleteFormAclController(String formId)
     {
-        formDataElasticService.deleteACL(TP_RUNTIME_FORM_DATA+formId);
+        formDataElasticService.deleteACL(FormDataElasticServiceImpl.formIdToIndexName(formId));
     }
 
 }
