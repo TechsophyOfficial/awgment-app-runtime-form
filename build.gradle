@@ -27,7 +27,7 @@ configurations {
 
 repositories {
     maven {
-        url "https://s01.oss.sonatype.org/content/repositories/releases/com/techsophy/multitenancy-mongo/0.2.0/"
+        url "https://s01.oss.sonatype.org/content/repositories/snapshots/"
     }
     mavenLocal()
     mavenCentral()
