@@ -32,7 +32,6 @@ public class FormAclControllerImpl implements FormAclController {
     }
 
     @Override
-    @Transactional
     public ApiResponse<FormAclDto> getFormAcl(String formId) {
         FormAclDto dto = formAclService.getFormAcl(formId);
         if(dto == null){
@@ -42,7 +41,6 @@ public class FormAclControllerImpl implements FormAclController {
     }
 
     @Override
-    @Transactional
     public ApiResponse getAllFormsAcl(Long page, Long size) throws JsonProcessingException {
         return new ApiResponse<>(formAclService.getAllFormsAcl(page,size),true,"All FormsAcl data get successfully");
     }
