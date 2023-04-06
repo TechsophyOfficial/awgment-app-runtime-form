@@ -15,13 +15,13 @@ import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.NO_RECOR
 
 @RestController
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@Transactional
 public class FormAclControllerImpl implements FormAclController {
     
     private final FormAclService formAclService;
     private final GlobalMessageSource globalMessageSource;
     
     @Override
+    @Transactional
     public ApiResponse<FormAclDto> saveFormAcl(FormAclDto formAclDto) {
         FormAclDto dto = formAclService.saveFormAcl(formAclDto);
         if(dto==null)
@@ -32,6 +32,7 @@ public class FormAclControllerImpl implements FormAclController {
     }
 
     @Override
+    @Transactional
     public ApiResponse<FormAclDto> getFormAcl(String formId) {
         FormAclDto dto = formAclService.getFormAcl(formId);
         if(dto == null){
@@ -41,11 +42,13 @@ public class FormAclControllerImpl implements FormAclController {
     }
 
     @Override
+    @Transactional
     public ApiResponse getAllFormsAcl(Long page, Long size) throws JsonProcessingException {
         return new ApiResponse<>(formAclService.getAllFormsAcl(page,size),true,"All FormsAcl data get successfully");
     }
 
     @Override
+    @Transactional
     public ApiResponse deleteFormAcl(String formId) throws JsonProcessingException {
 
        Long count = formAclService.deleteFormAcl(formId);
