@@ -27,7 +27,7 @@ configurations {
 
 repositories {
     maven {
-        url "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+        url "https://s01.oss.sonatype.org/content/repositories/releases/com/techsophy/multitenancy-mongo/0.2.0/"
     }
     mavenLocal()
     mavenCentral()
@@ -66,7 +66,7 @@ dependencies {
     implementation "io.mongock:mongock-springboot:5.0.32"
     implementation "io.mongock:mongodb-springdata-v3-driver:5.0.32"
     implementation 'com.techsophy:id-generator:2.0.0'
-    implementation 'com.techsophy:multitenancy-mongo:1.0.0'
+    implementation 'com.techsophy:multitenancy-mongo:0.2.0'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
     implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.5.0'
 

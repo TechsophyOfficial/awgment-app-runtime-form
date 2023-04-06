@@ -39,7 +39,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
@@ -48,7 +47,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
@@ -110,44 +108,33 @@ public class FormDataServiceImpl implements FormDataService
         BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(loggedInUserDetails.get(ID).toString()));
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinition.setUpdatedById(String.valueOf(loggedInUserId));
-        if(mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formId))
-            {
-                if(formDataDefinition.getId()==null)
-                {
-                    formDataDefinition.setId(String.valueOf(idGenerator.nextId()));
-                    formDataDefinition.setVersion(1);
-                    formDataDefinition.setCreatedById(String.valueOf(loggedInUserId));
-                    formDataDefinition.setCreatedOn(String.valueOf(Instant.now()));
-                }
-                else
-                {
-                    Query query=StringUtils.isNotBlank(filter)?new Query(new Criteria().andOperator(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()),
+        if(formDataDefinition.getId()==null)
+        {
+            formDataDefinition.setId(String.valueOf(idGenerator.nextId()));
+            formDataDefinition.setVersion(1);
+            formDataDefinition.setCreatedById(String.valueOf(loggedInUserId));
+            formDataDefinition.setCreatedOn(String.valueOf(Instant.now()));
+        }
+        else
+        {
+            Query query=StringUtils.isNotBlank(filter)?new Query(new Criteria().andOperator(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()),
                             getCriteria(filter))):new Query(Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId()));
-                    FormDataDefinition existingFormDataDefinition=mongoTemplate.findOne(query,FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formId);
-                    if(existingFormDataDefinition==null)
-                    {
-                        throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,formDataSchema.getId()));
-                    }
-                    formDataDefinition.setCreatedById(existingFormDataDefinition.getCreatedById());
-                    formDataDefinition.setCreatedOn(existingFormDataDefinition.getCreatedOn());
-                    formDataDefinition.setVersion(existingFormDataDefinition.getVersion()+1);
-                }
-            }
-            else
+            FormDataDefinition existingFormDataDefinition=mongoTemplate.findOne(query,FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formId);
+            if(existingFormDataDefinition==null)
             {
-                mongoTemplate.createCollection(TP_RUNTIME_FORM_DATA + formId);
-                formDataDefinition.setId(String.valueOf(idGenerator.nextId()));
-                formDataDefinition.setVersion(1);
-                formDataDefinition.setCreatedById(String.valueOf(loggedInUserId));
-                formDataDefinition.setCreatedOn(String.valueOf(Instant.now()));
+                throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,formDataSchema.getId()));
             }
-            saveToMongo(formId,formDataDefinition);
-            FormDataAuditSchema formDataAuditSchema=new FormDataAuditSchema(
+            formDataDefinition.setCreatedById(existingFormDataDefinition.getCreatedById());
+            formDataDefinition.setCreatedOn(existingFormDataDefinition.getCreatedOn());
+            formDataDefinition.setVersion(existingFormDataDefinition.getVersion()+1);
+        }
+        saveToMongo(formId,formDataDefinition);
+        FormDataAuditSchema formDataAuditSchema=new FormDataAuditSchema(
                     String.valueOf(idGenerator.nextId()),formDataDefinition.getId(),
                     formId,1,formDataDefinition.getFormData(),formDataDefinition.getFormMetaData()
             );
-            this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
-            return formDataDefinition;
+        this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
+        return formDataDefinition;
     }
 
     private void saveToMongo(String formId, FormDataDefinition formDataDefinition) {
