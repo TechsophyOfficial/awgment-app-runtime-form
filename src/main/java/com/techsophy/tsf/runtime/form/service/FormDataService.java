@@ -2,20 +2,20 @@ package com.techsophy.tsf.runtime.form.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.techsophy.tsf.runtime.form.dto.*;
+import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
 import org.springframework.data.domain.Pageable;
-
 import java.io.IOException;
 import java.util.List;
 
 public interface FormDataService
 {
-    FormDataResponse saveFormData(FormDataSchema formDataSchema) throws IOException;
+    FormDataDefinition saveFormData(FormDataSchema formDataSchema,String filter) throws IOException;
 
-    FormDataResponse updateFormData(FormDataSchema formDataSchema) throws JsonProcessingException;
+    FormDataDefinition updateFormData(FormDataSchema formDataSchema,String filter) throws JsonProcessingException;
 
-    List<FormDataResponseSchema> getAllFormDataByFormId(String formId,String relations,String filter,String sortBy, String sortOrder);
+    List<FormDataResponseSchema> getAllFormDataByFormId(String formId,String relations,String filter,String sortBy, String sortOrder) throws JsonProcessingException;
 
-    PaginationResponsePayload getAllFormDataByFormId(String formId,String relations,String filter, String sortBy, String sortOrder, Pageable pageable);
+    PaginationResponsePayload getAllFormDataByFormId(String formId,String relations,String filter, String sortBy, String sortOrder, Pageable pageable) throws JsonProcessingException;
 
     List<FormDataResponseSchema> getAllFormDataByFormIdAndQ(String formId,String relations,String q, String sortBy, String sortOrder);
 
@@ -29,5 +29,5 @@ public interface FormDataService
 
     void deleteFormDataByFormIdAndId(String formId, String id);
 
-    AggregationResponse aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation);
+    AggregationResponse aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation) throws JsonProcessingException;
 }

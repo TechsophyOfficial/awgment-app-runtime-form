@@ -1,11 +1,12 @@
 package com.techsophy.tsf.runtime.form.controller.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.techsophy.tsf.commons.ACLDecision;
-import com.techsophy.tsf.commons.ACLEvaluator;
+import com.techsophy.tsf.commons.acl.ACLDecision;
+import com.techsophy.tsf.commons.acl.ACLEvaluatorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.FormDataController;
 import com.techsophy.tsf.runtime.form.dto.*;
+import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
 import com.techsophy.tsf.runtime.form.exception.ACLException;
 import com.techsophy.tsf.runtime.form.model.ApiResponse;
 import com.techsophy.tsf.runtime.form.service.FormAclService;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
@@ -41,23 +43,25 @@ public class FormDataControllerImpl implements FormDataController
     private String gatewayUrl;
 
     @Override
-    public ApiResponse<FormDataResponse> saveFormData(FormDataSchema formDataSchema) throws IOException
+    @Transactional
+    public ApiResponse<FormDataDefinition> saveFormData(FormDataSchema formDataSchema, String filter) throws IOException
     {
         checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
-        FormDataResponse formDataResponse=formDataService.saveFormData(formDataSchema);
-        return new ApiResponse<>(formDataResponse,true,globalMessageSource.get(SAVE_FORM_DATA_SUCCESS));
+        FormDataDefinition formDataDefinition =formDataService.saveFormData(formDataSchema,filter);
+        return new ApiResponse<>(formDataDefinition,true,globalMessageSource.get(SAVE_FORM_DATA_SUCCESS));
     }
 
     @Override
-    public ApiResponse<FormDataResponse> updateFormData(FormDataSchema formDataSchema) throws JsonProcessingException
+    @Transactional
+    public ApiResponse<FormDataDefinition> updateFormData(FormDataSchema formDataSchema, String filter) throws JsonProcessingException
     {
          checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
-         FormDataResponse formDataResponse=formDataService.updateFormData(formDataSchema);
-         return new ApiResponse<>(formDataResponse,true,globalMessageSource.get(UPDATE_FORM_DATA_SUCCESS));
+         FormDataDefinition formDataDefinition=formDataService.updateFormData(formDataSchema,filter);
+         return new ApiResponse<>(formDataDefinition,true,globalMessageSource.get(UPDATE_FORM_DATA_SUCCESS));
     }
 
     @Override
-    public ApiResponse<Object> getAllFormDataByFormId(String formId, String relations, Integer page, Integer pageSize, String sortBy, String sortOrder, String filter, String q)
+    public ApiResponse<Object> getAllFormDataByFormId(String formId, String relations, Integer page, Integer pageSize, String sortBy, String sortOrder, String filter, String q) throws JsonProcessingException
     {
         List<String> listOfFormIds=new ArrayList<>();
         listOfFormIds.add(formId);
@@ -98,6 +102,8 @@ public class FormDataControllerImpl implements FormDataController
         return new ApiResponse<>(formDataService.getFormDataByFormIdAndId(formId, id, relations), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
     }
 
+    @Override
+    @Transactional
     public ApiResponse<Void> deleteAllFormDataByFormId(String formId)
     {
         checkACL(DELETE_RULE, Collections.singletonList(formId));
@@ -106,6 +112,7 @@ public class FormDataControllerImpl implements FormDataController
     }
 
     @Override
+    @Transactional
     public ApiResponse<Void> deleteFormDataByFormIdAndId(String formId, String id)
     {
         checkACL(DELETE_RULE, Collections.singletonList(formId));
@@ -114,7 +121,7 @@ public class FormDataControllerImpl implements FormDataController
     }
 
     @Override
-    public ApiResponse<AggregationResponse> aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation)
+    public ApiResponse<AggregationResponse> aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation) throws JsonProcessingException
     {
         checkACL(READ_RULE, Collections.singletonList(formId));
         AggregationResponse aggregationResponse=formDataService.aggregateByFormIdFilterGroupBy(formId,filter,groupBy,operation);
@@ -127,18 +134,18 @@ public class FormDataControllerImpl implements FormDataController
                FormAclDto dto = formAclService.getFormAcl(x);
                if(dto==null) return;
                String aclId = dto.getAclId();
-                ACLEvaluator aclEvaluator=new ACLEvaluator(aclId,null,gatewayUrl);
+                ACLEvaluatorImpl aclEvaluator=new ACLEvaluatorImpl(gatewayUrl);
                 ACLDecision decision =null;
                 switch (rule)
                 {
                     case READ_RULE:
-                        decision = aclEvaluator.getRead(tokenUtils.getTokenFromContext());
+                        decision = aclEvaluator.getRead(aclId,tokenUtils.getTokenFromContext(),null);
                         break;
                     case UPDATE_RULE:
-                        decision = aclEvaluator.getUpdate(tokenUtils.getTokenFromContext());
+                        decision = aclEvaluator.getUpdate(aclId,tokenUtils.getTokenFromContext(),null);
                         break;
                     case DELETE_RULE:
-                        decision = aclEvaluator.getDelete(tokenUtils.getTokenFromContext());
+                        decision = aclEvaluator.getDelete(aclId,tokenUtils.getTokenFromContext(),null);
                         break;
                     default: break;
                 }

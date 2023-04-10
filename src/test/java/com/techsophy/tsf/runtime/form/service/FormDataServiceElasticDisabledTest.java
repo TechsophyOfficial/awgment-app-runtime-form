@@ -6,7 +6,6 @@ import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertOneResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
@@ -28,23 +27,20 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.time.Instant;
 import java.util.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
-import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.CONTENT;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.DATA;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.DEFAULT_PAGE_LIMIT;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.FILTER;
@@ -57,6 +53,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith({MockitoExtension.class})
 class FormDataServiceElasticDisabledTest
 {
+    @Captor
+    ArgumentCaptor<Query> queryArgumentCaptor;
     @Mock
     MongoTemplate mockMongoTemplate;
     @Mock
@@ -128,393 +126,137 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void saveFormDataCollectionExistsTest() throws IOException
+    void saveFormDataValidationExceptionTest()
     {
-        Map<String, Object> testFormData = new HashMap<>();
-        testFormData.put(NAME, NAME_VALUE);
-        testFormData.put(AGE,AGE_VALUE);
-        Map<String, Object> testFormMetaData = new HashMap<>();
-        testFormMetaData.put(FORM_VERSION, 1);
-        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID_VALUE,TEST_FORM_ID,
-                TEST_VERSION,testFormData,testFormMetaData);
-        doReturn(userList).when(mockUserDetails).getUserDetails();
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
-        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
+        FormResponseSchema formResponseSchema=new FormResponseSchema();
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchema);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        ValidationResult validationResult=new ValidationResult("name","name field cannot be empty");
+        List<ValidationResult> validationResultList=new ArrayList<>();
+        validationResultList.add(validationResult);
+        Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
+        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil"));
+    }
+    @Test
+    void saveFormDataValidationExceptionTest1() throws JsonProcessingException {
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
+        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
+        Mockito.when(mockMongoTemplate.save(any(),anyString())).thenThrow(new MongoException(" E11000 Duplicate key index : officialEmail dup key"));
+        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil"));
+    }
+
+    @Test
+    void saveFormDataNewCollectionTest() throws IOException
+    {
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
         ValidationResult validationResult=new ValidationResult("name");
         List<ValidationResult> validationResultList=new ArrayList<>();
         validationResultList.add(validationResult);
-        Mockito.when(mockFormValidationServiceImpl.validateData(formResponseSchemaTest,formDataSchemaTest,TEST_FORM_ID)).thenReturn(validationResultList);
-        Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-        Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
-        Map<String, Object> formDataMap = new HashMap<>();
-            formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
-            formDataMap.put(FORM_ID,TEST_FORM_ID);
-            formDataMap.put(VERSION, String.valueOf(1));
-            formDataMap.put(FORM_META_DATA, formDataSchemaTest.getFormMetaData());
-            formDataMap.put(FORM_DATA, formDataSchemaTest.getFormData());
-            formDataMap.put(CREATED_ON, Date.from(Instant.now()));
-            formDataMap.put(CREATED_BY_ID,CREATED_BY_USER_ID);
-            formDataMap.put(CREATED_BY_NAME, CREATED_BY_USER_NAME);
-            formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
-            formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
-            formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        Document document = new Document();
-        document.put(VERSION,1);
-        FindIterable<Document> iterable = mock(FindIterable.class);
-        MongoCursor cursor = mock(MongoCursor.class);
-        Mockito.when(mockMongoCollection.find((Bson) any())).thenReturn(iterable);
-        Mockito.when(iterable.iterator()).thenReturn(cursor);
-        Mockito.when(cursor.next()).thenReturn(document);
+        Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
-        Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
-        Assertions.assertNotNull(mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
+        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
+        mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil");
+        Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
 
     @Test
-    void saveFormDataWithoutCollectionTest() throws IOException
+    void saveFormDataCreateNewRecordSameCollectionTest() throws IOException
     {
-        Map<String, Object> testFormData = new HashMap<>();
-        testFormData.put(NAME, NAME_VALUE);
-        testFormData.put(AGE,AGE_VALUE);
-        Map<String, Object> testFormMetaData = new HashMap<>();
-        testFormMetaData.put(FORM_VERSION, 1);
-        FormDataSchema formDataSchemaTest=new FormDataSchema(null,TEST_FORM_ID,
-                TEST_VERSION,testFormData,testFormMetaData);
-        doReturn(userList).when(mockUserDetails).getUserDetails();
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
-        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-        Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(false);
-        Map<String, Object> formDataMap = new HashMap<>();
-        formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
-        formDataMap.put(FORM_ID,TEST_FORM_ID);
-        formDataMap.put(VERSION, String.valueOf(1));
-        formDataMap.put(FORM_META_DATA, formDataSchemaTest.getFormMetaData());
-        formDataMap.put(FORM_DATA, formDataSchemaTest.getFormData());
-        formDataMap.put(CREATED_ON, Date.from(Instant.now()));
-        formDataMap.put(CREATED_BY_ID,CREATED_BY_USER_ID);
-        formDataMap.put(CREATED_BY_NAME, CREATED_BY_USER_NAME);
-        formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
-        formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
-        formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        Mockito.when(mockMongoTemplate.save(any(),anyString())).thenReturn(formDataMap);
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        ValidationResult validationResult=new ValidationResult("name");
+        List<ValidationResult> validationResultList=new ArrayList<>();
+        validationResultList.add(validationResult);
+        Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
-        Assertions.assertNotNull(mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
+        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
+        mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil");
+        Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
 
     @Test
-    void saveFormDataWithUniqueKeyCheck() throws IOException
+    void saveFormDataCreateNewRecordSameCollectionNotFoundExceptionTest() throws IOException
     {
-        Map<String, Object> testFormData = new HashMap<>();
-        testFormData.put(NAME, NAME_VALUE);
-        testFormData.put(AGE,AGE_VALUE);
-        Map<String, Object> testFormMetaData = new HashMap<>();
-        testFormMetaData.put(FORM_VERSION, 1);
-        FormDataSchema formDataSchemaTest=new FormDataSchema(null,TEST_FORM_ID,
-                TEST_VERSION,testFormData,testFormMetaData);
-        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
-        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-        Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(false);
-        Map<String, Object> formDataMap = new HashMap<>();
-        formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
-        formDataMap.put(FORM_ID,TEST_FORM_ID);
-        formDataMap.put(VERSION, String.valueOf(1));
-        formDataMap.put(FORM_META_DATA, formDataSchemaTest.getFormMetaData());
-        formDataMap.put(FORM_DATA, formDataSchemaTest.getFormData());
-        formDataMap.put(CREATED_ON, Date.from(Instant.now()));
-        formDataMap.put(CREATED_BY_ID,CREATED_BY_USER_ID);
-        formDataMap.put(CREATED_BY_NAME, CREATED_BY_USER_NAME);
-        formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
-        formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
-        formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        mockMongoSave();
-        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
-        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        ValidationResult validationResult=new ValidationResult("name");
+        List<ValidationResult> validationResultList=new ArrayList<>();
+        validationResultList.add(validationResult);
+        Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
+        FormDataDefinition formDataDefinition=new FormDataDefinition();
+        formDataDefinition.setId("101");
+        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(formDataDefinition);
+        Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(null);
+        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
+        Assertions.assertThrows(RuntimeException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil"));
     }
 
     @Test
-    void saveFormDataWithUniqueKeyCheckCollectionNotExist() throws IOException
+    void saveFormDataUpdateRecordSameCollectionWithFilterTest() throws IOException
     {
-        Map<String, Object> testFormData = new HashMap<>();
-        testFormData.put(NAME, NAME_VALUE);
-        testFormData.put(AGE,AGE_VALUE);
-        Map<String, Object> testFormMetaData = new HashMap<>();
-        testFormMetaData.put(FORM_VERSION, 1);
-        FormDataSchema formDataSchemaTest=new FormDataSchema(null,TEST_FORM_ID,
-                TEST_VERSION,testFormData,testFormMetaData);
-        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
-        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-        Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(false);
-        Map<String, Object> formDataMap = new HashMap<>();
-        formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
-        formDataMap.put(FORM_ID,TEST_FORM_ID);
-        formDataMap.put(VERSION, String.valueOf(1));
-        formDataMap.put(FORM_META_DATA, formDataSchemaTest.getFormMetaData());
-        formDataMap.put(FORM_DATA, formDataSchemaTest.getFormData());
-        formDataMap.put(CREATED_ON, Date.from(Instant.now()));
-        formDataMap.put(CREATED_BY_ID,CREATED_BY_USER_ID);
-        formDataMap.put(CREATED_BY_NAME, CREATED_BY_USER_NAME);
-        formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
-        formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
-        formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        Mockito.when(mockMongoTemplate.save(any(),anyString())).thenThrow(new MongoException("Duplicate key"));
-        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
-        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        ValidationResult validationResult=new ValidationResult("name");
+        List<ValidationResult> validationResultList=new ArrayList<>();
+        validationResultList.add(validationResult);
+        Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
+        FormDataDefinition formDataDefinition=new FormDataDefinition();
+        formDataDefinition.setId("101");
+        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(formDataDefinition);
+        Mockito.when(mockMongoTemplate.findOne(queryArgumentCaptor.capture(),any(),anyString())).thenReturn(formDataDefinition);
+        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
+        mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil");
+        Assertions.assertEquals("Query: { \"$and\" : [{ \"_id\" : \"1\"}, { \"$and\" : [{ \"formData.name\" : \"akhil\"}]}]}, Fields: {}, Sort: {}",queryArgumentCaptor.getValue().toString());
+        Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
 
     @Test
-    void saveFormDataWithUniqueKeyCheckWithMongoErrorCode() throws IOException
+    void saveFormDataUpdateRecordSameCollectionWithoutFilterTest() throws IOException
     {
-        Map<String, Object> testFormData = new HashMap<>();
-        testFormData.put(NAME, NAME_VALUE);
-        testFormData.put(AGE,AGE_VALUE);
-        Map<String, Object> testFormMetaData = new HashMap<>();
-        testFormMetaData.put(FORM_VERSION, 1);
-        FormDataSchema formDataSchemaTest=new FormDataSchema(null,TEST_FORM_ID,
-                TEST_VERSION,testFormData,testFormMetaData);
-        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
-        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-        Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-        Map<String, Object> formDataMap = new HashMap<>();
-        formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
-        formDataMap.put(FORM_ID,TEST_FORM_ID);
-        formDataMap.put(VERSION, String.valueOf(1));
-        formDataMap.put(FORM_META_DATA, formDataSchemaTest.getFormMetaData());
-        formDataMap.put(FORM_DATA, formDataSchemaTest.getFormData());
-        formDataMap.put(CREATED_ON, Date.from(Instant.now()));
-        formDataMap.put(CREATED_BY_ID,CREATED_BY_USER_ID);
-        formDataMap.put(CREATED_BY_NAME, CREATED_BY_USER_NAME);
-        formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
-        formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
-        formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        mockMongoSave();
-        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
-        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
+        FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
+        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        ValidationResult validationResult=new ValidationResult("name");
+        List<ValidationResult> validationResultList=new ArrayList<>();
+        validationResultList.add(validationResult);
+        Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
+        FormDataDefinition formDataDefinition=new FormDataDefinition();
+        formDataDefinition.setId("101");
+        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(formDataDefinition);
+        Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(formDataDefinition);
+        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
+        mockFormDataServiceImpl.saveFormData(formDataSchema,null);
+        Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
-
-    public void mockMongoSave()
+    @Test
+    void updateFormDataWithFiltersTest()
     {
-        Mockito.when(mockMongoTemplate.save(any(),anyString())).thenThrow(new RuntimeException(DUPLICATE_KEY_ERROR_CODE));
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,new HashMap<>(),TEST_FORM_META_DATA);
+        FormDataDefinition formDataDefinition=new FormDataDefinition();
+        formDataDefinition.setFormData(new HashMap<>());
+        formDataDefinition.setId("101");
+        Mockito.when(mockMongoTemplate.findOne(queryArgumentCaptor.capture(),any(),anyString())).thenReturn(formDataDefinition);
+        mockFormDataServiceImpl.updateFormData(formDataSchema,"formData.name:akhil");
+        Assertions.assertEquals("Query: { \"$and\" : [{ \"_id\" : \"1\"}, { \"$and\" : [{ \"formData.name\" : \"akhil\"}]}]}, Fields: {}, Sort: {}",queryArgumentCaptor.getValue().toString());
+        Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
 
     @Test
-    void saveFormDataWithUniqueKeyCollectionExist() throws IOException
+    void updateFormDataWithOutFiltersTest()
     {
-        Map<String, Object> testFormData = new HashMap<>();
-        testFormData.put(NAME, NAME_VALUE);
-        testFormData.put(AGE,AGE_VALUE);
-        Map<String, Object> testFormMetaData = new HashMap<>();
-        testFormMetaData.put(FORM_VERSION, 1);
-        FormDataSchema formDataSchemaTest=new FormDataSchema(null,TEST_FORM_ID,
-                TEST_VERSION,testFormData,testFormMetaData);
-        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
-        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-        Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-        Map<String, Object> formDataMap = new HashMap<>();
-        formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
-        formDataMap.put(FORM_ID,TEST_FORM_ID);
-        formDataMap.put(VERSION, String.valueOf(1));
-        formDataMap.put(FORM_META_DATA, formDataSchemaTest.getFormMetaData());
-        formDataMap.put(FORM_DATA, formDataSchemaTest.getFormData());
-        formDataMap.put(CREATED_ON, Date.from(Instant.now()));
-        formDataMap.put(CREATED_BY_ID,CREATED_BY_USER_ID);
-        formDataMap.put(CREATED_BY_NAME, CREATED_BY_USER_NAME);
-        formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
-        formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
-        formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        Mockito.when(mockMongoTemplate.save(any(),anyString())).thenThrow(new RuntimeException("duplicate key"));
-        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
-        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-    }
-
-    @Test
-    void saveFormDataWithUniqueKeyCheckNotNull() throws IOException
-    {
-        Map<String, Object> testFormData = new HashMap<>();
-        testFormData.put(NAME, NAME_VALUE);
-        testFormData.put(AGE,AGE_VALUE);
-        Map<String, Object> testFormMetaData = new HashMap<>();
-        testFormMetaData.put(FORM_VERSION, 1);
-        FormDataSchema formDataSchemaTest=new FormDataSchema("1",TEST_FORM_ID,
-                TEST_VERSION,testFormData,testFormMetaData);
-        doReturn(userList).when(mockUserDetails).getUserDetails();
-//        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema(TEST_FORM_ID, TEST_NAME, TEST_COMPONENTS, list,TEST_PROPERTIES,TEST_TYPE_FORM, TEST_VERSION,IS_DEFAULT_VALUE, TEST_CREATED_BY_ID,
-                String.valueOf(TEST_CREATED_ON), TEST_UPDATED_BY_ID, String.valueOf(TEST_UPDATED_ON));
-        Mockito.when(mockFormService.getRuntimeFormById(formDataSchemaTest.getFormId())).thenReturn(formResponseSchemaTest);
-        Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-
-        Map<String, Object> formDataMap = new HashMap<>();
-        formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
-        formDataMap.put(FORM_ID,TEST_FORM_ID);
-        formDataMap.put(VERSION, String.valueOf(1));
-        formDataMap.put(FORM_META_DATA, formDataSchemaTest.getFormMetaData());
-        formDataMap.put(FORM_DATA, formDataSchemaTest.getFormData());
-        formDataMap.put(CREATED_ON, Date.from(Instant.now()));
-        formDataMap.put(CREATED_BY_ID,CREATED_BY_USER_ID);
-        formDataMap.put(CREATED_BY_NAME, CREATED_BY_USER_NAME);
-        formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
-        formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
-        formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        Document document = new Document();
-        document.put(UNDERSCORE_ID,TEST_ID_VALUE);
-        document.put(FORM_DATA,testFormData);
-        document.put(FORM_META_DATA,testFormMetaData);
-        document.put(VERSION,1);
-        FindIterable<Document> iterable = mock(FindIterable.class);
-        MongoCursor cursor = mock(MongoCursor.class);
-        Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
-        Mockito.when(mockMongoCollection.find((Bson) any())).thenReturn(iterable);
-        Mockito.when(iterable.iterator()).thenReturn(cursor);
-        Mockito.when(cursor.hasNext()).thenReturn(true);
-        Mockito.when(cursor.next()).thenReturn(document);
-
-
-        Bson filter = new Document("_id", "1");
-        Bson update = Updates.combine(
-                Updates.set(FORM_DATA, null),
-                Updates.set(VERSION, "2"));
-        Mockito.doThrow(new RuntimeException(DUPLICATE_KEY_ERROR_CODE)).when(mockMongoCollection).updateOne(filter, update);
-        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
-        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-    }
-
-    @Test
-    void saveFormDataEmptyDocumentIdTest() throws IOException
-    {
-        doReturn(userList).when(mockUserDetails).getUserDetails();
-        Mockito.when(mockIdGeneratorImpl.nextId()).thenReturn(BigInteger.valueOf(Long.parseLong(TEST_FORM_ID)));
-        Map<String, Object> testFormData = new HashMap<>();
-        testFormData.put(NAME, NAME_VALUE);
-        testFormData.put(AGE,AGE_VALUE);
-        testFormData.put(ID,EMPTY_STRING);
-        Map<String, Object> testFormMetaData = new HashMap<>();
-        testFormMetaData.put(FORM_VERSION, 1);
-        FormDataSchema formDataSchemaTest=new FormDataSchema(null,TEST_FORM_ID,
-                TEST_VERSION,testFormData,testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-        Map<String, Object> formDataMap = new HashMap<>();
-        formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
-        formDataMap.put(FORM_ID,TEST_FORM_ID);
-        formDataMap.put(VERSION, String.valueOf(1));
-        formDataMap.put(FORM_META_DATA, formDataSchemaTest.getFormMetaData());
-        formDataMap.put(FORM_DATA, formDataSchemaTest.getFormData());
-        formDataMap.put(CREATED_ON, Date.from(Instant.now()));
-        formDataMap.put(CREATED_BY_ID,CREATED_BY_USER_ID);
-        formDataMap.put(CREATED_BY_NAME, CREATED_BY_USER_NAME);
-        formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
-        formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
-        formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
-        Document document=new Document();
-        document.append("version",1);
-        Assertions.assertNotNull(mockFormDataServiceImpl.saveFormData(formDataSchemaTest));
-    }
-
-    @Test
-    void updateFormDataTest() throws JsonProcessingException
-    {
-        doReturn(userList).when(mockUserDetails).getUserDetails();
-        Map<String, Object> testFormData = new HashMap<>();
-        testFormData.put(NAME, NAME_VALUE);
-        testFormData.put(AGE,AGE_VALUE);
-        testFormData.put(ID,EMPTY_STRING);
-        Map<String, Object> testFormMetaData = new HashMap<>();
-        testFormMetaData.put(FORM_VERSION, 1);
-        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID_VALUE,TEST_FORM_ID,
-                TEST_VERSION,testFormData,testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
-        LinkedHashMap<String, Object> formDataMap = new LinkedHashMap<>();
-        formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
-        formDataMap.put(FORM_ID,TEST_FORM_ID);
-        formDataMap.put(VERSION, String.valueOf(1));
-        formDataMap.put(FORM_META_DATA, formDataSchemaTest.getFormMetaData());
-        formDataMap.put(FORM_DATA, formDataSchemaTest.getFormData());
-        formDataMap.put(CREATED_ON, Date.from(Instant.now()));
-        formDataMap.put(CREATED_BY_ID,CREATED_BY_USER_ID);
-        formDataMap.put(CREATED_BY_NAME, CREATED_BY_USER_NAME);
-        formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
-        formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
-        formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        Document document = new Document();
-        document.put(UNDERSCORE_ID,TEST_ID_VALUE);
-        document.put(FORM_DATA,testFormData);
-        document.put(FORM_META_DATA,testFormMetaData);
-        document.put(VERSION,1);
-        FindIterable<Document> iterable = mock(FindIterable.class);
-        MongoCursor cursor = mock(MongoCursor.class);
-        Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
-        Mockito.when(mockMongoCollection.find((Bson) any())).thenReturn(iterable);
-        Mockito.when(iterable.iterator()).thenReturn(cursor);
-        Mockito.when(cursor.hasNext()).thenReturn(true);
-        Mockito.when(cursor.next()).thenReturn(document);
-        Assertions.assertNotNull(mockFormDataServiceImpl.updateFormData(formDataSchemaTest));
-    }
-
-    @Test
-    void updateFormDataTestException() throws JsonProcessingException
-    {
-        doReturn(userList).when(mockUserDetails).getUserDetails();
-        Map<String, Object> testFormData = new HashMap<>();
-        testFormData.put(NAME, NAME_VALUE);
-        testFormData.put(AGE,AGE_VALUE);
-        testFormData.put(ID,EMPTY_STRING);
-        Map<String, Object> testFormMetaData = new HashMap<>();
-        testFormMetaData.put(FORM_VERSION, 1);
-        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID_VALUE,TEST_FORM_ID,
-                TEST_VERSION,testFormData,testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
-        LinkedHashMap<String, Object> formDataMap = new LinkedHashMap<>();
-        formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
-        formDataMap.put(FORM_ID,TEST_FORM_ID);
-        formDataMap.put(VERSION, String.valueOf(1));
-        formDataMap.put(FORM_META_DATA, formDataSchemaTest.getFormMetaData());
-        formDataMap.put(FORM_DATA, formDataSchemaTest.getFormData());
-        formDataMap.put(CREATED_ON, Date.from(Instant.now()));
-        formDataMap.put(CREATED_BY_ID,CREATED_BY_USER_ID);
-        formDataMap.put(CREATED_BY_NAME, CREATED_BY_USER_NAME);
-        formDataMap.put(UPDATED_ON,TEST_UPDATED_ON);
-        formDataMap.put(UPDATED_BY_ID,UPDATED_BY_USER_ID);
-        formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
-        Document document = new Document();
-        document.put(UNDERSCORE_ID,TEST_ID_VALUE);
-        document.put(FORM_DATA,testFormData);
-        document.put(FORM_META_DATA,testFormMetaData);
-        document.put(VERSION,1);
-        FindIterable<Document> iterable = mock(FindIterable.class);
-        MongoCursor cursor = mock(MongoCursor.class);
-        Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
-        Mockito.when(mockMongoCollection.find((Bson) any())).thenReturn(iterable);
-        Mockito.when(iterable.iterator()).thenReturn(cursor);
-        Mockito.when(cursor.hasNext()).thenReturn(true);
-        Mockito.when(cursor.next()).thenReturn(document);
-        Bson filter = new Document("_id", "123");
-        Bson update = Updates.combine(
-                Updates.set(FORM_DATA, testFormData),
-                Updates.set(VERSION, "2"),
-                Updates.set(FORM_META_DATA, testFormMetaData));
-        Mockito.doThrow(new RuntimeException(DUPLICATE_KEY_ERROR_CODE)).when(mockMongoCollection).updateOne(filter, update);
-        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.updateFormData(formDataSchemaTest));
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,new HashMap<>(),TEST_FORM_META_DATA);
+        FormDataDefinition formDataDefinition=new FormDataDefinition();
+        formDataDefinition.setFormData(new HashMap<>());
+        formDataDefinition.setId("101");
+        Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(formDataDefinition);
+        mockFormDataServiceImpl.updateFormData(formDataSchema,null);
+        Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
     }
 
     @Test
@@ -529,12 +271,11 @@ class FormDataServiceElasticDisabledTest
         List<Document> documentList=new ArrayList<>();
         documentList.add(document);
         Mockito.when(mockMongoTemplate.aggregate((Aggregation) any(),anyString(),eq(Document.class))).thenReturn( new AggregationResults<>(documentList,document));
-        Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,TEST_RELATIONS,FILTER,EMPTY_STRING, EMPTY_STRING));
+        Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,TEST_RELATIONS,FILTER_VERSION_2,EMPTY_STRING, EMPTY_STRING));
     }
 
     @Test
-    void getAllFormDataByFormIdAggregationSortTest()
-    {
+    void getAllFormDataByFormIdAggregationSortTest() {
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<Map> aggregateList=new ArrayList<>();
         Map<String,Object> map=new HashMap<>();
@@ -548,8 +289,7 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void getAllFormDataByFormIdPaginationEmptySortTest()
-    {
+    void getAllFormDataByFormIdPaginationEmptySortTest() {
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<Map> aggregateList=new ArrayList<>();
         Map<String,Object> map=new HashMap<>();
@@ -573,8 +313,7 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void getAllFormDataByFormIdPaginationSortTest()
-    {
+    void getAllFormDataByFormIdPaginationSortTest() {
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<Map> aggregateList=new ArrayList<>();
         Map<String,Object> map=new HashMap<>();
@@ -598,8 +337,7 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void getAllFormDataByFormIdFilterAndRelationsTest()
-    {
+    void getAllFormDataByFormIdFilterAndRelationsTest() {
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<FormDataDefinition> formDataDefinitionsList=new ArrayList<>();
         Map<String, Object> testFormData = new HashMap<>();
@@ -623,8 +361,7 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void getAllFormDataByFormIdFilterAndRelationsSortBySortOrderTest()
-    {
+    void getAllFormDataByFormIdFilterAndRelationsSortBySortOrderTest() {
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<FormDataDefinition> formDataDefinitionsList=new ArrayList<>();
         Map<String, Object> testFormData = new HashMap<>();
@@ -643,13 +380,11 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setUpdatedById(TEST_UPDATED_BY_ID);
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinitionsList.add(formDataDefinition);
-//        Mockito.when(mockMongoTemplate.find(any(),eq(FormDataDefinition.class),anyString())).thenReturn(formDataDefinitionsList);
         Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,EMPTY_STRING,FILTER,TEST_SORT_BY,TEST_SORT_ORDER));
     }
 
     @Test
-    void getAllFormDataByFormIdEmptySortPaginationTest()
-    {
+    void getAllFormDataByFormIdEmptySortPaginationTest() {
         List<FormDataDefinition> formDataDefinitionsList=new ArrayList<>();
         FormDataDefinition formDataDefinition=new FormDataDefinition();
         formDataDefinition.setId(TEST_ID_VALUE);
@@ -673,8 +408,7 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void getAllFormDataByFormIdSortPaginationTest()
-    {
+    void getAllFormDataByFormIdSortPaginationTest() {
         List<FormDataDefinition> formDataDefinitionsList=new ArrayList<>();
         FormDataDefinition formDataDefinition=new FormDataDefinition();
         formDataDefinition.setId(TEST_ID_VALUE);
@@ -762,7 +496,6 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setUpdatedById(TEST_UPDATED_BY_ID);
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinitionsList.add(formDataDefinition);
-//        Mockito.when(mockMongoTemplate.find(any(),eq(FormDataDefinition.class),anyString())).thenReturn(formDataDefinitionsList);
         List<Map> aggregateList=new ArrayList<>();
         Map<String,Object> map=new HashMap<>();
         map.put(UNDERSCORE_ID,TEST_ID_VALUE);
@@ -778,9 +511,8 @@ class FormDataServiceElasticDisabledTest
         Map<String, Object> testFormData = new HashMap<>();
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
-        FormDataSchema formDataSchemaTest = new FormDataSchema(null, TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-        FormDataDefinition formDataDefinitionTest=new FormDataDefinition(TEST_ID,TEST_FORM_ID,TEST_VERSION,testFormData,testFormMetaData);
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+        FormDataDefinition formDataDefinitionTest=new FormDataDefinition();
         formDataDefinitionTest.setCreatedById(TEST_CREATED_BY_ID);
         formDataDefinitionTest.setCreatedOn(String.valueOf(TEST_CREATED_ON));
         formDataDefinitionTest.setUpdatedById(TEST_UPDATED_BY_ID);
@@ -816,8 +548,7 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setUpdatedById(TEST_UPDATED_BY_ID);
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinitionsList.add(formDataDefinition);
-        FormDataSchema formDataSchemaTest = new FormDataSchema(null, TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         Mockito.when(mockMongoTemplate.find(any(),eq(FormDataDefinition.class),anyString())).thenReturn(formDataDefinitionsList);
         Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,EMPTY_STRING, Q,EMPTY_STRING,EMPTY_STRING,PageRequest.of(1,5)));
     }
@@ -842,8 +573,7 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setUpdatedById(TEST_UPDATED_BY_ID);
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinitionsList.add(formDataDefinition);
-        FormDataSchema formDataSchemaTest = new FormDataSchema(null, TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         Mockito.when(mockMongoTemplate.find(any(),eq(FormDataDefinition.class),anyString())).thenReturn(formDataDefinitionsList);
         Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,EMPTY_STRING, Q,TEST_SORT_BY,TEST_SORT_ORDER,PageRequest.of(1,5)));
     }
@@ -868,8 +598,7 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setUpdatedById(TEST_UPDATED_BY_ID);
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinitionsList.add(formDataDefinition);
-        FormDataSchema formDataSchemaTest = new FormDataSchema(null, TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         Mockito.when(mockMongoTemplate.find(any(),eq(FormDataDefinition.class),anyString())).thenReturn(formDataDefinitionsList);
         Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,EMPTY_STRING));
     }
@@ -883,14 +612,13 @@ class FormDataServiceElasticDisabledTest
         testFormData.put(ID,EMPTY_STRING);
         Map<String, Object> testFormMetaData = new HashMap<>();
         testFormMetaData.put(FORM_VERSION, 1);
-        FormDataSchema formDataSchemaTest=new FormDataSchema(TEST_ID_VALUE,TEST_FORM_ID,
-                TEST_VERSION,testFormData,testFormMetaData);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
         LinkedHashMap<String, Object> formDataMap = new LinkedHashMap<>();
         formDataMap.put(UNDERSCORE_ID,Long.parseLong(UNDERSCORE_ID_VALUE));
         formDataMap.put(FORM_ID,TEST_FORM_ID);
         formDataMap.put(VERSION, String.valueOf(1));
-        formDataMap.put(FORM_META_DATA, formDataSchemaTest.getFormMetaData());
-        formDataMap.put(FORM_DATA, formDataSchemaTest.getFormData());
+        formDataMap.put(FORM_META_DATA, formDataSchema.getFormMetaData());
+        formDataMap.put(FORM_DATA, formDataSchema.getFormData());
         formDataMap.put(CREATED_ON, Date.from(Instant.now()));
         formDataMap.put(CREATED_BY_ID,CREATED_BY_USER_ID);
         formDataMap.put(CREATED_BY_NAME, CREATED_BY_USER_NAME);
@@ -899,8 +627,6 @@ class FormDataServiceElasticDisabledTest
         formDataMap.put(UPDATED_BY_NAME,UPDATED_BY_USER_NAME);
         Document document = new Document(formDataMap);
         document.put(UNDERSCORE_ID,TEST_ID_VALUE);
-        FindIterable<Document> iterable = mock(FindIterable.class);
-        MongoCursor cursor = mock(MongoCursor.class);
         Mockito.when(mockMongoTemplate.getCollection(any())).thenReturn(mongoCollectionDocument);
         Mockito.when(mongoCollectionDocument.find(any(Bson.class))).thenReturn(mockDocuments);
         Mockito.when(mockDocuments.iterator()).thenReturn(mongoCursor);
@@ -917,7 +643,7 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setUpdatedById(TEST_UPDATED_BY_ID);
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinitionsList.add(formDataDefinition);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         Assertions.assertNotNull(mockFormDataServiceImpl.getFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID,EMPTY_STRING));
     }
 
@@ -965,8 +691,7 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setUpdatedById(TEST_UPDATED_BY_ID);
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinitionsList.add(formDataDefinition);
-        FormDataSchema formDataSchemaTest = new FormDataSchema(null, TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<Map> aggregateList=new ArrayList<>();
         Map<String,Object> map=new HashMap<>();
         map.put(UNDERSCORE_ID,TEST_ID_VALUE);
@@ -996,10 +721,8 @@ class FormDataServiceElasticDisabledTest
         Map<String, Object> testFormData = new HashMap<>();
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
-        FormDataSchema formDataSchemaTest = new FormDataSchema(null, TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
-        FormDataDefinition formDataDefinitionTest=new FormDataDefinition(TEST_ID,TEST_FORM_ID,
-                TEST_VERSION,testFormData,testFormMetaData);
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+        FormDataDefinition formDataDefinitionTest=new FormDataDefinition();
         formDataDefinitionTest.setCreatedById(TEST_CREATED_BY_ID);
         formDataDefinitionTest.setCreatedOn(String.valueOf(TEST_CREATED_ON));
         formDataDefinitionTest.setUpdatedById(TEST_UPDATED_BY_ID);
@@ -1028,7 +751,6 @@ class FormDataServiceElasticDisabledTest
     @Test
     void getAllFormDataByFormIdAndQSortBySortOrderPaginationTest()
     {
-        ReflectionTestUtils.setField(mockFormDataServiceImpl,"elasticEnable", true);
         Map<String, Object> testFormData2 = new HashMap<>();
         testFormData2.put(NAME, NAME_VALUE);
         testFormData2.put(AGE,AGE_VALUE);
@@ -1050,8 +772,7 @@ class FormDataServiceElasticDisabledTest
         Map<String, Object> testFormData = new HashMap<>();
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
-        FormDataSchema formDataSchemaTest = new FormDataSchema(null, TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<Map> aggregateList=new ArrayList<>();
         Map<String,Object> map=new HashMap<>();
         map.put(UNDERSCORE_ID,TEST_ID_VALUE);
@@ -1077,6 +798,7 @@ class FormDataServiceElasticDisabledTest
     void deleteAllFormDataByFormIdTest()
     {
         Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + TEST_FORM_ID)).thenReturn(true);
+        Mockito.when(mockTokenUtils.getTokenFromContext()).thenReturn(TEST_TOKEN);
         mockFormDataServiceImpl.deleteAllFormDataByFormId(TEST_FORM_ID);
         verify(mockMongoTemplate, times(1)).dropCollection(TP_RUNTIME_FORM_DATA + TEST_FORM_ID);
     }
@@ -1087,15 +809,13 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void aggregateByFormIdFilterGroupByTest()
-    {
+    void aggregateByFormIdFilterGroupByTest() {
         Map<String, Object> testFormMetaData = new HashMap<>();
         testFormMetaData.put(FORM_VERSION, 1);
         Map<String, Object> testFormData = new HashMap<>();
         testFormData.put(NAME, NAME_VALUE);
         testFormData.put(AGE,AGE_VALUE);
-        FormDataSchema formDataSchemaTest = new FormDataSchema("1", TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formDataSchemaTest.getFormId())).thenReturn(true);
+        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         List<Map> aggregateList=new ArrayList<>();
         Map<String,Object> map=new HashMap<>();
         map.put(UNDERSCORE_ID,TEST_ID_VALUE);

@@ -1,6 +1,7 @@
 package com.techsophy.tsf.runtime.form.config;
 
 import com.techsophy.idgenerator.IdGeneratorImpl;
+import com.techsophy.tsf.commons.user.UserDetails;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,5 +27,11 @@ public class ApplicationConfig
         return new OpenAPI()
                 .info(new io.swagger.v3.oas.models.info.Info().title(RUNTIME_FORM).version(VERSION_1).description(RUNTIME_FORM_MODELER_API_VERSION_1))
                 .servers( List.of(new Server().url(gatewayUrl)));
+    }
+
+    @Bean("CommonUserDetails")
+    public UserDetails userDetails(String gatewayUrl)
+    {
+        return new UserDetails(gatewayUrl);
     }
 }

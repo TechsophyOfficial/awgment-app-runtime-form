@@ -1,13 +1,13 @@
 package com.techsophy.tsf.runtime.form.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
-
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.techsophy.tsf.commons.ACLDecision;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.impl.FormDataControllerImpl;
 import com.techsophy.tsf.runtime.form.dto.*;
+import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
 import com.techsophy.tsf.runtime.form.exception.ACLException;
 import com.techsophy.tsf.runtime.form.exception.FormIdNotFoundException;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
@@ -17,7 +17,6 @@ import com.techsophy.tsf.runtime.form.service.FormAclService;
 import com.techsophy.tsf.runtime.form.service.FormDataService;
 import com.techsophy.tsf.runtime.form.utils.RelationUtils;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
-import org.junit.Rule;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -25,15 +24,10 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.PageRequest;
-
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,7 +39,6 @@ import static org.mockito.Mockito.verify;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FormDataControllerTest
 {
-
     @Mock
     TokenUtils tokenUtils;
     @Mock
@@ -138,8 +131,8 @@ class FormDataControllerTest
         InputStream inputStreamTest = new ClassPathResource(TEST_RUNTIME_FORM_DATA_1).getInputStream();
         ObjectMapper objectMapperTest = new ObjectMapper();
         FormDataSchema formDataSchemaTest = objectMapperTest.readValue(inputStreamTest, FormDataSchema.class);
-        Mockito.when(formDataService.saveFormData(formDataSchemaTest)).thenThrow(new UserDetailsIdNotFoundException(errorCode, USER_DETAILS_NOT_FOUND_WITH_GIVEN_ID));
-        Assertions.assertThrows(UserDetailsIdNotFoundException.class, () -> formDataController.saveFormData(formDataSchemaTest));
+        Mockito.when(formDataService.saveFormData(formDataSchemaTest,"formData.name:akhil")).thenThrow(new UserDetailsIdNotFoundException(errorCode, USER_DETAILS_NOT_FOUND_WITH_GIVEN_ID));
+        Assertions.assertThrows(UserDetailsIdNotFoundException.class, () -> formDataController.saveFormData(formDataSchemaTest,"formData.name:akhil"));
     }
 
     @Test
@@ -147,8 +140,8 @@ class FormDataControllerTest
         InputStream inputStreamTest = new ClassPathResource(TEST_RUNTIME_FORM_DATA_1).getInputStream();
         ObjectMapper objectMapperTest = new ObjectMapper();
         FormDataSchema formDataSchemaTest = objectMapperTest.readValue(inputStreamTest, FormDataSchema.class);
-        Mockito.when(formDataService.saveFormData(formDataSchemaTest)).thenThrow(new FormIdNotFoundException(errorCode, USER_DETAILS_NOT_FOUND_WITH_GIVEN_ID));
-        Assertions.assertThrows(FormIdNotFoundException.class, () -> formDataController.saveFormData(formDataSchemaTest));
+        Mockito.when(formDataService.saveFormData(formDataSchemaTest,"formData.name:akhil")).thenThrow(new FormIdNotFoundException(errorCode, USER_DETAILS_NOT_FOUND_WITH_GIVEN_ID));
+        Assertions.assertThrows(FormIdNotFoundException.class, () -> formDataController.saveFormData(formDataSchemaTest,"formData.name:akhil"));
     }
 
     @Test
@@ -156,34 +149,26 @@ class FormDataControllerTest
         InputStream inputStreamTest = new ClassPathResource(TEST_RUNTIME_FORM_DATA_1).getInputStream();
         ObjectMapper objectMapperTest = new ObjectMapper();
         FormDataSchema formDataSchemaTest = objectMapperTest.readValue(inputStreamTest, FormDataSchema.class);
-        Mockito.when(formDataService.saveFormData(formDataSchemaTest)).thenThrow(new InvalidInputException(errorCode, USER_DETAILS_NOT_FOUND_WITH_GIVEN_ID));
-        Assertions.assertThrows(InvalidInputException.class, () -> formDataController.saveFormData(formDataSchemaTest));
+        Mockito.when(formDataService.saveFormData(formDataSchemaTest,"formData.name:akhil")).thenThrow(new InvalidInputException(errorCode, USER_DETAILS_NOT_FOUND_WITH_GIVEN_ID));
+        Assertions.assertThrows(InvalidInputException.class, () -> formDataController.saveFormData(formDataSchemaTest,"formData.name:akhil"));
     }
 
     @Test
     void saveFormDataExceptionTest() throws Exception {
-        Map<String, Object> formData = new HashMap<>();
-        Map<String, Object> formMetaData = new HashMap<>();
-        FormDataSchema formDataSchema = new FormDataSchema("101", "101", 1, formData, formMetaData);
-        FormDataResponse formDataResponse = new FormDataResponse("101", 1);
-        Mockito.when(formDataService.saveFormData(formDataSchema)).thenReturn(formDataResponse);
-        formDataController.saveFormData(formDataSchema);
-        verify(formDataService, times(1)).saveFormData(formDataSchema);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        Mockito.when(formDataService.saveFormData(formDataSchema,"formData.name:akhil")).thenReturn(new FormDataDefinition());
+        formDataController.saveFormData(formDataSchema,"formData.name:akhil");
+        verify(formDataService, times(1)).saveFormData(formDataSchema,"formData.name:akhil");
     }
 
     @Test
     void updateFormDataExceptionTest() {
-        Map<String, Object> formData = new HashMap<>();
-        Map<String, Object> formMetaData = new HashMap<>();
-        FormDataSchema formDataSchema = new FormDataSchema("1", "101", 1, formData, formMetaData);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
         FormAclDto formAclDto = new FormAclDto();
         formAclDto.setFormId("101");
         formAclDto.setAclId("101");
         Mockito.when(mockFormACLService.getFormAcl(any())).thenReturn(formAclDto);
-        ACLDecision aclDecision = new ACLDecision();
-        aclDecision.setDecision("deny");
-        aclDecision.setAdditionalDetails(null);
-        Assertions.assertThrows(ACLException.class, () -> formDataController.updateFormData(formDataSchema));
+        Assertions.assertThrows(ACLException.class, () -> formDataController.updateFormData(formDataSchema,"formData.name:akhil"));
     }
 
     @Test
@@ -215,39 +200,23 @@ class FormDataControllerTest
     @Test
     void saveFormDataTest() throws Exception
     {
-        Map<String,Object> formData=new HashMap<>();
-        Map<String,Object> formMetaData=new HashMap<>();
-        FormDataSchema formDataSchema = new FormDataSchema("101","201",1,formData,formMetaData);
-        FormDataResponse formDataResponse=new FormDataResponse("101",1);
-        Mockito.when(formDataService.saveFormData(formDataSchema)).thenReturn(formDataResponse);
-        formDataController.saveFormData(formDataSchema);
-        verify(formDataService,times(1)).saveFormData(formDataSchema);
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        Mockito.when(formDataService.saveFormData(formDataSchema,"formData.name:akhil")).thenReturn(new FormDataDefinition());
+        formDataController.saveFormData(formDataSchema,"formData.name:akhil");
+        verify(formDataService,times(1)).saveFormData(formDataSchema,"formData.name:akhil");
     }
 
     @Test
-    void updateFormData() throws Exception
+    void updateFormDataTest() throws Exception
     {
-        Map<String,Object> formData=new HashMap<>();
-        Map<String,Object> formMetaData=new HashMap<>();
-        FormDataSchema formDataSchema = new FormDataSchema("1","1",1,formData,formMetaData);
-        FormAclDto formAclDto=new FormAclDto();
-        formAclDto.setFormId("101");
-        formAclDto.setAclId("1");
-        Mockito.when(mockFormACLService.getFormAcl(any())).thenReturn(formAclDto);
-        Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("abc");
-        ACLDecision aclDecision=new ACLDecision();
-        aclDecision.setDecision("deny");
-        aclDecision.setAdditionalDetails(null);
-        FormDataResponse formDataResponse=new FormDataResponse("1",1);
-        ApiResponse apiResponse=new ApiResponse(formDataResponse,true,"Form data updated successfully");
-        Mockito.when(formDataService.updateFormData(formDataSchema)).thenReturn(formDataResponse);
-        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data updated successfully");
-        Assertions.assertEquals(apiResponse,formDataController.updateFormData(formDataSchema));
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        Mockito.when(formDataService.updateFormData(formDataSchema,"formData.name:akhil")).thenReturn(new FormDataDefinition());
+        formDataController.updateFormData(formDataSchema,"formData.name:akhil");
+        verify(formDataService,times(1)).updateFormData(formDataSchema,"formData.name:akhil");
     }
 
     @Test
-    void getAllFormDataByFormIdFilterTest()
-    {
+    void getAllFormDataByFormIdFilterTest() throws JsonProcessingException {
         List<FormDataResponseSchema> formDataResponseSchemaList=new ArrayList<>();
         Mockito.when(formDataService.getAllFormDataByFormId(anyString(),anyString(),any(),any(),any())).thenReturn(formDataResponseSchemaList);
         ApiResponse apiResponse=new ApiResponse(new ArrayList<>(),true,"Form data retrieved successfully");
@@ -256,8 +225,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void getAllFormDataByFormIdFilterPaginationTest()
-    {
+    void getAllFormDataByFormIdFilterPaginationTest() throws JsonProcessingException {
         PaginationResponsePayload paginationResponsePayload=new PaginationResponsePayload();
         Mockito.when(formDataService.getAllFormDataByFormId(anyString(),anyString(),any(),any(),any(),any())).thenReturn(paginationResponsePayload);
         ApiResponse apiResponse=new ApiResponse(paginationResponsePayload,true,"Form data retrieved successfully");
@@ -266,8 +234,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void getAllFormDataByFormIdFilterSortTest()
-    {
+    void getAllFormDataByFormIdFilterSortTest() throws JsonProcessingException {
         PaginationResponsePayload paginationResponsePayload=new PaginationResponsePayload();
         Mockito.when(formDataService.getAllFormDataByFormId(anyString(),anyString(),any(),any(),any(),any())).thenReturn(paginationResponsePayload);
         ApiResponse apiResponse=new ApiResponse(paginationResponsePayload,true,"Form data retrieved successfully");
@@ -276,8 +243,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void getAllFormDataByFormIdSortTest()
-    {
+    void getAllFormDataByFormIdSortTest() throws JsonProcessingException {
         List<FormDataResponseSchema> formDataResponseSchemaList=new ArrayList<>();
         Mockito.when(formDataService.getAllFormDataByFormIdAndQ("101","994102731543871488:orderId,994122561634369536:parcelId",null,CREATED_ON,DESCENDING)).thenReturn(formDataResponseSchemaList);
         ApiResponse apiResponse=new ApiResponse(formDataResponseSchemaList,true,"Form data retrieved successfully");
@@ -286,8 +252,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void getAllFormDataByFormIdSortPaginationTest()
-    {
+    void getAllFormDataByFormIdSortPaginationTest() throws JsonProcessingException {
         PaginationResponsePayload paginationResponsePayload=new PaginationResponsePayload();
         Mockito.when(formDataService.getAllFormDataByFormIdAndQ("101","994102731543871488:orderId,994122561634369536:parcelId",null,CREATED_ON,DESCENDING, PageRequest.of(0,5))).thenReturn(paginationResponsePayload);
         ApiResponse apiResponse=new ApiResponse(paginationResponsePayload,true,"Form data retrieved successfully");
@@ -296,8 +261,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void getAllFormDataByFormIdRelationsTest()
-    {
+    void getAllFormDataByFormIdRelationsTest() throws JsonProcessingException {
         PaginationResponsePayload paginationResponsePayload=new PaginationResponsePayload();
         Mockito.when(formDataService.getAllFormDataByFormId("101","994102731543871488:orderId,994122561634369536:parcelId")).thenReturn(paginationResponsePayload);
         ApiResponse apiResponse=new ApiResponse(paginationResponsePayload,true,"Form data retrieved successfully");
@@ -343,8 +307,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void aggregateByFormIdFilterGroupByTest()
-    {
+    void aggregateByFormIdFilterGroupByTest() throws JsonProcessingException {
         Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data retrieved successfully");
         AggregationResponse aggregationResponse=new AggregationResponse(new ArrayList<>());
         Mockito.when(formDataService.aggregateByFormIdFilterGroupBy(any(),anyString(),any(),anyString())).thenReturn(aggregationResponse);

@@ -44,7 +44,16 @@ public class FormServiceImpl implements FormService
             throw new UserDetailsIdNotFoundException(LOGGED_IN_USER_ID_NOT_FOUND,globalMessageSource.get(LOGGED_IN_USER_ID_NOT_FOUND,loggedInUserDetails.get(ID).toString()));
         }
         BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(loggedInUserDetails.get(ID).toString()));
-        FormDefinition formDefinition=new FormDefinition(BigInteger.valueOf(Long.parseLong(formSchema.getId())),formSchema.getName(),BigInteger.valueOf(formSchema.getVersion()),formSchema.getComponents(),formSchema.getAcls(),formSchema.getProperties(),formSchema.getType(),formSchema.getIsDefault());
+        FormDefinition formDefinition=new FormDefinition();
+        formDefinition.setId(BigInteger.valueOf(Long.parseLong(formSchema.getId())));
+        formDefinition.setName(formSchema.getName());
+        formDefinition.setVersion(BigInteger.valueOf(formSchema.getVersion()));
+        formDefinition.setComponents(formSchema.getComponents());
+        formDefinition.setAcls(formSchema.getAcls());
+        formDefinition.setProperties(formSchema.getProperties());
+        formDefinition.setType(formSchema.getType());
+        formDefinition.setIsDefault(formSchema.getIsDefault());
+        formDefinition.setElasticPush(formSchema.getElasticPush());
         formDefinition.setCreatedById(String.valueOf(loggedInUserId));
         formDefinition.setCreatedOn(String.valueOf(Date.from(Instant.now())));
         formDefinition.setUpdatedById(String.valueOf(loggedInUserId));
@@ -69,28 +78,29 @@ public class FormServiceImpl implements FormService
         if(isEmpty(type))
         {
             return this.formDefinitionRepository.findAll().stream()
-                    .map(formio ->
-                    {
-                        FormResponseSchema formSchema = this.objectMapper.convertValue(formio,FormResponseSchema.class);
-                        if (!content)
+                    .map(formio->this.objectMapper.convertValue(formio,FormResponseSchema.class))
+                    .map(formSchema->{
+                        if(content)
                         {
-                            return formSchema.withComponents(null);
+                            return formSchema;
                         }
+                        formSchema.setComponents(null);
                         return formSchema;
                     });
         }
         else
         {
-        return this.formDefinitionRepository.findByType(type).stream()
-                .map(formio ->
-                {
-                    FormResponseSchema formSchema = this.objectMapper.convertValue(formio, FormResponseSchema.class);
-                    if (!content)
-                    {
-                        return formSchema.withComponents(null);
-                    }
-                    return formSchema;
-                });
+            return this.formDefinitionRepository.findByType(type).stream()
+                    .map(formio->
+                            this.objectMapper.convertValue(formio,FormResponseSchema.class))
+                    .map(formSchema->{
+                        if(content)
+                        {
+                            return formSchema;
+                        }
+                        formSchema.setComponents(null);
+                        return formSchema;
+                    });
     }}
 
     @Override
@@ -110,16 +120,22 @@ public class FormServiceImpl implements FormService
     {
         if(StringUtils.isNotEmpty(type))
         {
-            return this.formDefinitionRepository.findByNameOrIdAndType(idOrNameLike,type).stream().map(formio ->
-            {
-                FormResponseSchema formSchema = this.objectMapper.convertValue(formio, FormResponseSchema.class);
-                return formSchema.withComponents(null);
-            });
+            return this.formDefinitionRepository
+                    .findByNameOrIdAndType(idOrNameLike,type)
+                    .stream()
+                    .map(formio ->{
+                        FormResponseSchema formSchema = this.objectMapper.convertValue(formio, FormResponseSchema.class);
+                        formSchema.setComponents(null);
+                        return formSchema;
+                    });
         }
-        return this.formDefinitionRepository.findByNameOrId(idOrNameLike).stream().map(formio ->
-        {
-            FormResponseSchema formSchema = this.objectMapper.convertValue(formio,FormResponseSchema.class);
-            return formSchema.withComponents(null);
-        });
+        return this.formDefinitionRepository
+                .findByNameOrId(idOrNameLike)
+                .stream()
+                .map(formio ->{
+                    FormResponseSchema formSchema = this.objectMapper.convertValue(formio, FormResponseSchema.class);
+                    formSchema.setComponents(null);
+                    return formSchema;
+                });
+        }
     }
-}

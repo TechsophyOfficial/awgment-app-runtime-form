@@ -9,11 +9,8 @@ import java.util.Map;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.TP_FORM_DEFINITION_COLLECTION;
 
 @EqualsAndHashCode(callSuper = true)
-@Data
-@With
-@NoArgsConstructor
-@AllArgsConstructor
 @Document(collection = TP_FORM_DEFINITION_COLLECTION)
+@Data
 public class FormDefinition extends Auditable
 {
     private static final long serialVersionUID = 1L;
@@ -26,4 +23,5 @@ public class FormDefinition extends Auditable
     Map<String,Object> properties;
     private String type;
     private Boolean isDefault;
+    private Status elasticPush = Status.DISABLED;
 }

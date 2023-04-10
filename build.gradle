@@ -46,7 +46,7 @@ jib {
 }
 
 dependencies {
-    implementation 'com.techsophy:awgment-commons:0.1.1-SNAPSHOT'
+    implementation 'com.techsophy:awgment-commons:0.1.3'
     implementation 'org.springframework.boot:spring-boot-starter-web:2.6.6'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb:2.6.6'
     implementation 'org.springframework.boot:spring-boot-starter-validation:2.6.6'
@@ -66,7 +66,7 @@ dependencies {
     implementation "io.mongock:mongock-springboot:5.0.32"
     implementation "io.mongock:mongodb-springdata-v3-driver:5.0.32"
     implementation 'com.techsophy:id-generator:2.0.0'
-    implementation 'com.techsophy:multitenancy-mongo:1.0.0'
+    implementation 'com.techsophy:multitenancy-mongo:0.2.0'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
     implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.5.0'
 
