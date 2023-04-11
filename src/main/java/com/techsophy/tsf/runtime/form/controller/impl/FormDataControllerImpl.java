@@ -103,7 +103,6 @@ public class FormDataControllerImpl implements FormDataController
     }
 
     @Override
-    @Transactional
     public ApiResponse<Void> deleteAllFormDataByFormId(String formId)
     {
         checkACL(DELETE_RULE, Collections.singletonList(formId));
