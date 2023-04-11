@@ -6,7 +6,6 @@ import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertOneResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
-import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
 import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataAuditServiceImpl;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataServiceImpl;
@@ -39,7 +38,6 @@ import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.FORM_DATA;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class})
@@ -104,7 +102,6 @@ class FormDataServiceElasticEnabledExceptionTest
     void deleteAllFormDataByFormIdTokenEmptyExceptionTest()
     {
         when(mockTokenUtils.getTokenFromContext()).thenReturn(EMPTY_STRING);
-        when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteAllFormDataByFormId(TEST_FORM_ID));
     }
 
@@ -134,14 +131,12 @@ class FormDataServiceElasticEnabledExceptionTest
         dataMapTest.put(UPDATED_ON,TEST_UPDATED_ON);
         responseMapTest.put(DATA, dataMapTest);
         responseMapTest.put(SUCCESS,true);
-        when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteAllFormDataByFormId(TEST_FORM_ID));
     }
 
     @Test
     void deleteFormDataByFormIdAndIdTest()
     {
-        when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +TEST_FORM_ID)).thenReturn(mockMongoCollection);
         DeleteResult mockDeleteResult=Mockito.mock(DeleteResult.class);
         when(mockMongoCollection.deleteMany(any())).thenReturn(mockDeleteResult);
@@ -172,7 +167,6 @@ class FormDataServiceElasticEnabledExceptionTest
         dataMapTest.put(UPDATED_ON,TEST_UPDATED_ON);
         responseMapTest.put(DATA, null);
         responseMapTest.put(SUCCESS,true);
-        when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +TEST_FORM_ID)).thenReturn(mockMongoCollection);
         DeleteResult mockDeleteResult=Mockito.mock(DeleteResult.class);
         when(mockMongoCollection.deleteMany(any())).thenReturn(mockDeleteResult);
@@ -183,7 +177,6 @@ class FormDataServiceElasticEnabledExceptionTest
     @Test
     void deleteFormDataByFormIdAndIdTokenInvalidInputExceptionTest()
     {
-        when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         Map<String, Object> testFormMetaData = new HashMap<>();
         testFormMetaData.put(FORM_VERSION, 1);
         Map<String, Object> testFormData = new HashMap<>();
