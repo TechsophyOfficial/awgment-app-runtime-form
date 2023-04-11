@@ -140,7 +140,6 @@ class FormDataServiceElasticEnabledTest
         dataMapTest.put(UPDATED_ON,TEST_UPDATED_ON);
         responseMapTest.put(DATA, dataMapTest);
         responseMapTest.put(SUCCESS,true);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +TEST_FORM_ID)).thenReturn(true);
         mockFormDataServiceImpl.deleteAllFormDataByFormId(TEST_FORM_ID);
         verify(mockWebClientWrapper,times(1)).webclientRequest(any(),any(),any(),any());
     }
@@ -172,7 +171,6 @@ class FormDataServiceElasticEnabledTest
         dataMapTest.put(UPDATED_ON,TEST_UPDATED_ON);
         responseMapTest.put(DATA, dataMapTest);
         responseMapTest.put(SUCCESS,true);
-        Mockito.when(mockMongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +TEST_FORM_ID)).thenReturn(true);
         Mockito.when(mockMongoTemplate.getCollection(anyString())).thenReturn(mockMongoCollection);
         Mockito.when(mockMongoCollection.deleteMany(any())).thenReturn(mockDeleteResult);
         Mockito.when(mockDeleteResult.getDeletedCount()).thenReturn(Long.valueOf(1));
