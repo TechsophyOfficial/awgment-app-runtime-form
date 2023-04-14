@@ -330,7 +330,10 @@ public class FormDataServiceImpl implements FormDataService
         paginationResponsePayload1 = sortByAndSortOrderIsEmpty(formId, sortBy, sortOrder, pageable, paginationResponsePayload, content,andCriteria);
         if (paginationResponsePayload1 != null) return paginationResponsePayload1;
         checkIfBothSortByAndSortOrderGivenAsInput(sortBy, sortOrder);
-        query.addCriteria(andCriteria);
+        if(andCriteria!=null)
+        {
+            query.addCriteria(andCriteria);
+        }
         query.with(Sort.by(Sort.Direction.fromString(sortOrder),sortBy));
         long totalMatchedRecords= getCount(formId, query);
         query.with(pageable);
@@ -742,7 +745,7 @@ public class FormDataServiceImpl implements FormDataService
             ArrayList<String> relationValuesList = new ArrayList<>();
             prepareRelationList(mappedArrayOfDocumentsName, relationsList, relationKeysList, relationValuesList);
             List<AggregationOperation> aggregationOperationsList = new ArrayList<>();
-            if(isNotBlank(aclFilter))
+            if(andCriteria!=null)
             {
                 aggregationOperationsList.add(Aggregation.match(andCriteria));
             }
