@@ -785,7 +785,6 @@ public class FormDataServiceImpl implements FormDataService
         try
         {
             mongoTemplate.dropCollection(TP_RUNTIME_FORM_DATA +formId+AUDIT);
-            checkMongoCollectionIfExistsOrNot(formId);
             mongoTemplate.dropCollection(TP_RUNTIME_FORM_DATA +formId);
         }
         catch (Exception e)
@@ -810,7 +809,6 @@ public class FormDataServiceImpl implements FormDataService
         boolean flag = false;
         long count = 0;
         Bson filter= Filters.eq(UNDERSCORE_ID,id);
-        checkMongoCollectionIfExistsOrNot(formId);
         try
         {
                 DeleteResult deleteResult= mongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formId).deleteMany(filter);
