@@ -9,25 +9,25 @@ import java.util.List;
 
 public interface FormDataService
 {
-    FormDataDefinition saveFormData(FormDataSchema formDataSchema,String filter) throws IOException;
+    FormDataDefinition saveFormData(FormDataSchema formDataSchema, String filter,String aclFilter) throws IOException;
 
-    FormDataDefinition updateFormData(FormDataSchema formDataSchema,String filter) throws JsonProcessingException;
+    FormDataDefinition updateFormData(FormDataSchema formDataSchema, String filter,String aclFilter) throws JsonProcessingException;
 
-    List<FormDataResponseSchema> getAllFormDataByFormId(String formId,String relations,String filter,String sortBy, String sortOrder) throws JsonProcessingException;
+    List<FormDataResponseSchema> getAllFormDataByFormId(String formId, String relations, String filter, String sortBy, String sortOrder,String aclFilter) throws JsonProcessingException;
 
-    PaginationResponsePayload getAllFormDataByFormId(String formId,String relations,String filter, String sortBy, String sortOrder, Pageable pageable) throws JsonProcessingException;
+    PaginationResponsePayload getAllFormDataByFormId(String formId, String relations, String filter, String sortBy, String sortOrder, Pageable pageable,String aclFilter) throws JsonProcessingException;
 
-    List<FormDataResponseSchema> getAllFormDataByFormIdAndQ(String formId,String relations,String q, String sortBy, String sortOrder);
+    List<FormDataResponseSchema> getAllFormDataByFormIdAndQ(String formId, String relations, String q, String sortBy, String sortOrder,String aclFilter);
 
-    PaginationResponsePayload getAllFormDataByFormIdAndQ(String formId, String relations, String q, String sortBy, String sortOrder, Pageable pageable);
+    PaginationResponsePayload getAllFormDataByFormIdAndQ(String formId, String relations, String q, String sortBy, String sortOrder, Pageable pageable,String aclFilter);
 
-    PaginationResponsePayload getAllFormDataByFormId(String formId, String relations);
+    PaginationResponsePayload getAllFormDataByFormId(String formId, String relations,String aclFilter);
 
-   List<FormDataResponseSchema> getFormDataByFormIdAndId(String formId, String id, String relations);
+   List<FormDataResponseSchema> getFormDataByFormIdAndId(String formId, String id, String relations,String aclFilter);
 
     void deleteAllFormDataByFormId(String formId);
 
-    void deleteFormDataByFormIdAndId(String formId, String id);
+    void deleteFormDataByFormIdAndId(String formId, String id, String filter, String aclFilter);
 
     AggregationResponse aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation) throws JsonProcessingException;
 }

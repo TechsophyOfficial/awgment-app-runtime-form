@@ -1,6 +1,8 @@
 package com.techsophy.tsf.runtime.form.config;
 
 import com.techsophy.idgenerator.IdGeneratorImpl;
+import com.techsophy.tsf.commons.acl.ACLEvaluation;
+import com.techsophy.tsf.commons.acl.ACLEvaluatorImpl;
 import com.techsophy.tsf.commons.user.UserDetails;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.servers.Server;
@@ -33,5 +35,11 @@ public class ApplicationConfig
     public UserDetails userDetails(String gatewayUrl)
     {
         return new UserDetails(gatewayUrl);
+    }
+
+    @Bean
+    public ACLEvaluation aclEvaluator()
+    {
+        return new ACLEvaluatorImpl(gatewayUrl);
     }
 }
