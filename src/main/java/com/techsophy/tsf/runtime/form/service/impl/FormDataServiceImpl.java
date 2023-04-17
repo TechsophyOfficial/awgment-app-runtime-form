@@ -608,7 +608,7 @@ public class FormDataServiceImpl implements FormDataService
         paginationResponsePayload.setPage(pageable.getPageNumber());
         paginationResponsePayload.setSize(pageable.getPageSize());
         List<Map<String, Object>> content = new ArrayList<>();
-        PaginationResponsePayload paginationResponsePayload1 = getPaginationWithMongoAndRelations(formId, relations, sortBy, sortOrder, pageable, paginationResponsePayload, content,andCriteria);
+        PaginationResponsePayload paginationResponsePayload1 = getPaginationWithMongoAndRelations(formId, relations, sortBy, sortOrder, pageable, paginationResponsePayload,andCriteria);
         if (paginationResponsePayload1!=null) return paginationResponsePayload1;
         Query query=new Query();
         if(andCriteria!=null)
@@ -660,7 +660,7 @@ public class FormDataServiceImpl implements FormDataService
         }
     }
 
-    private PaginationResponsePayload getPaginationWithMongoAndRelations(String formId, String relations, String sortBy, String sortOrder, Pageable pageable, PaginationResponsePayload paginationResponsePayload, List<Map<String, Object>> content,Criteria aclFilterCriteria)
+    private PaginationResponsePayload getPaginationWithMongoAndRelations(String formId, String relations, String sortBy, String sortOrder, Pageable pageable, PaginationResponsePayload paginationResponsePayload,Criteria aclFilterCriteria)
     {
         if (isNotEmpty(relations))
         {
@@ -675,7 +675,7 @@ public class FormDataServiceImpl implements FormDataService
                 aggregationOperationsList.add(Aggregation.match(aclFilterCriteria));
             }
             prepareDocumentAggregateList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList, aggregationOperationsList);
-            PaginationResponsePayload paginationResponsePayload1 = getPaginationWithMongoAndEmptySort(formId, sortBy, sortOrder, pageable, paginationResponsePayload, content, aggregationOperationsList);
+            PaginationResponsePayload paginationResponsePayload1 = getPaginationWithMongoAndEmptySort(formId, sortBy, sortOrder, pageable, paginationResponsePayload, new ArrayList<>(), aggregationOperationsList);
             if (paginationResponsePayload1!=null) return paginationResponsePayload1;
             FacetOperation facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA).and(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)),
                     Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
@@ -684,13 +684,13 @@ public class FormDataServiceImpl implements FormDataService
             Map<String,Object> dataMap=aggregateList.get(0);
             List<Map<String,Object>> metaDataList= getMetaDataList(dataMap);
             List<Map<String,Object>> dataList= getDataList(dataMap);
-            prepareContentListFromData(content, dataList);
+            prepareContentListFromData(new ArrayList<>(), dataList);
             Map<String,Object> metaData = new HashMap<>();
             metaData = getMetaDataMap(metaDataList, metaData);
             long totalMatchedRecords;
             totalMatchedRecords = extractCountOfMatchedRecords(metaData);
             int totalPages = getTotalPages(pageable, totalMatchedRecords);
-            setPaginationResponsePayload(paginationResponsePayload, content, totalMatchedRecords, totalPages);
+            setPaginationResponsePayload(paginationResponsePayload,new ArrayList<>(), totalMatchedRecords, totalPages);
             return paginationResponsePayload;
         }
         return null;
