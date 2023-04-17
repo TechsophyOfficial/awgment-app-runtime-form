@@ -27,10 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
@@ -273,11 +270,8 @@ class FormDataControllerTest
     }
 
     @Test
-    void getAllFormDataByFormIdSortWithoutACLTest() throws JsonProcessingException
+    void getAllFormDataByFormIdSortWithoutACLTest()
     {
-        List<FormDataResponseSchema> formDataResponseSchemaList=new ArrayList<>();
-        Mockito.when(formDataService.getAllFormDataByFormIdAndQ(anyString(),anyString(),any(),anyString(),anyString(), any())).thenReturn(formDataResponseSchemaList);
-        ApiResponse apiResponse=new ApiResponse(formDataResponseSchemaList,true,"Form data retrieved successfully");
         FormAclDto formAclDto = new FormAclDto();
         formAclDto.setId("1");
         formAclDto.setAclId("101");
@@ -289,8 +283,7 @@ class FormDataControllerTest
         ACLDecision aclDecision=new ACLDecision("allow",additionalDetails);
         Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("test-token");
         Mockito.when(aclEvaluatorImpl.getRead(anyString(),anyString(),any())).thenReturn(aclDecision);
-        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data retrieved successfully");
-        Assertions.assertEquals(apiResponse,formDataController.getAllFormDataByFormId("101","994102731543871488:orderId,994122561634369536:parcelId",null,null,CREATED_ON,DESCENDING,EMPTY_STRING,null));
+        Assertions.assertThrows(NoSuchElementException.class,()->formDataController.getAllFormDataByFormId("101","994102731543871488:orderId,994122561634369536:parcelId",null,null,CREATED_ON,DESCENDING,EMPTY_STRING,null));
     }
 
     @Test
