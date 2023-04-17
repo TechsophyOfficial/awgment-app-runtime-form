@@ -49,7 +49,7 @@ public class FormDataControllerImpl implements FormDataController
                 .map(additionaDetailsMap->Optional.ofNullable((Map<String,String>)additionaDetailsMap.get("runtime-form-app")))
                 .map(x->x.map(runtimeFormMap->runtimeFormMap.get("filters")))
                 .reduce((filter1,filter2)->filter1.flatMap(optionalFilter->Optional.of(optionalFilter+filter2.orElse(""))))
-                .orElse(Optional.empty());
+                .orElseThrow();
     }
 
     @Override
