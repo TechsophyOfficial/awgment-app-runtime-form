@@ -34,6 +34,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -80,6 +81,8 @@ class FormDataServiceElasticDisabledTest
     @Mock
     FormService mockFormService;
     @Mock
+    Criteria criteria;
+    @Mock
     IdGeneratorImpl mockIdGeneratorImpl;
     @Mock
     InsertOneResult insertOneResult;
@@ -89,6 +92,8 @@ class FormDataServiceElasticDisabledTest
     DeleteResult mockDeleteResult;
     @Mock
     ObjectMapper mockObjectMapper;
+    @Mock
+    MongoQueryBuilder mongoQueryBuilder;
     @Mock
     MongoCursor mongoCursor;
     @Mock
@@ -262,16 +267,22 @@ class FormDataServiceElasticDisabledTest
     @Test
     void getAllFormDataByFormIdAggregationEmptySortTest()
     {
-        Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
-        List<Map> aggregateList=new ArrayList<>();
-        Map<String,Object> map=new HashMap<>();
-        map.put(UNDERSCORE_ID,TEST_ID_VALUE);
-        aggregateList.add(map);
-        Document document=new Document();
-        List<Document> documentList=new ArrayList<>();
-        documentList.add(document);
-        Mockito.when(mockMongoTemplate.aggregate((Aggregation) any(),anyString(),eq(Document.class))).thenReturn( new AggregationResults<>(documentList,document));
-        Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID,TEST_RELATIONS,FILTER_VERSION_2,EMPTY_STRING, EMPTY_STRING));
+            Criteria criteria2 =  Criteria.where("formData.age").is(18);
+            doReturn(criteria2).when(mongoQueryBuilder).equalsQuery(any(),any());
+            doReturn(criteria2).when(mongoQueryBuilder).inQuery(any(),any());
+            doReturn(criteria2).when(mongoQueryBuilder).comparatorQuery(any(),any());
+            doReturn(criteria2).when(mongoQueryBuilder).likeQuery(any(),any());
+            Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+            List<Map> aggregateList = new ArrayList<>();
+            Map<String, Object> map = new HashMap<>();
+            map.put(UNDERSCORE_ID, TEST_ID_VALUE);
+            aggregateList.add(map);
+            Document document = new Document();
+            List<Document> documentList = new ArrayList<>();
+            documentList.add(document);
+            Mockito.when(mockMongoTemplate.aggregate((Aggregation) any(), anyString(), eq(Document.class))).thenReturn(new AggregationResults<>(documentList, document));
+            Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, FILTER_VERSION_2, EMPTY_STRING, EMPTY_STRING));
+
     }
 
     @Test
