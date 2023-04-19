@@ -46,9 +46,16 @@ public class FormDataControllerImpl implements FormDataController
         return aclDecisionList
                 .stream()
                 .map(ACLDecision::getAdditionalDetails)
-                .map(a->Optional.ofNullable((Map<String,String>)a.get("runtime-form-app")))
-                .map(b->b.map(c->c.get("filters")))
-                .reduce((d,e)->d.flatMap(f->Optional.of(f+e.orElse(""))))
+                .map(additionalDetailsMap->{
+                    Map<String,String> runtimeFormMap=(Map<String, String>) additionalDetailsMap.get(RUNTIME_FORM_APP);
+                    if(runtimeFormMap==null||runtimeFormMap.isEmpty())
+                    {
+                        throw new NoSuchElementException("runtime-form-app field is missing or it was empty in additionalDetailsMap inside ACLDefinition");
+                    }
+                    return Optional.of(runtimeFormMap);
+                })
+                .map(x->x.flatMap(runtimeFormApp->Optional.ofNullable(runtimeFormApp.get(FILTERS))))
+                .reduce((filter1, filter2) -> filter1.flatMap(optionalFilter -> Optional.of(optionalFilter + filter2.orElse(""))))
                 .orElse(Optional.empty());
     }
 

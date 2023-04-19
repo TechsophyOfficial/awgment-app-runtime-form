@@ -25,13 +25,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ClassPathResource;
-
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.RuntimeFormTestConstants.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -149,6 +145,44 @@ class FormDataControllerTest
         Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("test-token");
         Mockito.when(aclEvaluatorImpl.getRead(anyString(),anyString(),any())).thenReturn(aclDecision);
         Assertions.assertThrows(ACLException.class, () -> formDataController.getFormDataByFormIdAndId("101", "201", "994102731543871488:orderId,994122561634369536:parcelId"));
+    }
+
+    @Test
+    void saveFormDataNoSuchElementExceptionTest()
+    {
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        FormAclDto formAclDto = new FormAclDto();
+        formAclDto.setId("1");
+        formAclDto.setAclId("101");
+        formAclDto.setFormId("101");
+        Mockito.when(formAclServiceImpl.getFormAcl(anyString())).thenReturn(formAclDto);
+        Map<String,Object> additionalDetails=new HashMap<>();
+        Map<String,String> filtersMap=new HashMap<>();
+        additionalDetails.put("runtime-form-app",filtersMap);
+        ACLDecision aclDecision=new ACLDecision("allow",additionalDetails);
+        Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("test-token");
+        Mockito.when(aclEvaluatorImpl.getUpdate(anyString(),anyString(),any())).thenReturn(aclDecision);
+        Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("test-token");
+        Assertions.assertThrows(NoSuchElementException.class,()->formDataController.saveFormData(formDataSchema,"formData.name:akhil"));
+    }
+
+    @Test
+    void updateFormDataNoSuchElementExceptionTest()
+    {
+        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
+        FormAclDto formAclDto = new FormAclDto();
+        formAclDto.setId("1");
+        formAclDto.setAclId("101");
+        formAclDto.setFormId("101");
+        Mockito.when(formAclServiceImpl.getFormAcl(anyString())).thenReturn(formAclDto);
+        Map<String,Object> additionalDetails=new HashMap<>();
+        Map<String,String> filtersMap=new HashMap<>();
+        additionalDetails.put("runtime-form-app",filtersMap);
+        ACLDecision aclDecision=new ACLDecision("allow",additionalDetails);
+        Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("test-token");
+        Mockito.when(aclEvaluatorImpl.getUpdate(anyString(),anyString(),any())).thenReturn(aclDecision);
+        Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("test-token");
+        Assertions.assertThrows(NoSuchElementException.class,()->formDataController.updateFormData(formDataSchema,"formData.name:akhil"));
     }
 
     @Test
@@ -273,7 +307,7 @@ class FormDataControllerTest
     }
 
     @Test
-    void getAllFormDataByFormIdSortWithoutACLTest() throws JsonProcessingException
+    void getAllFormDataByFormIdSortWithACLTest() throws JsonProcessingException
     {
         List<FormDataResponseSchema> formDataResponseSchemaList=new ArrayList<>();
         Mockito.when(formDataService.getAllFormDataByFormIdAndQ(anyString(),anyString(),any(),anyString(),anyString(), any())).thenReturn(formDataResponseSchemaList);
@@ -285,6 +319,7 @@ class FormDataControllerTest
         Mockito.when(formAclServiceImpl.getFormAcl(anyString())).thenReturn(formAclDto);
         Map<String,Object> additionalDetails=new HashMap<>();
         Map<String,String> filtersMap=new HashMap<>();
+        filtersMap.put("filters","{\"formData.orderName\":{\"equals\" : \"order1\"}}");
         additionalDetails.put("runtime-form-app",filtersMap);
         ACLDecision aclDecision=new ACLDecision("allow",additionalDetails);
         Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("test-token");

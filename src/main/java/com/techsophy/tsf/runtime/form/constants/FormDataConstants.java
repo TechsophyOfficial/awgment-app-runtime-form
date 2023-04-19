@@ -18,6 +18,6 @@ public class FormDataConstants
     public static final String DELETE_RULE ="delete";
     public static final String ELASTIC ="/elastic";
     public static final String ACL ="/acl";
-    public static final String INDEX_NAME ="indexName";
-    public static final String ACL_ID ="aclId";
+    public static final String FILTERS="filters";
+    public static final String RUNTIME_FORM_APP="runtime-form-app";
 }
