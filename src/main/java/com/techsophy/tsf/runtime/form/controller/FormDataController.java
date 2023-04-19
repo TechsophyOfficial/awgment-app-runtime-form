@@ -44,7 +44,7 @@ public interface FormDataController
 
     @DeleteMapping(FORM_DATA_ID_URL)
     @PreAuthorize(DELETE_OR_ALL_ACCESS)
-    ApiResponse<Void> deleteFormDataByFormIdAndId(@PathVariable(FORM_ID) String formId, @RequestParam(value=ID) String id);
+    ApiResponse<Void> deleteFormDataByFormIdAndId(@PathVariable(FORM_ID) String formId, @RequestParam(value=ID) String id,@RequestParam(value = FILTER,required = false)String filter);
 
     @GetMapping(FORM_DATA_AGGREGATE)
     @PreAuthorize(READ_OR_ALL_ACCESS)

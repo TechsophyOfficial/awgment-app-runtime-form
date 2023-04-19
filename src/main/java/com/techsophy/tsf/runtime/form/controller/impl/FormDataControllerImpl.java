@@ -2,10 +2,13 @@ package com.techsophy.tsf.runtime.form.controller.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.techsophy.tsf.commons.acl.ACLDecision;
-import com.techsophy.tsf.commons.acl.ACLEvaluatorImpl;
+import com.techsophy.tsf.commons.acl.ACLEvaluation;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.controller.FormDataController;
-import com.techsophy.tsf.runtime.form.dto.*;
+import com.techsophy.tsf.runtime.form.dto.AggregationResponse;
+import com.techsophy.tsf.runtime.form.dto.FormAclDto;
+import com.techsophy.tsf.runtime.form.dto.FormDataResponseSchema;
+import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
 import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
 import com.techsophy.tsf.runtime.form.exception.ACLException;
 import com.techsophy.tsf.runtime.form.model.ApiResponse;
@@ -16,15 +19,12 @@ import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.ACCESS_DENIED;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.*;
@@ -39,15 +39,25 @@ public class FormDataControllerImpl implements FormDataController
     private final FormAclService formAclService;
     private final TokenUtils tokenUtils;
     private final RelationUtils relationUtils;
-    @Value(GATEWAY_URL)
-    private String gatewayUrl;
+    private final ACLEvaluation aclEvaluation;
+
+    private static Optional<String> getAclFilter(List<ACLDecision> aclDecisionList)
+    {
+        return aclDecisionList
+                .stream()
+                .map(ACLDecision::getAdditionalDetails)
+                .map(a->Optional.ofNullable((Map<String,String>)a.get("runtime-form-app")))
+                .map(b->b.map(c->c.get("filters")))
+                .reduce((d,e)->d.flatMap(f->Optional.of(f+e.orElse(""))))
+                .orElse(Optional.empty());
+    }
 
     @Override
     @Transactional
     public ApiResponse<FormDataDefinition> saveFormData(FormDataSchema formDataSchema, String filter) throws IOException
     {
-        checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
-        FormDataDefinition formDataDefinition =formDataService.saveFormData(formDataSchema,filter);
+        List<ACLDecision> aclDecisionList=checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
+        FormDataDefinition formDataDefinition =formDataService.saveFormData(formDataSchema,filter,getAclFilter(aclDecisionList).orElse(""));
         return new ApiResponse<>(formDataDefinition,true,globalMessageSource.get(SAVE_FORM_DATA_SUCCESS));
     }
 
@@ -55,8 +65,8 @@ public class FormDataControllerImpl implements FormDataController
     @Transactional
     public ApiResponse<FormDataDefinition> updateFormData(FormDataSchema formDataSchema, String filter) throws JsonProcessingException
     {
-         checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
-         FormDataDefinition formDataDefinition=formDataService.updateFormData(formDataSchema,filter);
+         List<ACLDecision> aclDecisionList=checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
+         FormDataDefinition formDataDefinition=formDataService.updateFormData(formDataSchema,filter,getAclFilter(aclDecisionList).orElse(""));
          return new ApiResponse<>(formDataDefinition,true,globalMessageSource.get(UPDATE_FORM_DATA_SUCCESS));
     }
 
@@ -66,30 +76,30 @@ public class FormDataControllerImpl implements FormDataController
         List<String> listOfFormIds=new ArrayList<>();
         listOfFormIds.add(formId);
         listOfFormIds.addAll(relationUtils.getListOfFormIdsUsingRelations(relations));
-        checkACL(READ_RULE,listOfFormIds);
+        List<ACLDecision> aclDecisionList=checkACL(READ_RULE,listOfFormIds);
         if (StringUtils.hasText(filter))
         {
             if (page == null)
             {
-                return new ApiResponse<>(formDataService.getAllFormDataByFormId(formId, relations, filter, sortBy, sortOrder), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
+                return new ApiResponse<>(formDataService.getAllFormDataByFormId(formId, relations, filter, sortBy, sortOrder,getAclFilter(aclDecisionList).orElse("")), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
             }
             else
             {
-                return new ApiResponse<>(formDataService.getAllFormDataByFormId(formId, relations, filter, sortBy, sortOrder, PageRequest.of(page, pageSize)), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
+                return new ApiResponse<>(formDataService.getAllFormDataByFormId(formId, relations, filter, sortBy, sortOrder, PageRequest.of(page, pageSize),getAclFilter(aclDecisionList).orElse("")), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
             }
         }
         else if ((StringUtils.hasText(sortBy) || StringUtils.hasText(sortOrder)) || (page != null || pageSize != null) || StringUtils.hasText(q))
         {
             if (page == null)
             {
-                return new ApiResponse<>(formDataService.getAllFormDataByFormIdAndQ(formId, relations, q, sortBy, sortOrder), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
+                return new ApiResponse<>(formDataService.getAllFormDataByFormIdAndQ(formId, relations, q, sortBy, sortOrder,getAclFilter(aclDecisionList).orElse("")), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
             }
             else
             {
-                return new ApiResponse<>(formDataService.getAllFormDataByFormIdAndQ(formId, relations, q, sortBy, sortOrder, PageRequest.of(page, pageSize)), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
+                return new ApiResponse<>(formDataService.getAllFormDataByFormIdAndQ(formId, relations, q, sortBy, sortOrder, PageRequest.of(page, pageSize),getAclFilter(aclDecisionList).orElse("")), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
             }
         }
-        return new ApiResponse<>(formDataService.getAllFormDataByFormId(formId,relations), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
+        return new ApiResponse<>(formDataService.getAllFormDataByFormId(formId,relations,getAclFilter(aclDecisionList).orElse("")), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
     }
 
     @Override
@@ -98,12 +108,11 @@ public class FormDataControllerImpl implements FormDataController
         List<String> listOfFormIds=new ArrayList<>();
         listOfFormIds.add(formId);
         listOfFormIds.addAll(relationUtils.getListOfFormIdsUsingRelations(relations));
-        checkACL(READ_RULE,listOfFormIds);
-        return new ApiResponse<>(formDataService.getFormDataByFormIdAndId(formId, id, relations), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
+        List<ACLDecision> aclDecisionList=checkACL(READ_RULE,listOfFormIds);
+        return new ApiResponse<>(formDataService.getFormDataByFormIdAndId(formId, id, relations,getAclFilter(aclDecisionList).orElse("")), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
     }
 
     @Override
-    @Transactional
     public ApiResponse<Void> deleteAllFormDataByFormId(String formId)
     {
         checkACL(DELETE_RULE, Collections.singletonList(formId));
@@ -113,10 +122,10 @@ public class FormDataControllerImpl implements FormDataController
 
     @Override
     @Transactional
-    public ApiResponse<Void> deleteFormDataByFormIdAndId(String formId, String id)
+    public ApiResponse<Void> deleteFormDataByFormIdAndId(String formId, String id,String filter)
     {
-        checkACL(DELETE_RULE, Collections.singletonList(formId));
-        formDataService.deleteFormDataByFormIdAndId(formId,id);
+        List<ACLDecision> aclDecisionList=checkACL(DELETE_RULE, Collections.singletonList(formId));
+        formDataService.deleteFormDataByFormIdAndId(formId,id,filter,getAclFilter(aclDecisionList).orElse(""));
         return new ApiResponse<>(null,true,globalMessageSource.get(DELETE_FORM_DATA_SUCCESS));
     }
 
@@ -128,24 +137,24 @@ public class FormDataControllerImpl implements FormDataController
         return new ApiResponse<>(aggregationResponse,true,globalMessageSource.get(GET_FORM_DATA_SUCCESS));
     }
 
-    private void checkACL(String rule,List<String> formIdList)
+    private List<ACLDecision> checkACL(String rule,List<String> formIdList)
     {
+        List<ACLDecision> aclDecisionList=new ArrayList<>();
         formIdList.forEach(x->{
                FormAclDto dto = formAclService.getFormAcl(x);
                if(dto==null) return;
                String aclId = dto.getAclId();
-                ACLEvaluatorImpl aclEvaluator=new ACLEvaluatorImpl(gatewayUrl);
                 ACLDecision decision =null;
                 switch (rule)
                 {
                     case READ_RULE:
-                        decision = aclEvaluator.getRead(aclId,tokenUtils.getTokenFromContext(),null);
+                        decision = aclEvaluation.getRead(aclId,tokenUtils.getTokenFromContext(),null);
                         break;
                     case UPDATE_RULE:
-                        decision = aclEvaluator.getUpdate(aclId,tokenUtils.getTokenFromContext(),null);
+                        decision = aclEvaluation.getUpdate(aclId,tokenUtils.getTokenFromContext(),null);
                         break;
                     case DELETE_RULE:
-                        decision = aclEvaluator.getDelete(aclId,tokenUtils.getTokenFromContext(),null);
+                        decision = aclEvaluation.getDelete(aclId,tokenUtils.getTokenFromContext(),null);
                         break;
                     default: break;
                 }
@@ -154,6 +163,8 @@ public class FormDataControllerImpl implements FormDataController
                 {
                     throw new ACLException(ACCESS_DENIED,globalMessageSource.get(ACCESS_DENIED,aclId));
                 }
+            aclDecisionList.add(decision);
         });
+        return aclDecisionList;
     }
 }

@@ -44,7 +44,7 @@ public class FormDataElasticServiceImpl implements FormDataElasticService
     {
         if(elasticEnable) {
             try {
-                webClientWrapper.webclientRequest(webClientWrapper.createWebClient("Bearer "+tokenUtils.getTokenFromContext()),
+              webClientWrapper.webclientRequest(webClientWrapper.createWebClient(tokenUtils.getTokenFromContext()),
                         gatewayApi + ELASTIC_VERSION1 + SLASH + TP_RUNTIME_FORM_DATA + formDataDefinition.getFormId() + PARAM_SOURCE + elasticSource, POST,
                         formDataDefinition);
             } catch (Exception e) {
