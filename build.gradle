@@ -46,7 +46,7 @@ jib {
 }
 
 dependencies {
-    implementation 'com.techsophy:awgment-commons:0.1.3-SNAPSHOT'
+    implementation 'com.techsophy:awgment-commons:0.1.4'
     implementation 'org.springframework.boot:spring-boot-starter-web:2.6.6'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb:2.6.6'
     implementation 'org.springframework.boot:spring-boot-starter-validation:2.6.6'
