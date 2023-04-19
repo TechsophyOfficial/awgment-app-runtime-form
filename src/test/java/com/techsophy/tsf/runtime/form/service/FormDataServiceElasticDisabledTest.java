@@ -267,11 +267,11 @@ class FormDataServiceElasticDisabledTest
     void getAllFormDataByFormIdAggregationEmptySortTest()
     {
 
-            Criteria criteria2 =  Criteria.where("formData.age").is(18);
-            doReturn(criteria2).when(mongoQueryBuilder).equalsQuery(any(),any());
-            doReturn(criteria2).when(mongoQueryBuilder).inQuery(any(),any());
-            doReturn(criteria2).when(mongoQueryBuilder).comparatorQuery(any(),any());
-            doReturn(criteria2).when(mongoQueryBuilder).likeQuery(any(),any());
+            Criteria criteria =  Criteria.where("formData.age").is(18);
+            doReturn(criteria).when(mongoQueryBuilder).equalsQuery(any(),any());
+            doReturn(criteria).when(mongoQueryBuilder).inQuery(any(),any());
+            doReturn(criteria).when(mongoQueryBuilder).comparatorQuery(any(),any());
+            doReturn(criteria).when(mongoQueryBuilder).likeQuery(any(),any());
             Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
             List<Map> aggregateList = new ArrayList<>();
             Map<String, Object> map = new HashMap<>();
@@ -281,7 +281,7 @@ class FormDataServiceElasticDisabledTest
             List<Document> documentList = new ArrayList<>();
             documentList.add(document);
             Mockito.when(mockMongoTemplate.aggregate((Aggregation) any(), anyString(), eq(Document.class))).thenReturn(new AggregationResults<>(documentList, document));
-            Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, FILTER_VERSION_2, EMPTY_STRING, EMPTY_STRING));
+            Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, FILTER_VERSION_2, EMPTY_STRING, EMPTY_STRING,null));
 
 
     }
