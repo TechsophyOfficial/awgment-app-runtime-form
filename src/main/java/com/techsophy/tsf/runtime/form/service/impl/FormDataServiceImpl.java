@@ -180,23 +180,24 @@ public class FormDataServiceImpl implements FormDataService
         Criteria andCriteria = getAndCriteria(filter, aclFilter);
         if (isNotEmpty(relations))
         {
-            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations);
-            if(andCriteria!=null)
-            {
-                aggregationOperationsList.add(Aggregation.match(andCriteria));
-            }
+            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations,andCriteria);
             return getMapsEmptySort(formId, sortBy, sortOrder, aggregationOperationsList);
         }
         return getFormDataResponseSchemasSort(formId, sortBy, sortOrder,andCriteria);
     }
 
-    private static List<AggregationOperation> getAggregationOperationsList(String relations)
+    private static List<AggregationOperation> getAggregationOperationsList(String relations,Criteria criteria)
     {
         String[] relationsList = relations.split(COMMA);
         List<String> relationKeysList=getRelationKeysList(relationsList);
         List<String> relationValuesList=getRelationValuesList(relationsList);
         List<String> mappedArrayOfDocumentsName=getMappedArrayOfDocuments(relationsList);
-        return getAggregationOperationList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList);
+        List<AggregationOperation> aggregationOperationsList= getAggregationOperationList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList);
+        if(criteria!=null)
+        {
+            aggregationOperationsList.add(Aggregation.match(criteria));
+        }
+        return aggregationOperationsList;
     }
 
     private Criteria getAndCriteria(String filter, String aclFilter)
@@ -270,8 +271,7 @@ public class FormDataServiceImpl implements FormDataService
         {
             query.with(Sort.by(Sort.Direction.fromString(sortOrder), sortBy));
         }
-        List<FormDataDefinition> formDataDefinitionsList= getFormDataDefinitionsList(formId, query);
-        return getFormDataResponseSchemaList(formDataDefinitionsList);
+        return getFormDataResponseSchemaList(getFormDataDefinitionsList(formId, query));
     }
 
     private List<Map<String, Object>> getMapsEmptySort(String formId, String sortBy, String sortOrder, List<AggregationOperation> aggregationOperationsList)
@@ -284,8 +284,7 @@ public class FormDataServiceImpl implements FormDataService
         {
             aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)));
         }
-        List<Document> aggregateList=getDocumentList(formId, aggregationOperationsList);
-        return getRelationsMap(aggregateList);
+        return getRelationsMap( getDocumentList(formId, aggregationOperationsList));
     }
 
     private static List<AggregationOperation> getAggregationOperationList(List<String> mappedArrayOfDocumentsName, List<String> relationKeysList, List<String> relationValuesList)
@@ -331,8 +330,7 @@ public class FormDataServiceImpl implements FormDataService
         query.with(pageable);
         List<FormDataDefinition> formDataDefinitionsList= getFormDataDefinitionsList(formId, query);
         int totalPages = getTotalPages(pageable, totalMatchedRecords);
-        List<Map<String,Object>> content=getContentList(formDataDefinitionsList);
-        return getPaginationResponseFromContent(content, totalMatchedRecords, totalPages,pageable );
+        return getPaginationResponseFromContent(getContentList(formDataDefinitionsList), totalMatchedRecords, totalPages,pageable );
     }
 
     private List<FormDataDefinition> getFormDataDefinitionsList(String formId, Query query) {
@@ -354,11 +352,7 @@ public class FormDataServiceImpl implements FormDataService
         }
         if (isNotEmpty(relations))
         {
-            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations);
-            if(criteria!=null)
-            {
-                aggregationOperationsList.add(Aggregation.match(criteria));
-            }
+            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations,criteria);
             PaginationResponsePayload paginationResponsePayload = getPaginationWithMongoAndEmptySort(formId, sortBy, sortOrder, pageable, aggregationOperationsList);
             if (paginationResponsePayload!=null) return paginationResponsePayload;
             FacetOperation facetOperation;
@@ -535,15 +529,12 @@ public class FormDataServiceImpl implements FormDataService
         return Collections.emptyList();
     }
 
+
     private List<Map<String, Object>> checkIfRelationsExists(String formId, String relations, String sortBy, String sortOrder,Criteria criteria)
     {
         if (isNotEmpty(relations))
         {
-            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations);
-            if(criteria!=null)
-            {
-                aggregationOperationsList.add(Aggregation.match(criteria));
-            }
+            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations,criteria);
             List<Map<String, Object>> relationalMapList = getMapsEmptySort(formId, sortBy, sortOrder, aggregationOperationsList);
             if (!relationalMapList.isEmpty()) return relationalMapList;
             aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)));
@@ -640,11 +631,7 @@ public class FormDataServiceImpl implements FormDataService
     {
         if (isNotEmpty(relations))
         {
-            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations);
-            if(aclFilterCriteria!=null)
-            {
-                aggregationOperationsList.add(Aggregation.match(aclFilterCriteria));
-            }
+            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations,aclFilterCriteria);
             PaginationResponsePayload paginationResponsePayload = getPaginationWithMongoAndEmptySort(formId, sortBy, sortOrder, pageable, aggregationOperationsList);
             if (paginationResponsePayload !=null) return paginationResponsePayload;
             FacetOperation facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA).and(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)),
@@ -702,11 +689,7 @@ public class FormDataServiceImpl implements FormDataService
         Pageable pageable = getPageable();
         if (isNotEmpty(relations))
         {
-            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations);
-            if(andCriteria!=null)
-            {
-                aggregationOperationsList.add(Aggregation.match(andCriteria));
-            }
+            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations,andCriteria);
             FacetOperation facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA).and(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)),
                     Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
             aggregationOperationsList.add(facetOperation);
@@ -789,7 +772,7 @@ public class FormDataServiceImpl implements FormDataService
 
     private List<Map<String, Object>> getFormDataList(String formId, String id, String relations,String aclFilter)
     {
-        List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations);
+        List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations,null);
         aggregationOperationsList.add(Aggregation.match(Criteria.where(UNDERSCORE_ID).is(Long.valueOf(id))));
         if(isNotBlank(aclFilter))
         {
