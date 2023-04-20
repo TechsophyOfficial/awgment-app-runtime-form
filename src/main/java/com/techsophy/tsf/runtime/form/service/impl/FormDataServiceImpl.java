@@ -46,7 +46,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.DATA;
@@ -188,9 +187,11 @@ public class FormDataServiceImpl implements FormDataService
 
     private static Map<String,String> getKeysValuesMap(String[] relationsList)
     {
-        List<String> keysList=Arrays.stream(relationsList).map(x->(TP_RUNTIME_FORM_DATA+x.split(COLON)[0]).replaceAll(REGEX_PATTERN_1, EMPTY_STRING)).collect(Collectors.toList());
-        List<String> valuesList=Arrays.stream(relationsList).map(x->(FORM_DATA+DOT+x.split(COLON)[1]).replaceAll(REGEX_PATTERN_1, EMPTY_STRING)).collect(Collectors.toList());
-        return IntStream.range(0,keysList.size()).boxed().collect(Collectors.toMap(keysList::get,valuesList::get));
+       return Arrays.stream(relationsList)
+                .collect(Collectors.toMap(
+                        key->(TP_RUNTIME_FORM_DATA+key.split(COLON)[0].replaceAll(REGEX_PATTERN_1,EMPTY_STRING)),
+                        value->(FORM_DATA+DOT+value.split(COLON)[1].replaceAll(REGEX_PATTERN_1,EMPTY_STRING))
+                ));
     }
 
     private static List<AggregationOperation> getAggregationOperationsList(String relations,Criteria criteria)
