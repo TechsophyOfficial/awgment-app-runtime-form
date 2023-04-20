@@ -178,11 +178,7 @@ public class FormDataServiceImpl implements FormDataService
         Criteria andCriteria = getAndCriteria(filter, aclFilter);
         if (isNotEmpty(relations))
         {
-            String[] relationsList = relations.split(COMMA);
-            List<String> relationKeysList=getRelationKeysList(relationsList);
-            List<String> relationValuesList=getRelationValuesList(relationsList);
-            List<String> mappedArrayOfDocumentsName=getMappedArrayOfDocuments(relationsList);
-            List<AggregationOperation> aggregationOperationsList= getAggregationOperationList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList);
+            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations);
             if(andCriteria!=null)
             {
                 aggregationOperationsList.add(Aggregation.match(andCriteria));
@@ -190,6 +186,15 @@ public class FormDataServiceImpl implements FormDataService
             return getMapsEmptySort(formId, sortBy, sortOrder, aggregationOperationsList);
         }
         return getFormDataResponseSchemasSort(formId, sortBy, sortOrder,andCriteria);
+    }
+
+    private static List<AggregationOperation> getAggregationOperationsList(String relations)
+    {
+        String[] relationsList = relations.split(COMMA);
+        List<String> relationKeysList=getRelationKeysList(relationsList);
+        List<String> relationValuesList=getRelationValuesList(relationsList);
+        List<String> mappedArrayOfDocumentsName=getMappedArrayOfDocuments(relationsList);
+        return getAggregationOperationList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList);
     }
 
     private Criteria getAndCriteria(String filter, String aclFilter)
@@ -274,14 +279,13 @@ public class FormDataServiceImpl implements FormDataService
         if (isEmpty(sortBy) && isEmpty(sortOrder))
         {
             aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.DESC,CREATED_ON)));
-            List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList),
-                    TP_RUNTIME_FORM_DATA + formId,Document.class).getMappedResults();
+            List<Document> aggregateList = getDocumentList(formId, aggregationOperationsList);
             return getRelationsMap(aggregateList);
         }
         else
         {
             aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)));
-            List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
+            List<Document> aggregateList = getDocumentList(formId, aggregationOperationsList);
             return getRelationsMap(aggregateList);
         }
     }
@@ -352,11 +356,7 @@ public class FormDataServiceImpl implements FormDataService
         }
         if (isNotEmpty(relations))
         {
-            String[] relationsList = relations.split(COMMA);
-            List<String> mappedArrayOfDocumentsName= getMappedArrayOfDocuments(relationsList);
-            List<String> relationKeysList=getRelationKeysList(relationsList);
-            List<String> relationValuesList=getRelationValuesList(relationsList);
-            List<AggregationOperation> aggregationOperationsList=getAggregationOperationList(mappedArrayOfDocumentsName,relationKeysList,relationValuesList);
+            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations);
             if(criteria!=null)
             {
                 aggregationOperationsList.add(Aggregation.match(criteria));
@@ -377,8 +377,8 @@ public class FormDataServiceImpl implements FormDataService
                                 Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
             }
             aggregationOperationsList.add(facetOperation);
-            List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
-            Map<String,Object> dataMap=aggregateList.get(0);
+            List<Document> aggregateList = getDocumentList(formId, aggregationOperationsList);
+            Map<String, Object> dataMap = getFirstDocument(aggregateList);
             List<Map<String,Object>> metaDataList= getMetaDataList(dataMap);
             List<Map<String,Object>> dataList= getDataList(dataMap);
             List<Map<String,Object>> content=getContentFromDataList(dataList);
@@ -388,6 +388,16 @@ public class FormDataServiceImpl implements FormDataService
             return getPaginationResponseFromContent(content, totalMatchedRecords, totalPages,pageable );
         }
         return null;
+    }
+
+    private static Map<String, Object> getFirstDocument(List<Document> aggregateList)
+    {
+       return aggregateList.get(0);
+    }
+
+    private List<Document> getDocumentList(String formId, List<AggregationOperation> aggregationOperationsList)
+    {
+        return mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
     }
 
     private static List<Map<String, Object>> getDataList(Map<String, Object> dataMap)
@@ -531,11 +541,7 @@ public class FormDataServiceImpl implements FormDataService
     {
         if (isNotEmpty(relations))
         {
-            String[] relationsList = relations.split(COMMA);
-            List<String> mappedArrayOfDocumentsName= getMappedArrayOfDocuments(relationsList);
-            List<String> relationKeysList=getRelationKeysList(relationsList);
-            List<String> relationValuesList=getRelationValuesList(relationsList);
-            List<AggregationOperation> aggregationOperationsList=getAggregationOperationList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList);
+            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations);
             if(criteria!=null)
             {
                 aggregationOperationsList.add(Aggregation.match(criteria));
@@ -543,7 +549,7 @@ public class FormDataServiceImpl implements FormDataService
             List<Map<String, Object>> relationalMapList = getMapsEmptySort(formId, sortBy, sortOrder, aggregationOperationsList);
             if (!relationalMapList.isEmpty()) return relationalMapList;
             aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)));
-            List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
+            List<Document> aggregateList = getDocumentList(formId, aggregationOperationsList);
             return getRelationsMap(aggregateList);
         }
         return Collections.emptyList();
@@ -636,11 +642,7 @@ public class FormDataServiceImpl implements FormDataService
     {
         if (isNotEmpty(relations))
         {
-            String[] relationsList = relations.split(COMMA);
-            List<String> mappedArrayOfDocumentsName= getMappedArrayOfDocuments(relationsList);
-            List<String> relationKeysList=getRelationKeysList(relationsList);
-            List<String> relationValuesList=getRelationValuesList(relationsList);
-            List<AggregationOperation> aggregationOperationsList=getAggregationOperationList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList);
+            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations);
             if(aclFilterCriteria!=null)
             {
                 aggregationOperationsList.add(Aggregation.match(aclFilterCriteria));
@@ -650,8 +652,8 @@ public class FormDataServiceImpl implements FormDataService
             FacetOperation facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA).and(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)),
                     Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
             aggregationOperationsList.add(facetOperation);
-            List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
-            Map<String,Object> dataMap=aggregateList.get(0);
+            List<Document> aggregateList = getDocumentList(formId, aggregationOperationsList);
+            Map<String, Object> dataMap = getFirstDocument(aggregateList);
             List<Map<String,Object>> metaDataList= getMetaDataList(dataMap);
             List<Map<String,Object>> dataList= getDataList(dataMap);
             List<Map<String,Object>> content=getContentFromDataList(dataList);
@@ -674,8 +676,8 @@ public class FormDataServiceImpl implements FormDataService
             FacetOperation facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA).and(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)),
                     Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
             aggregationOperationsList.add(facetOperation);
-            List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
-            Map<String,Object> dataMap=aggregateList.get(0);
+            List<Document> aggregateList = getDocumentList(formId, aggregationOperationsList);
+            Map<String, Object> dataMap = getFirstDocument(aggregateList);
             List<Map<String,Object>> metaDataList= getMetaDataList(dataMap);
             List<Map<String,Object>> dataList= getDataList(dataMap);
             List<Map<String,Object>> content=getContentFromDataList(dataList);
@@ -702,11 +704,7 @@ public class FormDataServiceImpl implements FormDataService
         Pageable pageable = getPageable();
         if (isNotEmpty(relations))
         {
-            String[] relationsList = relations.split(COMMA);
-            List<String> mappedArrayOfDocumentsName= getMappedArrayOfDocuments(relationsList);
-            List<String> relationKeysList=getRelationKeysList(relationsList);
-            List<String> relationValuesList=getRelationValuesList(relationsList);
-            List<AggregationOperation> aggregationOperationsList=getAggregationOperationList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList);
+            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations);
             if(andCriteria!=null)
             {
                 aggregationOperationsList.add(Aggregation.match(andCriteria));
@@ -714,8 +712,8 @@ public class FormDataServiceImpl implements FormDataService
             FacetOperation facetOperation=Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA).and(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)),
                     Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
             aggregationOperationsList.add(facetOperation);
-            List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
-            Map<String,Object> dataMap=aggregateList.get(0);
+            List<Document> aggregateList = getDocumentList(formId, aggregationOperationsList);
+            Map<String, Object> dataMap = getFirstDocument(aggregateList);
             List<Map<String,Object>> metaDataList= getMetaDataList(dataMap);
             List<Map<String,Object>> dataList= getDataList(dataMap);
             List<Map<String,Object>> content=getContentFromDataList(dataList);
@@ -793,18 +791,14 @@ public class FormDataServiceImpl implements FormDataService
 
     private List<Map<String, Object>> getFormDataList(String formId, String id, String relations,String aclFilter)
     {
-        String[] relationsList = relations.split(COMMA);
-        List<String> mappedArrayOfDocumentsName= getMappedArrayOfDocuments(relationsList);
-        List<String> relationKeysList=getRelationKeysList(relationsList);
-        List<String> relationValuesList=getRelationValuesList(relationsList);
-        List<AggregationOperation> aggregationOperationsList=getAggregationOperationList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList);
+        List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations);
         aggregationOperationsList.add(Aggregation.match(Criteria.where(UNDERSCORE_ID).is(Long.valueOf(id))));
         if(isNotBlank(aclFilter))
         {
             aggregationOperationsList.add(Aggregation.match(getCriteria(aclFilter)));
         }
         aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)));
-        List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList), TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
+        List<Document> aggregateList = getDocumentList(formId, aggregationOperationsList);
         return getRelationsMap(aggregateList);
     }
 
@@ -891,8 +885,7 @@ public class FormDataServiceImpl implements FormDataService
         {
             aggregationOperationsList.add(Aggregation.group(groupBy).count().as(COUNT));
         }
-       List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList),
-               TP_RUNTIME_FORM_DATA + formId, Document.class).getMappedResults();
+        List<Document> aggregateList = getDocumentList(formId, aggregationOperationsList);
         List<Map<String,String>> responseAggregationList=new ArrayList<>();
         aggregateList.forEach(x->{
             Map<String,String> aggregationMap=new HashMap<>();
