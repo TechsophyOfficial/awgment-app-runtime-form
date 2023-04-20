@@ -370,11 +370,10 @@ public class FormDataServiceImpl implements FormDataService
             Map<String, Object> dataMap = getFirstDocument(getDocumentList(formId, aggregationOperationsList));
             List<Map<String,Object>> metaDataList= getMetaDataList(dataMap);
             List<Map<String,Object>> dataList= getDataList(dataMap);
-            List<Map<String,Object>> content=getContentFromDataList(dataList);
             Map<String,Object> metaData = getMetaDataMap(metaDataList);
             long totalMatchedRecords=extractCountOfMatchedRecords(metaData);
             int totalPages = getTotalPages(pageable, totalMatchedRecords);
-            return getPaginationResponseFromContent(content, totalMatchedRecords, totalPages,pageable );
+            return getPaginationResponseFromContent(getContentFromDataList(dataList), totalMatchedRecords, totalPages,pageable );
         }
         return null;
     }
@@ -408,8 +407,7 @@ public class FormDataServiceImpl implements FormDataService
             query.with(pageable);
             List<FormDataDefinition> formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
             int totalPages = getTotalPages(pageable, totalMatchedRecords);
-            List<Map<String,Object>> content=getContentList(formDataDefinitionsList);
-            return getPaginationResponseFromContent(content, totalMatchedRecords, totalPages,pageable );
+            return getPaginationResponseFromContent(getContentList(formDataDefinitionsList), totalMatchedRecords, totalPages,pageable );
         }
         return null;
     }
