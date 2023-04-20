@@ -180,8 +180,7 @@ public class FormDataServiceImpl implements FormDataService
         Criteria andCriteria = getAndCriteria(filter, aclFilter);
         if (isNotEmpty(relations))
         {
-            List<AggregationOperation> aggregationOperationsList=getAggregationOperationsList(relations,andCriteria);
-            return getMapsEmptySort(formId, sortBy, sortOrder, aggregationOperationsList);
+            return getMapsEmptySort(formId, sortBy, sortOrder, getAggregationOperationsList(relations,andCriteria));
         }
         return getFormDataResponseSchemasSort(formId, sortBy, sortOrder,andCriteria);
     }
@@ -329,8 +328,7 @@ public class FormDataServiceImpl implements FormDataService
         long totalMatchedRecords= getCount(formId, query);
         query.with(pageable);
         List<FormDataDefinition> formDataDefinitionsList= getFormDataDefinitionsList(formId, query);
-        int totalPages = getTotalPages(pageable, totalMatchedRecords);
-        return getPaginationResponseFromContent(getContentList(formDataDefinitionsList), totalMatchedRecords, totalPages,pageable );
+        return getPaginationResponseFromContent(getContentList(formDataDefinitionsList), totalMatchedRecords, getTotalPages(pageable, totalMatchedRecords),pageable );
     }
 
     private List<FormDataDefinition> getFormDataDefinitionsList(String formId, Query query) {
@@ -369,8 +367,7 @@ public class FormDataServiceImpl implements FormDataService
                                 Aggregation.skip(pageable.getOffset()),Aggregation.limit(pageable.getPageSize())).as(DATA);
             }
             aggregationOperationsList.add(facetOperation);
-            List<Document> aggregateList = getDocumentList(formId, aggregationOperationsList);
-            Map<String, Object> dataMap = getFirstDocument(aggregateList);
+            Map<String, Object> dataMap = getFirstDocument(getDocumentList(formId, aggregationOperationsList));
             List<Map<String,Object>> metaDataList= getMetaDataList(dataMap);
             List<Map<String,Object>> dataList= getDataList(dataMap);
             List<Map<String,Object>> content=getContentFromDataList(dataList);
@@ -506,8 +503,7 @@ public class FormDataServiceImpl implements FormDataService
         else {
             query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
         }
-        List<FormDataDefinition> formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
-        return getFormDataResponseSchemaList(formDataDefinitionsList);
+        return getFormDataResponseSchemaList(getFormDataDefinitionsList(formId, query));
     }
 
     private List<FormDataResponseSchema> ifSortEmpty(String formId, String sortBy, String sortOrder, Query query, String searchString)
@@ -523,8 +519,7 @@ public class FormDataServiceImpl implements FormDataService
                     Criteria.where(UPDATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
                     Criteria.where(UPDATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
             query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
-            List<FormDataDefinition> formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
-            return getFormDataResponseSchemaList(formDataDefinitionsList);
+            return getFormDataResponseSchemaList(getFormDataDefinitionsList(formId, query));
         }
         return Collections.emptyList();
     }
