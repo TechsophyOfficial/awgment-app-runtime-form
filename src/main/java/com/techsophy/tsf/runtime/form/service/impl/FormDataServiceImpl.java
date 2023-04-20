@@ -46,6 +46,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.*;
 import static com.techsophy.tsf.runtime.form.constants.FormModelerConstants.DATA;
@@ -185,13 +186,18 @@ public class FormDataServiceImpl implements FormDataService
         return getFormDataResponseSchemasSort(formId, sortBy, sortOrder,andCriteria);
     }
 
+    private static Map<String,String> getKeysValuesMap(String[] relationsList)
+    {
+        List<String> keysList=Arrays.stream(relationsList).map(x->(TP_RUNTIME_FORM_DATA+x.split(COLON)[0]).replaceAll(REGEX_PATTERN_1, EMPTY_STRING)).collect(Collectors.toList());
+        List<String> valuesList=Arrays.stream(relationsList).map(x->(FORM_DATA+DOT+x.split(COLON)[1]).replaceAll(REGEX_PATTERN_1, EMPTY_STRING)).collect(Collectors.toList());
+        return IntStream.range(0,keysList.size()).boxed().collect(Collectors.toMap(keysList::get,valuesList::get));
+    }
+
     private static List<AggregationOperation> getAggregationOperationsList(String relations,Criteria criteria)
     {
         String[] relationsList = relations.split(COMMA);
-        List<String> relationKeysList=getRelationKeysList(relationsList);
-        List<String> relationValuesList=getRelationValuesList(relationsList);
         List<String> mappedArrayOfDocumentsName=getMappedArrayOfDocuments(relationsList);
-        List<AggregationOperation> aggregationOperationsList= getAggregationOperationList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList);
+        List<AggregationOperation> aggregationOperationsList= getAggregationOperationList(mappedArrayOfDocumentsName,getKeysValuesMap(relationsList));
         if(criteria!=null)
         {
             aggregationOperationsList.add(Aggregation.match(criteria));
@@ -286,15 +292,17 @@ public class FormDataServiceImpl implements FormDataService
         return getRelationsMap( getDocumentList(formId, aggregationOperationsList));
     }
 
-    private static List<AggregationOperation> getAggregationOperationList(List<String> mappedArrayOfDocumentsName, List<String> relationKeysList, List<String> relationValuesList)
+    private static List<AggregationOperation> getAggregationOperationList(List<String> mappedArrayOfDocumentsName,Map<String,String> keysValuesMap)
     {
-        List<AggregationOperation> aggregationOperationsList=new ArrayList<>();
-        for(int j = 0; j< relationKeysList.size(); j++)
-        {
-            DocumentAggregationOperation documentAggregationOperation=new DocumentAggregationOperation(String.format(MONGO_AGGREGATION_STAGE_PIPELINE_1, relationKeysList.get(j), relationValuesList.get(j), relationValuesList.get(j), mappedArrayOfDocumentsName.get(j)));
-            aggregationOperationsList.add(documentAggregationOperation);
-        }
-        return aggregationOperationsList;
+      int index=0;
+      List<AggregationOperation> aggregationOperationsList=new ArrayList<>();
+      for(Map.Entry<String,String> entry:keysValuesMap.entrySet())
+      {
+          DocumentAggregationOperation documentAggregationOperation=new DocumentAggregationOperation(String.format(MONGO_AGGREGATION_STAGE_PIPELINE_1, entry.getKey(),entry.getValue(),entry.getValue(),mappedArrayOfDocumentsName.get(index)));
+          aggregationOperationsList.add(documentAggregationOperation);
+          index=index+1;
+      }
+      return aggregationOperationsList;
     }
 
     private WebClient getWebClient(String token)
@@ -438,16 +446,6 @@ public class FormDataServiceImpl implements FormDataService
        return Arrays.stream(relationsList).map(x->x.split(COLON)[0]).collect(Collectors.toList());
     }
 
-    private static List<String> getRelationKeysList(String[] relationsList)
-    {
-       return Arrays.stream(relationsList).map(x->(TP_RUNTIME_FORM_DATA+x.split(COLON)[0]).replaceAll(REGEX_PATTERN_1, EMPTY_STRING)).collect(Collectors.toList());
-    }
-
-    private static List<String> getRelationValuesList(String[] relationsList)
-    {
-        return Arrays.stream(relationsList).map(x->(FORM_DATA+DOT+x.split(COLON)[1]).replaceAll(REGEX_PATTERN_1, EMPTY_STRING)).collect(Collectors.toList());
-    }
-
     private static List<Map<String, Object>> getContentFromDataList(List<Map<String, Object>> dataList)
     {
         List<Map<String, Object>> content=new ArrayList<>();
@@ -522,7 +520,6 @@ public class FormDataServiceImpl implements FormDataService
         return Collections.emptyList();
     }
 
-
     private List<Map<String, Object>> checkIfRelationsExists(String formId, String relations, String sortBy, String sortOrder,Criteria criteria)
     {
         if (isNotEmpty(relations))
@@ -542,7 +539,6 @@ public class FormDataServiceImpl implements FormDataService
         return formDataDefinitionsList.stream().map(x->new FormDataResponseSchema(x.getId(),x.getFormData(),x.getFormMetaData(),String.valueOf(x.getVersion()),x.getCreatedById(),
                 x.getCreatedOn(),x.getUpdatedById(),x.getUpdatedOn())).collect(Collectors.toList());
     }
-
 
     private static List<Map<String, Object>> getRelationsMap(List<Document> aggregateList)
     {
