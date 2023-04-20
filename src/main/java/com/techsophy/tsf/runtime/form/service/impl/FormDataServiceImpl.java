@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.result.DeleteResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
-import com.techsophy.tsf.commons.query.QueryBuilder;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.*;
 import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
@@ -263,34 +262,35 @@ public class FormDataServiceImpl implements FormDataService
             query.addCriteria(criteria);
         }
         checkIfBothSortByAndSortOrderGivenAsInput(sortBy, sortOrder);
+        List<FormDataDefinition> formDataDefinitionsList;
         if (isEmpty(sortBy) && isEmpty(sortOrder))
         {
             query.with(Sort.by(Sort.Direction.DESC, CREATED_ON));
-            List<FormDataDefinition> formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
-            return getFormDataResponseSchemaList(formDataDefinitionsList);
+            formDataDefinitionsList= getFormDataDefinitionsList(formId, query);
         }
         else
         {
             query.with(Sort.by(Sort.Direction.fromString(sortOrder), sortBy));
-            List<FormDataDefinition> formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
-            return getFormDataResponseSchemaList(formDataDefinitionsList);
+            formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
         }
+        return getFormDataResponseSchemaList(formDataDefinitionsList);
     }
 
     private List<Map<String, Object>> getMapsEmptySort(String formId, String sortBy, String sortOrder, List<AggregationOperation> aggregationOperationsList)
     {
+        List<Document> aggregateList;
         if (isEmpty(sortBy) && isEmpty(sortOrder))
         {
             aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.DESC,CREATED_ON)));
-            List<Document> aggregateList = getDocumentList(formId, aggregationOperationsList);
-            return getRelationsMap(aggregateList);
+            aggregateList=getDocumentList(formId, aggregationOperationsList);
+
         }
         else
         {
             aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.fromString(sortOrder), sortBy)));
-            List<Document> aggregateList = getDocumentList(formId, aggregationOperationsList);
-            return getRelationsMap(aggregateList);
+            aggregateList=getDocumentList(formId, aggregationOperationsList);
         }
+        return getRelationsMap(aggregateList);
     }
 
     private static List<AggregationOperation> getAggregationOperationList(List<String> mappedArrayOfDocumentsName, List<String> relationKeysList, List<String> relationValuesList)
