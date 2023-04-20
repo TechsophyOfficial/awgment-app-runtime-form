@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.result.DeleteResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
+import com.techsophy.tsf.commons.query.QueryBuilder;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.*;
 import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
@@ -13,6 +14,7 @@ import com.techsophy.tsf.runtime.form.exception.InvalidInputException;
 import com.techsophy.tsf.runtime.form.service.FormDataAuditService;
 import com.techsophy.tsf.runtime.form.service.FormDataService;
 import com.techsophy.tsf.runtime.form.service.FormService;
+import com.techsophy.tsf.runtime.form.service.MongoQueryBuilder;
 import com.techsophy.tsf.runtime.form.utils.DocumentAggregationOperation;
 import com.techsophy.tsf.runtime.form.utils.TokenUtils;
 import com.techsophy.tsf.runtime.form.utils.UserDetails;
@@ -74,6 +76,7 @@ public class FormDataServiceImpl implements FormDataService
     private FormService formService = null;
     private FormValidationServiceImpl formValidationServiceImpl;
     private UserDetails userDetails;
+    private MongoQueryBuilder queryBuilder;
 
     private void handleMongoException(Exception e) {
         boolean exist = e.getMessage().contains(E11000);
@@ -240,11 +243,11 @@ public class FormDataServiceImpl implements FormDataService
             try {
                 return new Criteria().andOperator(
                         new ObjectMapper()
-                                .readValue("{\"operations\":"+filter+"}", com.techsophy.tsf.runtime.form.dto.Filters.class)
+                                .readValue("{\"operations\":"+filter+"}", com.techsophy.tsf.commons.query.Filters.class)
                                 .getOperations()
                                 .entrySet()
                                 .stream()
-                                .map(entry->entry.getValue().getCriteria(entry.getKey()))
+                                .map(entry->entry.getValue().getCriteria(entry.getKey(),queryBuilder))
                                 .collect(Collectors.toList()));
             } catch (JsonProcessingException e) {
                 throw new IllegalArgumentException("Invalid filter: " + filter, e);
