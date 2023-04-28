@@ -38,4 +38,5 @@ public class ErrorConstants
     public static final String PAYLOAD_SHOULD_NOT_HAVE_ID="AWGMENT-RUNTIME-FORM-1039";
     public static final String DUPLICATE_FIELD_VALUE="AWGMENT-RUNTIME-FORM-1041";
     public static final String ACCESS_DENIED="AWGMENT-RUNTIME-FORM-1042";
+    public static final String FILTERS_NOT_APPLICABLE="AWGMENT-RUNTIME-FORM-1043";
 }
