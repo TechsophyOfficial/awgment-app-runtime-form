@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FormDataConstants
 {
+    public static final String RUNTIME_FORM_APP="runtime-form-app";
+    public static final String FILTERS="filters";
     public static final String CHILDREN="children";
     public static final String DATA="data";
     public static final String SEMICOLON=";";
@@ -18,6 +20,4 @@ public class FormDataConstants
     public static final String DELETE_RULE ="delete";
     public static final String ELASTIC ="/elastic";
     public static final String ACL ="/acl";
-    public static final String INDEX_NAME ="indexName";
-    public static final String ACL_ID ="aclId";
 }
