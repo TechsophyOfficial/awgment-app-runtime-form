@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.WebRequest;
-
+import java.util.NoSuchElementException;
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.ACCESS_DENIED;
 import static com.techsophy.tsf.runtime.form.constants.FormAclConstants.NO_RECORD_FOUND;
 
@@ -54,6 +54,14 @@ class GlobalExceptionHandlerTest
     {
         InvalidInputException invalidInputException=new InvalidInputException("errorCode",NO_RECORD_FOUND);
         ResponseEntity<ApiErrorResponse> x=globalExceptionHandler.invalidInputException(invalidInputException,webRequest);
+        Assertions.assertTrue(x.getStatusCode().is4xxClientError());
+    }
+
+    @Test
+    void noSuchElementExceptionTest()
+    {
+        NoSuchElementException noSuchElementException=new NoSuchElementException("errorCode");
+        ResponseEntity<ApiErrorResponse> x=globalExceptionHandler.handleNoSuchElementException(noSuchElementException,webRequest);
         Assertions.assertTrue(x.getStatusCode().is4xxClientError());
     }
 }
