@@ -8,7 +8,9 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertOneResult;
+import com.mongodb.client.result.UpdateResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
+import com.techsophy.tsf.commons.query.Filters;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
 import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
@@ -96,9 +98,13 @@ class FormDataServiceElasticDisabledTest
     @Mock
     MongoCursor mongoCursor;
     @Mock
+    UpdateResult updateResult;
+    @Mock
     AggregationResults aggregationResults;
     @Mock
     FormValidationServiceImpl mockFormValidationServiceImpl;
+    @Mock
+    Filters filters;
     @InjectMocks
     FormDataServiceImpl mockFormDataServiceImpl;
 
@@ -213,15 +219,18 @@ class FormDataServiceElasticDisabledTest
         FormDataDefinition formDataDefinition=new FormDataDefinition();
         formDataDefinition.setId("101");
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(formDataDefinition);
-        Mockito.when(mockMongoTemplate.findOne(queryArgumentCaptor.capture(),any(),anyString())).thenReturn(formDataDefinition);
+        Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(formDataDefinition);
+        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataSchema.class))).thenReturn(formDataSchema);
         Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
+        Mockito.when(mockMongoTemplate.updateFirst(queryArgumentCaptor.capture(),any(),any(),anyString())).thenReturn(updateResult);
+        Mockito.when(updateResult.getMatchedCount()).thenReturn(1L);
         mockFormDataServiceImpl.saveFormData(formDataSchema,"formData.name:akhil", null);
         Assertions.assertEquals("Query: { \"_id\" : \"1\", \"$and\" : [{ \"$and\" : [{ \"formData.name\" : \"akhil\"}]}, {}]}, Fields: {}, Sort: {}",queryArgumentCaptor.getValue().toString());
-        Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
+        Mockito.verify(mockMongoTemplate,times(1)).updateFirst(any(),any(),any(),anyString());
     }
 
     @Test
-    void saveFormDataUpdateRecordSameCollectionWithoutFilterTest() throws IOException
+    void saveFormDataUpdateRecordSameCollectionWithFilterNotMatchTest() throws IOException
     {
         FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
         Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
@@ -233,10 +242,12 @@ class FormDataServiceElasticDisabledTest
         FormDataDefinition formDataDefinition=new FormDataDefinition();
         formDataDefinition.setId("101");
         Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(formDataDefinition);
+        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataSchema.class))).thenReturn(formDataSchema);
         Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(formDataDefinition);
+        Mockito.when(mockMongoTemplate.updateFirst(any(),any(),any(),anyString())).thenReturn(updateResult);
+        Mockito.when(updateResult.getMatchedCount()).thenReturn(0L);
         Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
-        mockFormDataServiceImpl.saveFormData(formDataSchema,null, null);
-        Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
+        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema,null, null));
     }
     @Test
     void updateFormDataWithFiltersTest()
@@ -264,14 +275,13 @@ class FormDataServiceElasticDisabledTest
     }
 
     @Test
-    void getAllFormDataByFormIdAggregationEmptySortTest()
-    {
+    void getAllFormDataByFormIdAggregationEmptySortTest() throws JsonProcessingException {
 
             Criteria criteria =  Criteria.where("formData.age").is(18);
-            doReturn(criteria).when(mongoQueryBuilder).equalsQuery(any(),any());
-            doReturn(criteria).when(mongoQueryBuilder).inQuery(any(),any());
-            doReturn(criteria).when(mongoQueryBuilder).comparatorQuery(any(),any());
-            doReturn(criteria).when(mongoQueryBuilder).likeQuery(any(),any());
+//            doReturn(criteria).when(mongoQueryBuilder).equalsQuery(any(),any());
+//            doReturn(criteria).when(mongoQueryBuilder).inQuery(any(),any());
+//            doReturn(criteria).when(mongoQueryBuilder).comparatorQuery(any(),any());
+//            doReturn(criteria).when(mongoQueryBuilder).likeQuery(any(),any());
             Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
             List<Map> aggregateList = new ArrayList<>();
             Map<String, Object> map = new HashMap<>();
@@ -280,6 +290,8 @@ class FormDataServiceElasticDisabledTest
             Document document = new Document();
             List<Document> documentList = new ArrayList<>();
             documentList.add(document);
+            String FILTER_JSON="{\"operations\":{\"formData.orderId\":{\"lt\":23,\"lte\":20,\"gt\":20,\"gte\":24}";
+            Mockito.when(mockObjectMapper.readValue(anyString(),ArgumentMatchers.eq(Filters.class))).thenReturn(filters);
             Mockito.when(mockMongoTemplate.aggregate((Aggregation) any(), anyString(), eq(Document.class))).thenReturn(new AggregationResults<>(documentList, document));
             Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, FILTER_VERSION_2, EMPTY_STRING, EMPTY_STRING,null));
 

@@ -3,8 +3,9 @@ package com.techsophy.tsf.runtime.form.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
-import com.techsophy.tsf.commons.query.QueryBuilder;
+import com.techsophy.tsf.commons.query.Filters;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.*;
 import com.techsophy.tsf.runtime.form.entity.FormDataDefinition;
@@ -37,6 +38,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.FacetOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import java.io.IOException;
@@ -77,6 +79,7 @@ public class FormDataServiceImpl implements FormDataService
     private FormValidationServiceImpl formValidationServiceImpl;
     private UserDetails userDetails;
     private MongoQueryBuilder queryBuilder;
+    private Filters filters;
 
     private void handleMongoException(Exception e) {
         boolean exist = e.getMessage().contains(E11000);
@@ -114,10 +117,12 @@ public class FormDataServiceImpl implements FormDataService
             formDataDefinition.setVersion(1);
             formDataDefinition.setCreatedById(String.valueOf(loggedInUserId));
             formDataDefinition.setCreatedOn(String.valueOf(Instant.now()));
-        }
-        else
-        {
-            FormDataDefinition existingFormDataDefinition=mongoTemplate.findOne(getQuery(formDataSchema, filter, aclFilter),FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formId);
+            saveToMongo(formId,formDataDefinition);
+        }else{
+
+            Criteria criteria = Criteria.where("id").is(formDataDefinition.getId());
+            Query query = new Query().addCriteria(criteria);
+            FormDataDefinition existingFormDataDefinition = mongoTemplate.findOne(query,FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formId);
             if(existingFormDataDefinition==null)
             {
                 throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,formDataSchema.getId()));
@@ -125,8 +130,19 @@ public class FormDataServiceImpl implements FormDataService
             formDataDefinition.setCreatedById(existingFormDataDefinition.getCreatedById());
             formDataDefinition.setCreatedOn(existingFormDataDefinition.getCreatedOn());
             formDataDefinition.setVersion(existingFormDataDefinition.getVersion()+1);
+            FormDataSchema formDataSchema1 = objectMapper.convertValue(formDataDefinition,FormDataSchema.class);
+            Query filtersonData = getQuery(formDataSchema1, filter, aclFilter);
+            Update update = new Update().set("formData",formDataDefinition.getFormData())
+                    .set("formMetaData",formDataDefinition.getFormMetaData())
+                    .set("updatedById",formDataDefinition.getUpdatedById())
+                    .set("updatedOn",formDataDefinition.getUpdatedOn())
+                    .set("version",formDataDefinition.getVersion());
+            UpdateResult updateResult =  mongoTemplate.updateFirst(filtersonData,update,FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formId);
+            if(updateResult.getMatchedCount()==0)
+            {
+                throw new InvalidInputException(FILTERS_NOT_APPLICABLE,globalMessageSource.get(FILTERS_NOT_APPLICABLE,formDataSchema.getId()));
+            }
         }
-        saveToMongo(formId,formDataDefinition);
         FormDataAuditSchema formDataAuditSchema=new FormDataAuditSchema(
                     String.valueOf(idGenerator.nextId()),formDataDefinition.getId(),
                     formId,1,formDataDefinition.getFormData(),formDataDefinition.getFormMetaData()
@@ -134,6 +150,7 @@ public class FormDataServiceImpl implements FormDataService
         this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
         return formDataDefinition;
     }
+
 
     private Query getQuery(FormDataSchema formDataSchema, String filter, String aclFilter)
     {
@@ -239,14 +256,8 @@ public class FormDataServiceImpl implements FormDataService
         else
         {
             try {
-                return new Criteria().andOperator(
-                        new ObjectMapper()
-                                .readValue("{\"operations\":"+filter+"}", com.techsophy.tsf.commons.query.Filters.class)
-                                .getOperations()
-                                .entrySet()
-                                .stream()
-                                .map(entry->entry.getValue().getCriteria(entry.getKey(),queryBuilder))
-                                .collect(Collectors.toList()));
+                filters = objectMapper.readValue("{\"operations\":"+filter+"}", Filters.class);
+              return   filters.buildAndQuery(queryBuilder);
             } catch (JsonProcessingException e) {
                 throw new IllegalArgumentException("Invalid filter: " + filter, e);
             }
