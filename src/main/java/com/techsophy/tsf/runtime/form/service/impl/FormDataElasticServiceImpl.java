@@ -16,6 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.TOKEN_NOT_NULL;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.ACL;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.ELASTIC;
@@ -78,12 +81,11 @@ public class FormDataElasticServiceImpl implements FormDataElasticService
     }
      public static String formIdToIndexName(String id)
      {
-         if(TokenUtils.getTenantName().get()==databaseName) {
-             return TP_RUNTIME_FORM_DATA + id;
-         }
-         else
-         {
-             return id;
-         }
+         Optional<String> tenantName = TokenUtils.getTenantName();
+         if(tenantName.isPresent() && tenantName.get().equals(databaseName)) {
+                 return TP_RUNTIME_FORM_DATA + id;
+             } else {
+                 return id;
+             }
      }
 }
