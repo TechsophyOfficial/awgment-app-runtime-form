@@ -32,6 +32,8 @@ public class FormDataElasticServiceImpl implements FormDataElasticService
     private  TokenUtils tokenUtils;
     @Value(GATEWAY_URI)
     private  String gatewayApi;
+    @Value(DATABASE_NAME)
+    private static String databaseName;
     @Value(ELASTIC_SOURCE)
     private  boolean elasticSource;
     @Value(ELASTIC_ENABLE)
@@ -44,9 +46,11 @@ public class FormDataElasticServiceImpl implements FormDataElasticService
     {
         if(elasticEnable) {
             try {
-              webClientWrapper.webclientRequest(webClientWrapper.createWebClient(tokenUtils.getTokenFromContext()),
-                        gatewayApi + ELASTIC_VERSION1 + SLASH + TP_RUNTIME_FORM_DATA + formDataDefinition.getFormId() + PARAM_SOURCE + elasticSource, POST,
-                        formDataDefinition);
+                    webClientWrapper.webclientRequest(webClientWrapper.createWebClient(tokenUtils.getTokenFromContext()),
+                            gatewayApi + ELASTIC_VERSION1 + SLASH + FormDataElasticServiceImpl.formIdToIndexName(formDataDefinition.getFormId()) + PARAM_SOURCE + elasticSource, POST,
+                            formDataDefinition);
+
+
             } catch (Exception e) {
                 log.error(e.getMessage());
                 throw new ExternalServiceErrorException("Elastic Search pod is down", "Elastic Search pod is down");
@@ -74,6 +78,12 @@ public class FormDataElasticServiceImpl implements FormDataElasticService
     }
      public static String formIdToIndexName(String id)
      {
-         return TP_RUNTIME_FORM_DATA+id;
+         if(TokenUtils.getTenantName().get()==databaseName) {
+             return TP_RUNTIME_FORM_DATA + id;
+         }
+         else
+         {
+             return id;
+         }
      }
 }
