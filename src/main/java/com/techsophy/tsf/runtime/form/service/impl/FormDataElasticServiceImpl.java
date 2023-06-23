@@ -1,5 +1,6 @@
 package com.techsophy.tsf.runtime.form.service.impl;
 
+import com.techsophy.multitenancy.mongo.config.TenantContext;
 import com.techsophy.tsf.commons.user.UserDetails;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.ELasticAcl;
@@ -36,7 +37,7 @@ public class FormDataElasticServiceImpl implements FormDataElasticService
     @Value(GATEWAY_URI)
     private  String gatewayApi;
     @Value(DATABASE_NAME)
-    private static String databaseName;
+    private  String databaseName;
     @Value(ELASTIC_SOURCE)
     private  boolean elasticSource;
     @Value(ELASTIC_ENABLE)
@@ -50,7 +51,7 @@ public class FormDataElasticServiceImpl implements FormDataElasticService
         if(elasticEnable) {
             try {
                     webClientWrapper.webclientRequest(webClientWrapper.createWebClient(tokenUtils.getTokenFromContext()),
-                            gatewayApi + ELASTIC_VERSION1 + SLASH + FormDataElasticServiceImpl.formIdToIndexName(formDataDefinition.getFormId()) + PARAM_SOURCE + elasticSource, POST,
+                            gatewayApi + ELASTIC_VERSION1 + SLASH +formIdToIndexName(formDataDefinition.getFormId()) + PARAM_SOURCE + elasticSource, POST,
                             formDataDefinition);
 
 
@@ -79,10 +80,9 @@ public class FormDataElasticServiceImpl implements FormDataElasticService
             webClientWrapper.webclientRequest(client, gatewayApi + ELASTIC + VERSION_V1 + SLASH + indexName + ACL, DELETE, null);
         }
     }
-     public static String formIdToIndexName(String id)
+     public  String formIdToIndexName(String id)
      {
-         Optional<String> tenantName = TokenUtils.getTenantName();
-         if(tenantName.isPresent() && tenantName.get().equals(databaseName)) {
+         if(TenantContext.getTenantId().equals(databaseName)) {
                  return TP_RUNTIME_FORM_DATA + id;
              } else {
                  return id;

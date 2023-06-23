@@ -1,5 +1,6 @@
 package com.techsophy.tsf.runtime.form.service;
 
+import com.techsophy.multitenancy.mongo.config.TenantContext;
 import com.techsophy.tsf.commons.user.UserDetails;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.ELasticAcl;
@@ -45,8 +46,8 @@ class FormDataElasticServiceTest
         ReflectionTestUtils.setField(formDataElasticService,"elasticEnable",true); }
     @Test
     void saveOrUpdateToElasticTest() {
-        try (MockedStatic<TokenUtils> tokenUtils = Mockito.mockStatic(TokenUtils.class)) {
-            tokenUtils.when(() -> TokenUtils.getTenantName()).thenReturn(Optional.of("techsophy-platform"));
+        try (MockedStatic<TenantContext> tokenUtils = Mockito.mockStatic(TenantContext.class)) {
+            tokenUtils.when(() -> TenantContext.getTenantId()).thenReturn("techsophy-platform");
             FormDataDefinition formDataDefinition = new FormDataDefinition();
             formDataElasticService.saveOrUpdateToElastic(formDataDefinition);
             Mockito.verify(mockWebClientWrapper, Mockito.times(1)).webclientRequest(any(), anyString(), anyString(), any());
@@ -56,8 +57,8 @@ class FormDataElasticServiceTest
     @Test
     void saveOrUpdateToElasticExceptionTest()
     {
-        try(MockedStatic<TokenUtils> tokenUtils = Mockito.mockStatic(TokenUtils.class)) {
-            tokenUtils.when(() -> TokenUtils.getTenantName()).thenReturn(Optional.of("techsophy-platform"));
+        try(MockedStatic<TenantContext> tokenUtils = Mockito.mockStatic(TenantContext.class)) {
+            tokenUtils.when(() -> TenantContext.getTenantId()).thenReturn("techsophy-platform");
             FormDataDefinition formDataDefinition = new FormDataDefinition();
             when(mockWebClientWrapper.webclientRequest(any(), anyString(), anyString(), any())).thenThrow(RuntimeException.class);
             Assertions.assertThrows(RuntimeException.class, () -> formDataElasticService.saveOrUpdateToElastic(formDataDefinition));

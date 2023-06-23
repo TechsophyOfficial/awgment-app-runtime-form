@@ -1,6 +1,7 @@
 package com.techsophy.tsf.runtime.form.aspect;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.techsophy.multitenancy.mongo.config.TenantContext;
 import com.techsophy.tsf.runtime.form.dto.ELasticAcl;
 import com.techsophy.tsf.runtime.form.dto.FormAclDto;
 import com.techsophy.tsf.runtime.form.service.impl.FormDataElasticServiceImpl;
@@ -47,8 +48,8 @@ import static org.mockito.Mockito.*;
     @Test
       void afterSaveFormAclController()
     {
-        try(MockedStatic<TokenUtils> tokenUtils = Mockito.mockStatic(TokenUtils.class)) {
-            tokenUtils.when(() -> TokenUtils.getTenantName()).thenReturn(Optional.of("techsophy-platform"));
+        try(MockedStatic<TenantContext> tokenUtils = Mockito.mockStatic(TenantContext.class)) {
+            tokenUtils.when(() -> TenantContext.getTenantId()).thenReturn("techsophy-platform");
             FormAclDto formAclDto = new FormAclDto();
             formAclDto.setId("12");
             formAclDto.setFormId("23131");
@@ -65,14 +66,14 @@ import static org.mockito.Mockito.*;
     }
     @Test
      void afterDeleteFormAclController() {
-        try(MockedStatic<TokenUtils> tokenUtils = Mockito.mockStatic(TokenUtils.class))
+        try(MockedStatic<TenantContext> tokenUtils = Mockito.mockStatic(TenantContext.class))
         {
-            tokenUtils.when(()->TokenUtils.getTenantName()).thenReturn(Optional.of("techsophy-platform"));
+            tokenUtils.when(()->TenantContext.getTenantId()).thenReturn("techsophy-platform");
             FormAclDto formAclDto = new FormAclDto();
             formAclDto.setId("12");
             formAclDto.setFormId("1234");
             formAclDto.setAclId("34");
-            String indexName = FormDataElasticServiceImpl.formIdToIndexName("1234");
+            String indexName = formDataElasticService.formIdToIndexName("1234");
             elasticAclAspect.afterDeleteFormAclController("1234");
             verify(formDataElasticService, times(1)).deleteACL(indexName);
         }

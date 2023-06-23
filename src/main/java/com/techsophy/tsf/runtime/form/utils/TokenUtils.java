@@ -182,23 +182,4 @@ public class TokenUtils
         }
         return sort;
     }
-    public static Optional<String> getTenantName()
-    {
-        SecurityContext context = SecurityContextHolder.getContext();
-        if (context != null)
-        {
-            Authentication authentication = context.getAuthentication();
-            if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken))
-            {
-                Object principal = authentication.getPrincipal();
-                if (principal instanceof Jwt)
-                {
-                    Jwt jwt = (Jwt) principal;
-                    List<String> iss = List.of(jwt.getClaim(ISS).toString().split(URL_SEPERATOR));
-                    return Optional.of(iss.get(iss.size()-1));
-                }
-            }
-        }
-        return Optional.empty();
-    }
 }

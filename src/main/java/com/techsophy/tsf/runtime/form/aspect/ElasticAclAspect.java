@@ -20,14 +20,14 @@ public class ElasticAclAspect {
     {
         ELasticAcl eLasticAcl = new ELasticAcl();
         eLasticAcl.setId(formAclDto.getId());
-        eLasticAcl.setIndexName(FormDataElasticServiceImpl.formIdToIndexName(formAclDto.getFormId()));
+        eLasticAcl.setIndexName(formDataElasticService.formIdToIndexName(formAclDto.getFormId()));
         eLasticAcl.setAclId(formAclDto.getAclId());
         formDataElasticService.saveACL(eLasticAcl);
     }
     @AfterReturning(pointcut="execution(* com.techsophy.tsf.runtime.form.service.impl.FormAclServiceImpl.deleteFormAcl(..)) && args(formId)")
     void afterDeleteFormAclController(String formId)
     {
-        formDataElasticService.deleteACL(FormDataElasticServiceImpl.formIdToIndexName(formId));
+        formDataElasticService.deleteACL(formDataElasticService.formIdToIndexName(formId));
     }
 
 }
