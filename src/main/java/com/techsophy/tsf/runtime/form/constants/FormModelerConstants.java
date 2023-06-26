@@ -264,4 +264,5 @@ public class FormModelerConstants
     public static final String RUNTIME_FORM = "tp-app-runtime-form";
     public static final String RUNTIME_FORM_MODELER_API_VERSION_1 = "Runtime Form API v1.0";
     public static final String SERVICE = "service";
+    public static final String DATABASE_NAME = "techsophy-platform";
 }

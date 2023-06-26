@@ -1,5 +1,6 @@
 package com.techsophy.tsf.runtime.form.service;
 
+import com.techsophy.multitenancy.mongo.config.TenantContext;
 import com.techsophy.tsf.commons.user.UserDetails;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.ELasticAcl;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -43,19 +45,24 @@ class FormDataElasticServiceTest
     @BeforeEach public void setUp() {
         ReflectionTestUtils.setField(formDataElasticService,"elasticEnable",true); }
     @Test
-    void saveOrUpdateToElasticTest()
-    {
-        FormDataDefinition formDataDefinition=new FormDataDefinition();
-        formDataElasticService.saveOrUpdateToElastic(formDataDefinition);
-        Mockito.verify(mockWebClientWrapper,Mockito.times(1)).webclientRequest(any(),anyString(),anyString(),any());
+    void saveOrUpdateToElasticTest() {
+        try (MockedStatic<TenantContext> tokenUtils = Mockito.mockStatic(TenantContext.class)) {
+            tokenUtils.when(() -> TenantContext.getTenantId()).thenReturn("techsophy-platform");
+            FormDataDefinition formDataDefinition = new FormDataDefinition();
+            formDataElasticService.saveOrUpdateToElastic(formDataDefinition);
+            Mockito.verify(mockWebClientWrapper, Mockito.times(1)).webclientRequest(any(), anyString(), anyString(), any());
+        }
     }
 
     @Test
     void saveOrUpdateToElasticExceptionTest()
     {
-        FormDataDefinition formDataDefinition=new FormDataDefinition();
-        when(mockWebClientWrapper.webclientRequest(any(),anyString(),anyString(),any())).thenThrow(RuntimeException.class);
-        Assertions.assertThrows(RuntimeException.class,()->formDataElasticService.saveOrUpdateToElastic(formDataDefinition));
+        try(MockedStatic<TenantContext> tokenUtils = Mockito.mockStatic(TenantContext.class)) {
+            tokenUtils.when(() -> TenantContext.getTenantId()).thenReturn("techsophy-platform");
+            FormDataDefinition formDataDefinition = new FormDataDefinition();
+            when(mockWebClientWrapper.webclientRequest(any(), anyString(), anyString(), any())).thenThrow(RuntimeException.class);
+            Assertions.assertThrows(RuntimeException.class, () -> formDataElasticService.saveOrUpdateToElastic(formDataDefinition));
+        }
     }
     @Test
     void saveACL()
