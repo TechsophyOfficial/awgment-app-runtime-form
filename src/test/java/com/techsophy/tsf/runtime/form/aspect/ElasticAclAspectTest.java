@@ -56,7 +56,7 @@ import static org.mockito.Mockito.*;
             formAclDto.setAclId("34");
             ELasticAcl eLasticAcl = new ELasticAcl();
             eLasticAcl.setId("12");
-            eLasticAcl.setIndexName("tp_runtime_form_data_23131");
+            eLasticAcl.setIndexName(null);
             eLasticAcl.setAclId("34");
             elasticAclAspect.afterSaveFormAclController(formAclDto);
             ArgumentCaptor<ELasticAcl> argumentCaptor = ArgumentCaptor.forClass(ELasticAcl.class);

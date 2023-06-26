@@ -36,7 +36,7 @@ public class FormDataElasticServiceImpl implements FormDataElasticService
     private  TokenUtils tokenUtils;
     @Value(GATEWAY_URI)
     private  String gatewayApi;
-    @Value(DATABASE_NAME)
+    @Value("${database.name:techsophy-platform}")
     private  String databaseName;
     @Value(ELASTIC_SOURCE)
     private  boolean elasticSource;
