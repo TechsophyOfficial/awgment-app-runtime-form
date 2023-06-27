@@ -74,7 +74,6 @@ public class FormDataAuditServiceImpl implements FormDataAuditService
         Map<String,Object> formMetaData;
         FormDataAuditResponseSchema formDataAuditResponseSchema;
         List<FormDataAuditResponseSchema> formDataAuditResponseSchemasList=new ArrayList<>();
-        List<Map<String,Object>> responseList=new ArrayList<>();
         Bson filter= Filters.eq(FORM_DATA_ID,formDataId);
         MongoCursor<Document> cursor;
         if(!mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formId+AUDIT))
