@@ -24,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
@@ -72,7 +74,7 @@ public class FormDataAuditServiceImpl implements FormDataAuditService
         Map<String,Object> formMetaData;
         FormDataAuditResponseSchema formDataAuditResponseSchema;
         List<FormDataAuditResponseSchema> formDataAuditResponseSchemasList=new ArrayList<>();
-        Bson filter= Filters.eq(FORM_DATA_ID,Long.valueOf(formDataId));
+        Bson filter= Filters.eq(FORM_DATA_ID,formDataId);
         MongoCursor<Document> cursor;
         if(!mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA +formId+AUDIT))
         {
@@ -97,6 +99,7 @@ public class FormDataAuditServiceImpl implements FormDataAuditService
                    formDataAuditResponseSchemasList.add(formDataAuditResponseSchema);
                }
            }
+
        }
        catch(Exception e)
        {

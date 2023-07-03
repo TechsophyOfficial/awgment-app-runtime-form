@@ -1,5 +1,6 @@
 package com.techsophy.tsf.runtime.form.service.impl;
 
+import com.techsophy.multitenancy.mongo.config.TenantContext;
 import com.techsophy.tsf.commons.user.UserDetails;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
 import com.techsophy.tsf.runtime.form.dto.ELasticAcl;
@@ -16,6 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.TOKEN_NOT_NULL;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.ACL;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.ELASTIC;
@@ -32,6 +36,8 @@ public class FormDataElasticServiceImpl implements FormDataElasticService
     private  TokenUtils tokenUtils;
     @Value(GATEWAY_URI)
     private  String gatewayApi;
+    @Value("${database.name:techsophy-platform}")
+    private  String databaseName;
     @Value(ELASTIC_SOURCE)
     private  boolean elasticSource;
     @Value(ELASTIC_ENABLE)
@@ -44,9 +50,11 @@ public class FormDataElasticServiceImpl implements FormDataElasticService
     {
         if(elasticEnable) {
             try {
-              webClientWrapper.webclientRequest(webClientWrapper.createWebClient(tokenUtils.getTokenFromContext()),
-                        gatewayApi + ELASTIC_VERSION1 + SLASH + TP_RUNTIME_FORM_DATA + formDataDefinition.getFormId() + PARAM_SOURCE + elasticSource, POST,
-                        formDataDefinition);
+                    webClientWrapper.webclientRequest(webClientWrapper.createWebClient(tokenUtils.getTokenFromContext()),
+                            gatewayApi + ELASTIC_VERSION1 + SLASH +formIdToIndexName(formDataDefinition.getFormId()) + PARAM_SOURCE + elasticSource, POST,
+                            formDataDefinition);
+
+
             } catch (Exception e) {
                 log.error(e.getMessage());
                 throw new ExternalServiceErrorException("Elastic Search pod is down", "Elastic Search pod is down");
@@ -72,8 +80,12 @@ public class FormDataElasticServiceImpl implements FormDataElasticService
             webClientWrapper.webclientRequest(client, gatewayApi + ELASTIC + VERSION_V1 + SLASH + indexName + ACL, DELETE, null);
         }
     }
-     public static String formIdToIndexName(String id)
+     public  String formIdToIndexName(String id)
      {
-         return TP_RUNTIME_FORM_DATA+id;
+         if(TenantContext.getTenantId().equals(databaseName)) {
+                 return TP_RUNTIME_FORM_DATA + id;
+             } else {
+                 return id;
+             }
      }
 }

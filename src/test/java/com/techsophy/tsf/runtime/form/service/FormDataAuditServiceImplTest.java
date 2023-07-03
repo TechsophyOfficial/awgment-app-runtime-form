@@ -202,7 +202,7 @@ class FormDataAuditServiceImplTest
         Mockito.when(mockMongoTemplate.getCollection(TP_RUNTIME_FORM_DATA +formDataAuditSchemaTest.getFormId()+AUDIT)).thenReturn(mockMongoCollection);
         FindIterable iterable = mock(FindIterable.class);
         MongoCursor cursor = mock(MongoCursor.class);
-        Bson filter= Filters.eq(FORM_DATA_ID,Long.valueOf(TEST_FORM_DATA_ID_VALUE));
+        Bson filter= Filters.eq(FORM_DATA_ID,TEST_FORM_DATA_ID_VALUE);
         Mockito.when(mockMongoCollection.find(filter)).thenReturn(iterable);
         Mockito.when(iterable.iterator()).thenReturn(cursor);
         Mockito.when(cursor.hasNext()).thenReturn(true).thenReturn(false);
