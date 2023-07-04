@@ -108,7 +108,7 @@ public class FormDataServiceImpl implements FormDataService
         });
         FormDataDefinition formDataDefinition = getFormDataDefinition(formDataSchema);
         Map<String, Object> loggedInUserDetails = userDetails.getUserDetails().get(0);
-        BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(loggedInUserDetails.get(ID).toString()));
+        BigInteger loggedInUserId = new BigInteger(loggedInUserDetails.get(ID)+"");
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinition.setUpdatedById(String.valueOf(loggedInUserId));
         if(formDataDefinition.getId()==null)
