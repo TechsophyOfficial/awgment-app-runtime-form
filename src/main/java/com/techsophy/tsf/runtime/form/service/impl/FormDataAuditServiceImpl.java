@@ -59,7 +59,7 @@ public class FormDataAuditServiceImpl implements FormDataAuditService
         {
             throw new InvalidInputException(FORM_ID_CANNOT_BE_EMPTY,globalMessageSource.get(FORM_ID_CANNOT_BE_EMPTY,formDataAuditSchema.getFormId()));
         }
-        BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(loggedInUserDetails.get(ID).toString()));
+        BigInteger loggedInUserId = new BigInteger(loggedInUserDetails.get(ID)+"");
         FormDataAuditDefinition formDataAuditDefinition=objectMapper.convertValue(formDataAuditSchema,FormDataAuditDefinition.class);
         formDataAuditDefinition.setCreatedById(String.valueOf(loggedInUserId));
         formDataAuditDefinition.setCreatedOn(String.valueOf(Date.from(Instant.now())));
