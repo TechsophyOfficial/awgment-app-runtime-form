@@ -79,7 +79,7 @@ public class FormDataServiceImpl implements FormDataService
     private FormValidationServiceImpl formValidationServiceImpl;
     private UserDetails userDetails;
     private MongoQueryBuilder queryBuilder;
-    private Filters filters;
+    //private Filters filters;
 
     private void handleMongoException(Exception e) {
         boolean exist = e.getMessage().contains(E11000);
@@ -96,7 +96,7 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     @Override
-    public FormDataDefinition saveFormData(FormDataSchema formDataSchema, String filter, String aclFilter) throws IOException
+    public FormDataDefinition saveFormData(FormDataSchema formDataSchema, String filter, String aclFilter,List<String> orFilter) throws IOException
     {
         String formId=formDataSchema.getFormId();
         FormResponseSchema formResponseSchema = formService.getRuntimeFormById(formId);
@@ -131,7 +131,7 @@ public class FormDataServiceImpl implements FormDataService
             formDataDefinition.setCreatedOn(existingFormDataDefinition.getCreatedOn());
             formDataDefinition.setVersion(existingFormDataDefinition.getVersion()+1);
             FormDataSchema formDataSchema1 = objectMapper.convertValue(formDataDefinition,FormDataSchema.class);
-            Query filtersonData = getQuery(formDataSchema1, filter, aclFilter);
+            Query filtersonData = getQuery(formDataSchema1, filter, aclFilter,orFilter);
             Update update = new Update().set("formData",formDataDefinition.getFormData())
                     .set("formMetaData",formDataDefinition.getFormMetaData())
                     .set("updatedById",formDataDefinition.getUpdatedById())
@@ -152,13 +152,14 @@ public class FormDataServiceImpl implements FormDataService
     }
 
 
-    private Query getQuery(FormDataSchema formDataSchema, String filter, String aclFilter)
+    private Query getQuery(FormDataSchema formDataSchema, String filter, String aclFilter,List<String> orFilter)
     {
         Query query=new Query();
         Criteria idCriteria=Criteria.where(UNDERSCORE_ID).is(formDataSchema.getId());
         Criteria filterCriteria= getCriteria(filter);
         Criteria aclFilterCriteria= getCriteria(aclFilter);
-        query.addCriteria(idCriteria.andOperator(filterCriteria, aclFilterCriteria));
+        Criteria orFilterCriteria = getOrCriteria(orFilter);
+        query.addCriteria(idCriteria.andOperator(filterCriteria, aclFilterCriteria,orFilterCriteria));
         return query;
     }
 
@@ -176,9 +177,9 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     @Override
-    public FormDataDefinition updateFormData(FormDataSchema formDataSchema, String filter, String aclFilter)
+    public FormDataDefinition updateFormData(FormDataSchema formDataSchema, String filter, String aclFilter,List<String> orFilter)
     {
-        FormDataDefinition formDataDefinition=mongoTemplate.findOne(getQuery(formDataSchema,filter,aclFilter),FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formDataSchema.getFormId());
+        FormDataDefinition formDataDefinition=mongoTemplate.findOne(getQuery(formDataSchema,filter,aclFilter,orFilter),FormDataDefinition.class,TP_RUNTIME_FORM_DATA + formDataSchema.getFormId());
         if(formDataDefinition==null)
         {
             throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC,formDataSchema.getId()));
@@ -192,10 +193,10 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     @Override
-    public List getAllFormDataByFormId(String formId, String relations, String filter, String sortBy, String sortOrder, String aclFilter)
+    public List getAllFormDataByFormId(String formId, String relations, String filter, String sortBy, String sortOrder, String aclFilter, List<String> orFilter)
     {
         checkMongoCollectionIfExistsOrNot(formId);
-        Criteria andCriteria = getAndCriteria(filter, aclFilter);
+        Criteria andCriteria = getAndCriteria(filter, aclFilter, orFilter);
         if (isNotEmpty(relations))
         {
             ArrayList<String> mappedArrayOfDocumentsName=new ArrayList<>();
@@ -215,11 +216,15 @@ public class FormDataServiceImpl implements FormDataService
         return getFormDataResponseSchemasSort(formId, sortBy, sortOrder,andCriteria);
     }
 
-    private Criteria getAndCriteria(String filter, String aclFilter)
+    private Criteria getAndCriteria(String filter, String aclFilter, List<String> orFilter)
     {
-        if(isNotBlank(filter)&&isNotBlank(aclFilter))
+        if(isNotBlank(filter)&&isNotBlank(aclFilter)&&(orFilter!=null)&&(!orFilter.isEmpty()))
         {
-           return new Criteria().andOperator(getCriteria(filter),getCriteria(aclFilter));
+           return new Criteria().andOperator(getCriteria(filter),getCriteria(aclFilter),getOrCriteria(orFilter));
+        }
+        else if(isNotBlank(filter)&&isNotBlank(aclFilter))
+        {
+            return new Criteria().andOperator(getCriteria(filter),getCriteria(aclFilter));
         }
         else if(isNotBlank(filter))
         {
@@ -228,8 +233,26 @@ public class FormDataServiceImpl implements FormDataService
         else if(isNotBlank(aclFilter))
         {
             return getCriteria(aclFilter);
+        } else if ((orFilter!=null)&&(!orFilter.isEmpty()))
+        {
+            return getOrCriteria(orFilter);
         }
-       return null;
+        return null;
+    }
+
+    public Criteria getOrCriteria(List<String> orFilters){
+        if(orFilters==null || orFilters.isEmpty()){
+            return new Criteria();
+        }else {
+            List<Criteria> criteriaList = new ArrayList<>();
+            orFilters.forEach(filter -> {
+                criteriaList.add(getCriteria(filter));
+            });
+//        for(int i = orFilters.size(); i<=0;i++){
+//            criteriaList.add(getCriteria(orFilters.get(i)));
+//        }
+            return queryBuilder.orQueries(criteriaList);
+        }
     }
 
     public Criteria getCriteria(String filter)
@@ -256,7 +279,7 @@ public class FormDataServiceImpl implements FormDataService
         else
         {
             try {
-                filters = objectMapper.readValue("{\"operations\":"+filter+"}", Filters.class);
+                Filters filters = objectMapper.readValue("{\"operations\":"+filter+"}", Filters.class);
               return   filters.buildAndQuery(queryBuilder);
             } catch (JsonProcessingException e) {
                 throw new IllegalArgumentException("Invalid filter: " + filter, e);
@@ -330,7 +353,7 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     @Override
-    public PaginationResponsePayload getAllFormDataByFormId(String formId, String relations, String filter, String sortBy, String sortOrder, Pageable pageable, String aclFilter)
+    public PaginationResponsePayload getAllFormDataByFormId(String formId, String relations, String filter, String sortBy, String sortOrder, Pageable pageable, String aclFilter, List<String> orFilter)
     {
         PaginationResponsePayload paginationResponsePayload = new PaginationResponsePayload();
         checkMongoCollectionIfExistsOrNot(formId);
@@ -338,7 +361,7 @@ public class FormDataServiceImpl implements FormDataService
         paginationResponsePayload.setPage(pageable.getPageNumber());
         paginationResponsePayload.setSize(pageable.getPageSize());
         Query query = new Query();
-        Criteria andCriteria = getAndCriteria(filter, aclFilter);
+        Criteria andCriteria = getAndCriteria(filter, aclFilter, orFilter);
         PaginationResponsePayload paginationResponsePayload1 = getPaginationResponsePayloadIfRelationsExists(formId, relations, sortBy+";"+sortOrder, pageable, paginationResponsePayload, content,andCriteria);
         if (paginationResponsePayload1 != null) return paginationResponsePayload1;
         paginationResponsePayload1 = sortByAndSortOrderIsEmpty(formId, sortBy, sortOrder, pageable, paginationResponsePayload, content,andCriteria);
@@ -495,13 +518,13 @@ public class FormDataServiceImpl implements FormDataService
         return metaData;
     }
 
-    public List getAllFormDataByFormIdAndQ(String formId, String relations, String q, String sortBy, String sortOrder, String aclFilter)
+    public List getAllFormDataByFormIdAndQ(String formId, String relations, String q, String sortBy, String sortOrder, String aclFilter,List<String> orFilter)
     {
         checkMongoCollectionIfExistsOrNot(formId);
         List<Map<String, Object>> relationalMapList1 = checkIfRelationsExists(formId, relations, sortBy, sortOrder,getCriteria(aclFilter));
         if (!relationalMapList1.isEmpty()) return relationalMapList1;
         Query query=new Query();
-        Criteria andCriteria=getAndCriteria(null,aclFilter);
+        Criteria andCriteria=getAndCriteria(null,aclFilter,orFilter);
         if(andCriteria!=null)
         {
             query.addCriteria(andCriteria);
@@ -614,9 +637,9 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     @Override
-    public PaginationResponsePayload getAllFormDataByFormIdAndQ(String formId, String relations, String q, String sortBy, String sortOrder, Pageable pageable, String aclFilter)
+    public PaginationResponsePayload getAllFormDataByFormIdAndQ(String formId, String relations, String q, String sortBy, String sortOrder, Pageable pageable, String aclFilter, List<String> orFilter)
     {
-        Criteria andCriteria=getAndCriteria(null,aclFilter);
+        Criteria andCriteria=getAndCriteria(null,aclFilter,orFilter);
         PaginationResponsePayload paginationResponsePayload = new PaginationResponsePayload();
         checkMongoCollectionIfExistsOrNot(formId);
         paginationResponsePayload.setPage(pageable.getPageNumber());
@@ -744,9 +767,9 @@ public class FormDataServiceImpl implements FormDataService
         }
     }
 
-    public PaginationResponsePayload getAllFormDataByFormId(String formId, String relations, String aclFilter)
+    public PaginationResponsePayload getAllFormDataByFormId(String formId, String relations, String aclFilter, List<String> orFilter)
     {
-        Criteria andCriteria=getAndCriteria(null,aclFilter);
+        Criteria andCriteria=getAndCriteria(null,aclFilter,orFilter);
         PaginationResponsePayload paginationResponsePayload = new PaginationResponsePayload();
         checkMongoCollectionIfExistsOrNot(formId);
         List<Map<String,Object>> content = new ArrayList<>();
@@ -819,17 +842,17 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     @Override
-    public List getFormDataByFormIdAndId(String formId, String id, String relations, String aclFilter)
+    public List getFormDataByFormIdAndId(String formId, String id, String relations, String aclFilter,List<String> orFilter)
     {
         List<Map<String,Object>> responseList=new ArrayList<>();
         if (isNotEmpty(relations))
         {
-            return getFormDataList(formId, id, relations,aclFilter);
+            return getFormDataList(formId, id, relations,aclFilter,orFilter);
         }
         Query query=new Query();
-        if(isNotBlank(aclFilter))
+        if(isNotBlank(aclFilter)&&orFilter!=null&&!orFilter.isEmpty())
         {
-            query.addCriteria(new Criteria().andOperator(Criteria.where(UNDERSCORE_ID).is(id),getCriteria(aclFilter)));
+            query.addCriteria(new Criteria().andOperator(Criteria.where(UNDERSCORE_ID).is(id),getCriteria(aclFilter),getOrCriteria(orFilter)));
         }
         else {
             query.addCriteria(Criteria.where(UNDERSCORE_ID).is(id));
@@ -850,7 +873,7 @@ public class FormDataServiceImpl implements FormDataService
         return  responseList;
     }
 
-    private List<Map<String, Object>> getFormDataList(String formId, String id, String relations,String aclFilter)
+    private List<Map<String, Object>> getFormDataList(String formId, String id, String relations,String aclFilter,List<String> orFilter)
     {
         ArrayList<String> mappedArrayOfDocumentsName=new ArrayList<>();
         String[] relationsList = relations.split(COMMA);
@@ -860,9 +883,13 @@ public class FormDataServiceImpl implements FormDataService
         List<Map<String, Object>> relationalMapList = new ArrayList<>();
         List<AggregationOperation> aggregationOperationsList = new ArrayList<>();
         aggregationOperationsList.add(Aggregation.match(Criteria.where(UNDERSCORE_ID).is(Long.valueOf(id))));
-        if(isNotBlank(aclFilter))
+        if(isNotBlank(aclFilter)&&orFilter!=null&&!orFilter.isEmpty())
         {
+            aggregationOperationsList.add(Aggregation.match(new Criteria().andOperator(getCriteria(aclFilter),getOrCriteria(orFilter))));
+        } else if (isNotBlank(aclFilter)) {
             aggregationOperationsList.add(Aggregation.match(getCriteria(aclFilter)));
+        }else if(orFilter!=null&&!orFilter.isEmpty()){
+            aggregationOperationsList.add(Aggregation.match(getOrCriteria(orFilter)));
         }
         prepareDocumentAggregateList(mappedArrayOfDocumentsName, relationKeysList, relationValuesList, aggregationOperationsList);
         aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)));
@@ -896,11 +923,11 @@ public class FormDataServiceImpl implements FormDataService
     }
 
     @Override
-    public void deleteFormDataByFormIdAndId(String formId, String id, String filter, String aclFilter)
+    public void deleteFormDataByFormIdAndId(String formId, String id, String filter, String aclFilter, List<String> orFilter)
     {
         boolean flag = false;
         long count = 0;
-        Criteria andCriteria=getAndCriteria(filter,aclFilter);
+        Criteria andCriteria=getAndCriteria(filter,aclFilter,orFilter);
         Criteria removeCriteria;
         if(andCriteria!=null)
         {

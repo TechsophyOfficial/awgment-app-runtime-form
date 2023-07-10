@@ -49,7 +49,7 @@ class FormDataServiceImplTest
         LinkedHashMap<String,Object> map = new LinkedHashMap<>();
         map.put(STRING,STRING);
         FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
-        Assertions.assertThrows(InvalidInputException.class, () -> formDataService.updateFormData(formDataSchema,"formData.name:akhil", null));
+        Assertions.assertThrows(InvalidInputException.class, () -> formDataService.updateFormData(formDataSchema,"formData.name:akhil", null,null));
     }
 
     @Test
@@ -58,6 +58,6 @@ class FormDataServiceImplTest
         LinkedHashMap<String,Object> map = new LinkedHashMap<>();
         map.put(STRING,STRING);
         FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
-        Assertions.assertThrows(InvalidInputException.class, () -> formDataService.updateFormData(formDataSchema,"formData.name:akhil", null));
+        Assertions.assertThrows(InvalidInputException.class, () -> formDataService.updateFormData(formDataSchema,"formData.name:akhil", null,null));
     }
 }
