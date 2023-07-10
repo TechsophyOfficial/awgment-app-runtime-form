@@ -79,7 +79,6 @@ public class FormDataServiceImpl implements FormDataService
     private FormValidationServiceImpl formValidationServiceImpl;
     private UserDetails userDetails;
     private MongoQueryBuilder queryBuilder;
-    //private Filters filters;
 
     private void handleMongoException(Exception e) {
         boolean exist = e.getMessage().contains(E11000);
@@ -245,12 +244,7 @@ public class FormDataServiceImpl implements FormDataService
             return new Criteria();
         }else {
             List<Criteria> criteriaList = new ArrayList<>();
-            orFilters.forEach(filter -> {
-                criteriaList.add(getCriteria(filter));
-            });
-//        for(int i = orFilters.size(); i<=0;i++){
-//            criteriaList.add(getCriteria(orFilters.get(i)));
-//        }
+            orFilters.forEach(filter -> criteriaList.add(getCriteria(filter)));
             return queryBuilder.orQueries(criteriaList);
         }
     }

@@ -242,6 +242,28 @@ class FormDataControllerTest
     }
 
     @Test
+    void getAllFormDataByFormIdOrFilterTest() throws JsonProcessingException
+    {
+        List<FormDataResponseSchema> formDataResponseSchemaList=new ArrayList<>();
+        Mockito.when(formDataService.getAllFormDataByFormId(anyString(),anyString(),any(),any(),any(), anyString(),anyList())).thenReturn(formDataResponseSchemaList);
+        FormAclDto formAclDto = new FormAclDto();
+        formAclDto.setId("1");
+        formAclDto.setAclId("101");
+        formAclDto.setFormId("101");
+        Mockito.when(formAclServiceImpl.getFormAcl(anyString())).thenReturn(formAclDto);
+        Map<String,Object> additionalDetails=new HashMap<>();
+        Map<String,Object> filtersMap=new HashMap<>();
+        filtersMap.put("orFilters",List.of("{\\\"formData.orderId\\\":{\\\"equals\\\" : 994192119303684096},\\\"formData.customerName\\\":{\\\"like\\\":\\\"customer\\\"}}"));
+        additionalDetails.put("runtime-form-app",filtersMap);
+        ACLDecision aclDecision=new ACLDecision("allow",additionalDetails);
+        Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("test-token");
+        Mockito.when(aclEvaluatorImpl.getRead(anyString(),anyString(),any())).thenReturn(aclDecision);
+        Mockito.when(tokenUtils.getTokenFromContext()).thenReturn("test-token");
+        ApiResponse apiResponse=new ApiResponse(new ArrayList<>(),true,"Form data retrieved successfully");
+        Mockito.when(globalMessageSource.get(anyString())).thenReturn("Form data retrieved successfully");
+        Assertions.assertEquals(apiResponse,formDataController.getAllFormDataByFormId("101","994102731543871488:orderId,994122561634369536:parcelId",null,null,null,null,"formData.name:akhil",null));
+    }
+    @Test
     void getAllFormDataByFormIdFilterPaginationTest() throws JsonProcessingException
     {
         PaginationResponsePayload paginationResponsePayload=new PaginationResponsePayload();

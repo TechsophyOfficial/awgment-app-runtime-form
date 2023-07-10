@@ -25,8 +25,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.techsophy.tsf.runtime.form.constants.ErrorConstants.ACCESS_DENIED;
 import static com.techsophy.tsf.runtime.form.constants.FormDataConstants.*;
@@ -51,7 +49,7 @@ public class FormDataControllerImpl implements FormDataController
                 .map(ACLDecision::getAdditionalDetails)
                 .map(additionalDetailsMap->Optional.ofNullable((Map<String,String>)additionalDetailsMap.get(RUNTIME_FORM_APP)))
                 .map(optionalRuntimeFormMap->optionalRuntimeFormMap.map(runtimeFormMap->{
-                    if(runtimeFormMap.get(FILTERS)==null && !runtimeFormMap.containsKey("orFilters"))
+                    if(runtimeFormMap.get(FILTERS)==null && !runtimeFormMap.containsKey(OR_FILTERS))
                     {
                         throw new NoSuchElementException("runtime-form-app map was empty without filters inside ACLDefinition or filters which are compulsory if runtime-form-app map is created were not defined");
                     } else if (runtimeFormMap.get(FILTERS)!=null) {
@@ -70,10 +68,9 @@ public class FormDataControllerImpl implements FormDataController
                 .map(ACLDecision::getAdditionalDetails)
                 .map(additionalDetails -> Optional.ofNullable((Map<String, Object>) additionalDetails.get("runtime-form-app")))
                 .map(optionalRuntimeFormApp -> optionalRuntimeFormApp.map(runtimeFormApp -> {
-                    if (runtimeFormApp.containsKey("orFilters") || runtimeFormApp.containsKey(FILTERS)) {
-                        if(runtimeFormApp.get("orFilters")!=null) {
-                            List<String> orFilters = (List<String>) runtimeFormApp.get("orFilters");
-                            return orFilters;
+                    if (runtimeFormApp.containsKey(OR_FILTERS) || runtimeFormApp.containsKey(FILTERS)) {
+                        if(runtimeFormApp.get(OR_FILTERS)!=null) {
+                            return (List<String>) runtimeFormApp.get(OR_FILTERS);
                         }else{
                             return null;
                         }
