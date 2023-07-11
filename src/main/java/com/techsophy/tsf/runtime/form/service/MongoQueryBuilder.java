@@ -38,11 +38,6 @@ public class MongoQueryBuilder implements QueryBuilder<Criteria> {
         return Criteria.where(key).regex(operation.getLike());
     }
 
-    @Override
-    public Criteria orQueries(List<Criteria> queries) {
-        return new Criteria().orOperator(queries);
-    }
-
     public Criteria andQueries(List<Criteria> queries) {
         return new Criteria().andOperator(queries);
     }
