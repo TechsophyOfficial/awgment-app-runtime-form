@@ -20,5 +20,4 @@ public class FormDataConstants
     public static final String DELETE_RULE ="delete";
     public static final String ELASTIC ="/elastic";
     public static final String ACL ="/acl";
-    public static final String OR_FILTERS = "orFilters";
 }
