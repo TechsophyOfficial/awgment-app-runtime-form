@@ -46,6 +46,7 @@ class FormDataServiceElasticEnabledExceptionTest
     @InjectMocks
     FormDataServiceImpl mockFormDataServiceImpl;
 
+
     @BeforeEach
     public void init()
     {

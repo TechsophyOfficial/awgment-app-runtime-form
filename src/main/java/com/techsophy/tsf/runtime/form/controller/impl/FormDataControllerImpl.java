@@ -58,6 +58,25 @@ public class FormDataControllerImpl implements FormDataController
                 .orElse(Optional.empty());
     }
 
+    public static List<String> getOrFilter(List<ACLDecision> aclDecisionList) {
+        List<String> orFiltersList = new ArrayList<>();
+        aclDecisionList.stream()
+                .map(ACLDecision::getAdditionalDetails)
+                .map(additionalDetails -> Optional.ofNullable((Map<String, Object>) additionalDetails.get("runtime-form-app")))
+                .map(optionalRuntimeFormApp -> optionalRuntimeFormApp.map(runtimeFormApp -> {
+                    if (runtimeFormApp.containsKey(OR_FILTERS) || runtimeFormApp.containsKey(FILTERS)) {
+                        if(runtimeFormApp.get(OR_FILTERS)!=null) {
+                            return (List<String>) runtimeFormApp.get(OR_FILTERS);
+                        }else{
+                            return null;
+                        }
+                    } else {
+                        throw new NoSuchElementException("runtime-form-app map was empty without filters inside ACLDefinition or filters which are compulsory if runtime-form-app map is created were not defined");
+                    }
+                }))
+                .forEach(orFilter -> orFilter.ifPresent(orFiltersList::addAll));
+        return orFiltersList;
+    }
     @Override
     @Transactional
     public ApiResponse<FormDataDefinition> saveFormData(FormDataSchema formDataSchema, String filter) throws IOException

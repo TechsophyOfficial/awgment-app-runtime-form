@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 public class FormDataConstants
 {
     public static final String RUNTIME_FORM_APP="runtime-form-app";
+
     public static final String FILTERS="filters";
     public static final String CHILDREN="children";
     public static final String DATA="data";

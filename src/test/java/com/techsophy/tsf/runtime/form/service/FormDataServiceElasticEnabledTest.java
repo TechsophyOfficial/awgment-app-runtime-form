@@ -76,6 +76,7 @@ class FormDataServiceElasticEnabledTest
     MongoCollection mockMongoCollection;
     @Mock
     InsertOneResult mockInsertOneResult;
+
     @Mock
     MongoCursor mongoCursor;
     @Mock
