@@ -38,6 +38,8 @@ public interface FormDataController
     @PreAuthorize(READ_OR_ALL_ACCESS)
     ApiResponse<List<FormDataResponseSchema>> getFormDataByFormIdAndId(@PathVariable(FORM_ID) String formId, @RequestParam(ID) String id, @RequestParam(value = RELATIONS, required = false) String relations);
 
+
+
     @DeleteMapping(FORM_DATA_URL)
     @PreAuthorize(DELETE_OR_ALL_ACCESS)
     ApiResponse<Void> deleteAllFormDataByFormId(@RequestParam(value = FORM_ID) String formId);

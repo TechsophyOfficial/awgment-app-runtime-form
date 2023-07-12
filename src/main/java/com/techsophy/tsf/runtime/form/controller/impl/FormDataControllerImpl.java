@@ -48,22 +48,44 @@ public class FormDataControllerImpl implements FormDataController
                 .map(ACLDecision::getAdditionalDetails)
                 .map(additionalDetailsMap->Optional.ofNullable((Map<String,String>)additionalDetailsMap.get(RUNTIME_FORM_APP)))
                 .map(optionalRuntimeFormMap->optionalRuntimeFormMap.map(runtimeFormMap->{
-                    if(runtimeFormMap.get(FILTERS)==null)
+                    if(runtimeFormMap.get(FILTERS)==null && !runtimeFormMap.containsKey(OR_FILTERS))
                     {
                         throw new NoSuchElementException("runtime-form-app map was empty without filters inside ACLDefinition or filters which are compulsory if runtime-form-app map is created were not defined");
+                    } else if (runtimeFormMap.get(FILTERS)!=null) {
+                        return runtimeFormMap.get(FILTERS);
+                    } else {
+                        return null;
                     }
-                    return runtimeFormMap.get(FILTERS);
                 }))
                 .reduce((optionalFilter1,optionalFilter2)->optionalFilter1.flatMap(string1->Optional.of(string1+optionalFilter2.orElse(EMPTY_STRING))))
                 .orElse(Optional.empty());
     }
 
+    public static List<String> getOrFilter(List<ACLDecision> aclDecisionList) {
+        List<String> orFiltersList = new ArrayList<>();
+        aclDecisionList.stream()
+                .map(ACLDecision::getAdditionalDetails)
+                .map(additionalDetails -> Optional.ofNullable((Map<String, Object>) additionalDetails.get("runtime-form-app")))
+                .map(optionalRuntimeFormApp -> optionalRuntimeFormApp.map(runtimeFormApp -> {
+                    if (runtimeFormApp.containsKey(OR_FILTERS) || runtimeFormApp.containsKey(FILTERS)) {
+                        if(runtimeFormApp.get(OR_FILTERS)!=null) {
+                            return (List<String>) runtimeFormApp.get(OR_FILTERS);
+                        }else{
+                            return null;
+                        }
+                    } else {
+                        throw new NoSuchElementException("runtime-form-app map was empty without filters inside ACLDefinition or filters which are compulsory if runtime-form-app map is created were not defined");
+                    }
+                }))
+                .forEach(orFilter -> orFilter.ifPresent(orFiltersList::addAll));
+        return orFiltersList;
+    }
     @Override
     @Transactional
     public ApiResponse<FormDataDefinition> saveFormData(FormDataSchema formDataSchema, String filter) throws IOException
     {
         List<ACLDecision> aclDecisionList=checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
-        FormDataDefinition formDataDefinition =formDataService.saveFormData(formDataSchema,filter,getAclFilter(aclDecisionList).orElse(""));
+        FormDataDefinition formDataDefinition =formDataService.saveFormData(formDataSchema,filter,getAclFilter(aclDecisionList).orElse(""),getOrFilter(aclDecisionList));
         return new ApiResponse<>(formDataDefinition,true,globalMessageSource.get(SAVE_FORM_DATA_SUCCESS));
     }
 
@@ -72,7 +94,7 @@ public class FormDataControllerImpl implements FormDataController
     public ApiResponse<FormDataDefinition> updateFormData(FormDataSchema formDataSchema, String filter) throws JsonProcessingException
     {
          List<ACLDecision> aclDecisionList=checkACL(UPDATE_RULE, Collections.singletonList(formDataSchema.getFormId()));
-         FormDataDefinition formDataDefinition=formDataService.updateFormData(formDataSchema,filter,getAclFilter(aclDecisionList).orElse(""));
+         FormDataDefinition formDataDefinition=formDataService.updateFormData(formDataSchema,filter,getAclFilter(aclDecisionList).orElse(""),getOrFilter(aclDecisionList));
          return new ApiResponse<>(formDataDefinition,true,globalMessageSource.get(UPDATE_FORM_DATA_SUCCESS));
     }
 
@@ -87,25 +109,25 @@ public class FormDataControllerImpl implements FormDataController
         {
             if (page == null)
             {
-                return new ApiResponse<>(formDataService.getAllFormDataByFormId(formId, relations, filter, sortBy, sortOrder,getAclFilter(aclDecisionList).orElse("")), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
+                return new ApiResponse<>(formDataService.getAllFormDataByFormId(formId, relations, filter, sortBy, sortOrder,getAclFilter(aclDecisionList).orElse(""),getOrFilter(aclDecisionList)), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
             }
             else
             {
-                return new ApiResponse<>(formDataService.getAllFormDataByFormId(formId, relations, filter, sortBy, sortOrder, PageRequest.of(page, pageSize),getAclFilter(aclDecisionList).orElse("")), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
+                return new ApiResponse<>(formDataService.getAllFormDataByFormId(formId, relations, filter, sortBy, sortOrder, PageRequest.of(page, pageSize),getAclFilter(aclDecisionList).orElse(""),getOrFilter(aclDecisionList)), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
             }
         }
         else if ((StringUtils.hasText(sortBy) || StringUtils.hasText(sortOrder)) || (page != null || pageSize != null) || StringUtils.hasText(q))
         {
             if (page == null)
             {
-                return new ApiResponse<>(formDataService.getAllFormDataByFormIdAndQ(formId, relations, q, sortBy, sortOrder,getAclFilter(aclDecisionList).orElse("")), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
+                return new ApiResponse<>(formDataService.getAllFormDataByFormIdAndQ(formId, relations, q, sortBy, sortOrder,getAclFilter(aclDecisionList).orElse(""),getOrFilter(aclDecisionList)), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
             }
             else
             {
-                return new ApiResponse<>(formDataService.getAllFormDataByFormIdAndQ(formId, relations, q, sortBy, sortOrder, PageRequest.of(page, pageSize),getAclFilter(aclDecisionList).orElse("")), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
+                return new ApiResponse<>(formDataService.getAllFormDataByFormIdAndQ(formId, relations, q, sortBy, sortOrder, PageRequest.of(page, pageSize),getAclFilter(aclDecisionList).orElse(""),getOrFilter(aclDecisionList)), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
             }
         }
-        return new ApiResponse<>(formDataService.getAllFormDataByFormId(formId,relations,getAclFilter(aclDecisionList).orElse("")), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
+        return new ApiResponse<>(formDataService.getAllFormDataByFormId(formId,relations,getAclFilter(aclDecisionList).orElse(""),getOrFilter(aclDecisionList)), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
     }
 
     @Override
@@ -115,7 +137,7 @@ public class FormDataControllerImpl implements FormDataController
         listOfFormIds.add(formId);
         listOfFormIds.addAll(relationUtils.getListOfFormIdsUsingRelations(relations));
         List<ACLDecision> aclDecisionList=checkACL(READ_RULE,listOfFormIds);
-        return new ApiResponse<>(formDataService.getFormDataByFormIdAndId(formId, id, relations,getAclFilter(aclDecisionList).orElse("")), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
+        return new ApiResponse<>(formDataService.getFormDataByFormIdAndId(formId, id, relations,getAclFilter(aclDecisionList).orElse(""),getOrFilter(aclDecisionList)), true, globalMessageSource.get(GET_FORM_DATA_SUCCESS));
     }
 
     @Override
@@ -131,7 +153,7 @@ public class FormDataControllerImpl implements FormDataController
     public ApiResponse<Void> deleteFormDataByFormIdAndId(String formId, String id,String filter)
     {
         List<ACLDecision> aclDecisionList=checkACL(DELETE_RULE, Collections.singletonList(formId));
-        formDataService.deleteFormDataByFormIdAndId(formId,id,filter,getAclFilter(aclDecisionList).orElse(""));
+        formDataService.deleteFormDataByFormIdAndId(formId,id,filter,getAclFilter(aclDecisionList).orElse(""),getOrFilter(aclDecisionList));
         return new ApiResponse<>(null,true,globalMessageSource.get(DELETE_FORM_DATA_SUCCESS));
     }
 

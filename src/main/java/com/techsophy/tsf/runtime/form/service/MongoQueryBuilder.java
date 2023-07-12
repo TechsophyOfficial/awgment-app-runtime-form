@@ -33,9 +33,16 @@ public class MongoQueryBuilder implements QueryBuilder<Criteria> {
     public Criteria inQuery(String key, InOperation operation) {
         return Criteria.where(key).in(operation.getIn());    }
 
+
+
     @Override
     public Criteria likeQuery(String key, LikeOperation operation) {
         return Criteria.where(key).regex(operation.getLike());
+    }
+
+    @Override
+    public Criteria orQueries(List<Criteria> queries) {
+        return new Criteria().orOperator(queries);
     }
 
     public Criteria andQueries(List<Criteria> queries) {
