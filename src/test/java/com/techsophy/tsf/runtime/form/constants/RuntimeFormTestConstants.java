@@ -111,7 +111,6 @@ public class RuntimeFormTestConstants
     public static final String TEST_SORT_ORDER = "desc";
     public static final String FILTER="name:abc,id:123,formId:101";
     public static final String FILTER_VERSION_2="{\"formData.orderId\":{\"lt\":23,\"lte\":20,\"gt\":20,\"gte\":24},\"formData.age\":{\"equals\":18},\"formData.orderName\":{\"in\":[\"order1\"]},\"formData.name\":{\"like\":\"akh\"}}";
-    public static final String OR_FILTER_DATA="{\"formData.orderId\":{\"lt\":23,\"lte\":20,\"gt\":20,\"gte\":24},\"formData.age\":{\"equals\":18},\"formData.orderName\":{\"in\":[\"order1\"]},\"formData.name\":{\"like\":\"akh\"}}";
     public static final String FILTER_INCORRECT_JSON="{\"formData.orderId\":{\"lt\":23,\"lte\":20,\"gt\":20,\"gte\":24";
     public static final String TEST_FILTER = "id:123,version:1";
     public static final String TEST_GROUP_BY = "formData.name";

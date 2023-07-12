@@ -174,7 +174,7 @@ class FormDataServiceElasticEnabledTest
         responseMapTest.put(SUCCESS,true);
         Mockito.when(mockMongoTemplate.remove(any(),anyString())).thenReturn(mockDeleteResult);
         Mockito.when(mockDeleteResult.getDeletedCount()).thenReturn(Long.valueOf(1));
-        mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID, null, null,null);
+        mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID, null, null);
         verify(mockWebClientWrapper,times(1)).webclientRequest(any(),any(),any(),any());
     }
 }

@@ -25,7 +25,6 @@ public interface FormDataService {
 
     List<FormDataResponseSchema> getFormDataByFormIdAndId(String formId, String id, String relations, String aclFilter, List<String> orFilter);
 
-
     void deleteAllFormDataByFormId(String formId);
 
     void deleteFormDataByFormIdAndId(String formId, String id, String filter, String aclFilter, List<String> orFilter);
