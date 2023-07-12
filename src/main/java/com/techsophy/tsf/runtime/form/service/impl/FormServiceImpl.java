@@ -43,7 +43,7 @@ public class FormServiceImpl implements FormService
         {
             throw new UserDetailsIdNotFoundException(LOGGED_IN_USER_ID_NOT_FOUND,globalMessageSource.get(LOGGED_IN_USER_ID_NOT_FOUND,loggedInUserDetails.get(ID).toString()));
         }
-        BigInteger loggedInUserId = BigInteger.valueOf(Long.parseLong(loggedInUserDetails.get(ID).toString()));
+        BigInteger loggedInUserId = new BigInteger(loggedInUserDetails.get(ID)+"");
         FormDefinition formDefinition=new FormDefinition();
         formDefinition.setId(BigInteger.valueOf(Long.parseLong(formSchema.getId())));
         formDefinition.setName(formSchema.getName());
