@@ -236,6 +236,7 @@ class FormDataServiceElasticDisabledExceptionTest
         Map<String, Object> testFormData2 = new HashMap<>();
         testFormData2.put(NAME, NAME_VALUE);
         testFormData2.put(AGE,AGE_VALUE);
+
         Assertions.assertThrows(FormIdNotFoundException.class, () ->
                 mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_FORM_DATA_ID, null, null,null));
     }

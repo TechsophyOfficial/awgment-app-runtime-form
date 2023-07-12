@@ -424,6 +424,7 @@ class FormDataServiceElasticDisabledTest
         formDataDefinition.setCreatedById(TEST_CREATED_BY_ID);
         formDataDefinition.setCreatedOn(String.valueOf(Instant.now()));
         formDataDefinition.setUpdatedById(TEST_UPDATED_BY_ID);
+
         formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         formDataDefinitionsList.add(formDataDefinition);
         Mockito.when(mockMongoTemplate.find(any(),eq(FormDataDefinition.class),anyString())).thenReturn(formDataDefinitionsList);
