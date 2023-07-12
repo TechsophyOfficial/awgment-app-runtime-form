@@ -46,7 +46,6 @@ class FormDataServiceElasticEnabledExceptionTest
     @InjectMocks
     FormDataServiceImpl mockFormDataServiceImpl;
 
-
     @BeforeEach
     public void init()
     {
@@ -76,7 +75,7 @@ class FormDataServiceElasticEnabledExceptionTest
         DeleteResult mockDeleteResult=Mockito.mock(DeleteResult.class);
         when(mockMongoTemplate.remove(any(),anyString())).thenReturn(mockDeleteResult);
         when(mockDeleteResult.getDeletedCount()).thenReturn(Long.valueOf(1));
-        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID, null, null));
+        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID, null, null,null));
     }
 
     @Test
@@ -84,7 +83,7 @@ class FormDataServiceElasticEnabledExceptionTest
     {
         Mockito.when(mockMongoTemplate.remove(any(),anyString())).thenReturn(deleteResult);
         when(deleteResult.getDeletedCount()).thenReturn(Long.valueOf(1));
-        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID, null, null));
+        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID, null, null,null));
     }
 
     @Test
@@ -93,6 +92,6 @@ class FormDataServiceElasticEnabledExceptionTest
         DeleteResult mockDeleteResult= Mockito.mock(DeleteResult.class);
         when(mockMongoTemplate.remove(any(),anyString())).thenReturn(mockDeleteResult);
         when(mockDeleteResult.getDeletedCount()).thenReturn(Long.valueOf(1));
-        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID, null, null));
+        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_ID, null, null,null));
     }
 }
