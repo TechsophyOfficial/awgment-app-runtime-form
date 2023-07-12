@@ -125,7 +125,7 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(AGE, AGE_VALUE);
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(false);
         Assertions.assertThrows(FormIdNotFoundException.class, () ->
-                mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, relations, null, null, null, null,null));
+                mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, relations, null, null, null, null));
     }
 
     @Test
@@ -137,7 +137,7 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(AGE, AGE_VALUE);
         Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(false);
         Assertions.assertThrows(FormIdNotFoundException.class, () ->
-                mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, null, CREATED_ON, null, null, null,null));
+                mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, null, CREATED_ON, null, null, null));
     }
 
     @Test
@@ -149,7 +149,7 @@ class FormDataServiceElasticDisabledExceptionTest
             testFormData2.put(NAME, NAME_VALUE);
             testFormData2.put(AGE, AGE_VALUE);
             when(mockMongoTemplate.collectionExists(anyString())).thenReturn(false);
-            Assertions.assertThrows(FormIdNotFoundException.class,()->mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, null, CREATED_ON, null, null,null));
+            Assertions.assertThrows(FormIdNotFoundException.class,()->mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, null, CREATED_ON, null, null));
     }
 
         @Test
@@ -162,7 +162,7 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(AGE,AGE_VALUE);
         when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
         Assertions.assertThrows(IllegalArgumentException.class, () ->
-                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,TEST_RELATIONS,SEARCH_STRING, CREATED_ON, null, null,null));
+                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID,TEST_RELATIONS,SEARCH_STRING, CREATED_ON, null, null));
     }
 
     @Test
@@ -175,7 +175,7 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(AGE, AGE_VALUE);
         when(mockMongoTemplate.collectionExists(anyString())).thenReturn(false);
         Assertions.assertThrows(FormIdNotFoundException.class, () ->
-                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID, TEST_RELATIONS, EMPTY_STRING, null, null, null,null));
+                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID, TEST_RELATIONS, EMPTY_STRING, null, null, null));
     }
 
     @Test
@@ -187,7 +187,7 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(AGE, AGE_VALUE);
         when(mockMongoTemplate.collectionExists(anyString())).thenReturn(false);
         Assertions.assertThrows(FormIdNotFoundException.class, () ->
-                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID, TEST_RELATIONS, EMPTY_STRING, null, null, null,null));
+                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID, TEST_RELATIONS, EMPTY_STRING, null, null, null));
     }
 
     @Test
@@ -201,7 +201,7 @@ class FormDataServiceElasticDisabledExceptionTest
         when(mockMongoTemplate.collectionExists(anyString())).thenReturn(false);
         PageRequest pageRequest = PageRequest.of(1, 5);
         Assertions.assertThrows(RuntimeException.class, () ->
-                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID, TEST_RELATIONS, EMPTY_STRING, CREATED_ON, null, pageRequest, null,null));
+                mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID, TEST_RELATIONS, EMPTY_STRING, CREATED_ON, null, pageRequest, null));
     }
 
     @Test
@@ -214,7 +214,7 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(AGE, AGE_VALUE);
         when(mockMongoTemplate.collectionExists(anyString())).thenReturn(false);
         Assertions.assertThrows(FormIdNotFoundException.class, () ->
-                mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, null,null));
+                mockFormDataServiceImpl.getAllFormDataByFormId(TEST_FORM_ID, TEST_RELATIONS, null));
     }
 
     @Test
@@ -237,7 +237,7 @@ class FormDataServiceElasticDisabledExceptionTest
         testFormData2.put(NAME, NAME_VALUE);
         testFormData2.put(AGE,AGE_VALUE);
         Assertions.assertThrows(FormIdNotFoundException.class, () ->
-                mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_FORM_DATA_ID, null, null,null));
+                mockFormDataServiceImpl.deleteFormDataByFormIdAndId(TEST_FORM_ID,TEST_FORM_DATA_ID, null, null));
     }
 
 //    @Test
