@@ -144,7 +144,7 @@ public class FormDataServiceImpl implements FormDataService
         }
         FormDataAuditSchema formDataAuditSchema=new FormDataAuditSchema(
                 String.valueOf(idGenerator.nextId()),formDataDefinition.getId(),
-                formId,1,formDataDefinition.getFormData(),formDataDefinition.getFormMetaData()
+                formId,formDataDefinition.getVersion(),formDataDefinition.getFormData(),formDataDefinition.getFormMetaData()
         );
         this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
         return formDataDefinition;
@@ -188,7 +188,16 @@ public class FormDataServiceImpl implements FormDataService
         modifiedFormData.putAll(formDataSchema.getFormData());
         Optional.ofNullable(formDataSchema.getFormMetaData()).ifPresent(formDataDefinition::setFormMetaData);
         saveToMongo(formDataSchema.getFormId(),formDataDefinition);
-        return formDataDefinition;
+        FormDataAuditSchema formDataAuditSchema=new FormDataAuditSchema(
+        String.valueOf(idGenerator.nextId()),formDataDefinition.getId(),
+        formDataDefinition.getFormId(),formDataDefinition.getVersion(),formDataDefinition.getFormData(),formDataDefinition.getFormMetaData()
+      );
+      try {
+        this.formDataAuditService.saveFormDataAudit(formDataAuditSchema);
+      } catch (JsonProcessingException e) {
+        throw new InvalidInputException(FORMDATA_AUDIT_FAILED,globalMessageSource.get(FORMDATA_AUDIT_FAILED));
+      }
+      return formDataDefinition;
     }
 
     @Override
