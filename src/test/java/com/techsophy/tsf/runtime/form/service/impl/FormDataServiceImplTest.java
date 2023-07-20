@@ -74,6 +74,27 @@ class FormDataServiceImplTest {
   }
 
   @Test
+  void updateFormDataTestToSaveToAuditException() throws JsonProcessingException {
+    Map<String, Object> testFormMetaData = new HashMap<>();
+    testFormMetaData.put(FORM_VERSION, 1);
+    Map<String, Object> testFormData = new HashMap<>();
+    testFormData.put(NAME, NAME_VALUE);
+    testFormData.put(AGE,AGE_VALUE);
+    LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+    map.put(STRING, STRING);
+    FormDataSchema formDataSchema = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
+    FormDataDefinition formDataDefinition= new FormDataDefinition();
+    formDataDefinition.setId(TEST_ID);
+    formDataDefinition.setFormId(TEST_FORM_ID);
+    formDataDefinition.setVersion(TEST_VERSION);
+    formDataDefinition.setFormData(testFormData);
+    formDataDefinition.setFormMetaData(testFormMetaData);
+    when(mongoTemplate.findOne(any(),any(),any())).thenReturn(formDataDefinition);
+    when(formDataAuditService.saveFormDataAudit(any())).thenThrow(JsonProcessingException.class);
+    Assertions.assertThrows(InvalidInputException.class,()->formDataService.updateFormData(formDataSchema, "formData.name:akhil", null, null));
+  }
+
+  @Test
   void updateFormDataTestToSaveToAudit() throws JsonProcessingException {
     Map<String, Object> testFormMetaData = new HashMap<>();
     testFormMetaData.put(FORM_VERSION, 1);
@@ -91,8 +112,35 @@ class FormDataServiceImplTest {
     formDataDefinition.setFormData(testFormData);
     formDataDefinition.setFormMetaData(testFormMetaData);
     when(mongoTemplate.findOne(any(),any(),any())).thenReturn(formDataDefinition);
-    when(formDataAuditService.saveFormDataAudit(any())).thenThrow(JsonProcessingException.class);
+    FormDataAuditResponse formDataAuditResponse=new FormDataAuditResponse(formDataDefinition.getId(),formDataDefinition.getVersion()+1);
+    when(formDataAuditService.saveFormDataAudit(any())).thenReturn(formDataAuditResponse);
+    formDataService.updateFormData(formDataSchema, "formData.name:akhil", null, null);
+    Assertions.assertEquals(Integer.valueOf(formDataDefinition.getVersion()),formDataAuditResponse.getVersion());
+  }
+
+  @Test
+  void updateFormDataTestToSaveToAuditFailure() throws JsonProcessingException {
+    Map<String, Object> testFormMetaData = new HashMap<>();
+    testFormMetaData.put(FORM_VERSION, 1);
+    Map<String, Object> testFormData = new HashMap<>();
+    testFormData.put(NAME, NAME_VALUE);
+    testFormData.put(AGE,AGE_VALUE);
+    LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+    map.put(STRING, STRING);
+    FormDataAuditSchema formDataAuditSchema = new FormDataAuditSchema(TEST_ID,NULL,EMPTY_STRING, TEST_VERSION, testFormData, testFormMetaData);
+    FormDataSchema formDataSchema = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, testFormData, testFormMetaData);
+    FormDataDefinition formDataDefinition= new FormDataDefinition();
+    formDataDefinition.setId(TEST_ID);
+    formDataDefinition.setFormId(TEST_FORM_ID);
+    formDataDefinition.setVersion(TEST_VERSION);
+    formDataDefinition.setFormData(testFormData);
+    formDataDefinition.setFormMetaData(testFormMetaData);
+    FormDataAuditResponse formDataAuditResponse=new FormDataAuditResponse(formDataDefinition.getId(),null);
+    when(mongoTemplate.findOne(any(),any(),any())).thenReturn(formDataDefinition);
+    when(formDataAuditService.saveFormDataAudit(any())).thenReturn(formDataAuditResponse);
     Assertions.assertThrows(InvalidInputException.class,()->formDataService.updateFormData(formDataSchema, "formData.name:akhil", null, null));
   }
+
+
 
 }
