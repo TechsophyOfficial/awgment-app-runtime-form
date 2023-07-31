@@ -39,4 +39,5 @@ public class ErrorConstants
     public static final String DUPLICATE_FIELD_VALUE="AWGMENT-RUNTIME-FORM-1041";
     public static final String ACCESS_DENIED="AWGMENT-RUNTIME-FORM-1042";
     public static final String FILTERS_NOT_APPLICABLE="AWGMENT-RUNTIME-FORM-1043";
+    public static final String FORMDATA_AUDIT_FAILED="AWGMENT-RUNTIME-FORM-1044";
 }
