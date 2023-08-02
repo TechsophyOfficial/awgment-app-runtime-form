@@ -161,7 +161,6 @@ class FormDataServiceImplTest {
     // Assertions
     assertNotNull(updatedFormData);
     assertEquals(TEST_VERSION + 1, updatedFormData.getVersion());
-
     // Verify method invocations
     verify(mongoTemplate, times(1)).findOne(any(), any(), any());
     verify(formDataAuditService, times(1)).saveFormDataAudit(any());
