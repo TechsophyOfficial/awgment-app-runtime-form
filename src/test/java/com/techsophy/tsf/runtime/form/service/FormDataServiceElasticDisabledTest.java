@@ -12,6 +12,7 @@ import com.mongodb.client.result.UpdateResult;
 import com.techsophy.idgenerator.IdGeneratorImpl;
 import com.techsophy.tsf.commons.query.Filters;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
+import com.techsophy.tsf.runtime.form.dto.FormDataAuditResponse;
 import com.techsophy.tsf.runtime.form.dto.FormDataSchema;
 import com.techsophy.tsf.runtime.form.dto.FormResponseSchema;
 import com.techsophy.tsf.runtime.form.dto.ValidationResult;
@@ -103,6 +104,8 @@ class FormDataServiceElasticDisabledTest
     AggregationResults aggregationResults;
     @Mock
     FormValidationServiceImpl mockFormValidationServiceImpl;
+    @Mock
+    FormDataAuditService formDataAuditService;
     @Mock
     Filters filters;
     @InjectMocks
@@ -229,38 +232,108 @@ class FormDataServiceElasticDisabledTest
         Mockito.verify(mockMongoTemplate,times(1)).updateFirst(any(),any(),any(),anyString());
     }
 
-    @Test
-    void saveFormDataUpdateRecordSameCollectionWithFilterNotMatchTest() throws IOException
-    {
-        FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
-        Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
-        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,TEST_FORM_DATA,TEST_FORM_META_DATA);
-        ValidationResult validationResult=new ValidationResult("name");
-        List<ValidationResult> validationResultList=new ArrayList<>();
-        validationResultList.add(validationResult);
-        Mockito.when(mockFormValidationServiceImpl.validateData(any(),any(),anyString())).thenReturn(validationResultList);
-        FormDataDefinition formDataDefinition=new FormDataDefinition();
-        formDataDefinition.setId("101");
-        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataDefinition.class))).thenReturn(formDataDefinition);
-        Mockito.when(mockObjectMapper.convertValue(any(),eq(FormDataSchema.class))).thenReturn(formDataSchema);
-        Mockito.when(mockMongoTemplate.findOne(any(),any(),anyString())).thenReturn(formDataDefinition);
-        Mockito.when(mockMongoTemplate.updateFirst(any(),any(),any(),anyString())).thenReturn(updateResult);
-        Mockito.when(updateResult.getMatchedCount()).thenReturn(0L);
-        Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
-        Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema,null, null,null));
-    }
-    @Test
-    void updateFormDataWithFiltersTest()
-    {
-        FormDataSchema formDataSchema=new FormDataSchema(TEST_ID,TEST_FORM_ID,TEST_VERSION,new HashMap<>(),TEST_FORM_META_DATA);
-        FormDataDefinition formDataDefinition=new FormDataDefinition();
-        formDataDefinition.setFormData(new HashMap<>());
-        formDataDefinition.setId("101");
-        Mockito.when(mockMongoTemplate.findOne(queryArgumentCaptor.capture(),any(),anyString())).thenReturn(formDataDefinition);
-        mockFormDataServiceImpl.updateFormData(formDataSchema,"formData.name:akhil", null,null);
-        Assertions.assertEquals("Query: { \"_id\" : \"1\", \"$and\" : [{ \"$and\" : [{ \"formData.name\" : \"akhil\"}]}, {}, {}]}, Fields: {}, Sort: {}",queryArgumentCaptor.getValue().toString());
-        Mockito.verify(mockMongoTemplate,times(1)).save(any(),anyString());
-    }
+  @Test
+  void saveFormDataUpdateRecordSameCollectionWithFilterNotMatchTest() throws IOException {
+    FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
+    Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
+    FormDataSchema formDataSchema = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, TEST_FORM_DATA, TEST_FORM_META_DATA);
+    ValidationResult validationResult = new ValidationResult("name");
+    List<ValidationResult> validationResultList = new ArrayList<>();
+    validationResultList.add(validationResult);
+    Mockito.when(mockFormValidationServiceImpl.validateData(any(), any(), anyString())).thenReturn(validationResultList);
+    FormDataDefinition formDataDefinition = new FormDataDefinition();
+    formDataDefinition.setId("101");
+    Mockito.when(mockObjectMapper.convertValue(any(), eq(FormDataDefinition.class))).thenReturn(formDataDefinition);
+    Mockito.when(mockObjectMapper.convertValue(any(), eq(FormDataSchema.class))).thenReturn(formDataSchema);
+    Mockito.when(mockMongoTemplate.findOne(any(), any(), anyString())).thenReturn(formDataDefinition);
+    Mockito.when(mockMongoTemplate.updateFirst(any(), any(), any(), anyString())).thenReturn(updateResult);
+    Mockito.when(updateResult.getMatchedCount()).thenReturn(0L);
+    Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
+    Assertions.assertThrows(InvalidInputException.class, () -> mockFormDataServiceImpl.saveFormData(formDataSchema, null, null, null));
+  }
+
+  @Test
+  void saveFormDataNewCollectionAuditTest() throws IOException {
+    FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
+    Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
+    FormDataSchema formDataSchema = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, TEST_FORM_DATA, TEST_FORM_META_DATA);
+    ValidationResult validationResult = new ValidationResult("name");
+    List<ValidationResult> validationResultList = new ArrayList<>();
+    validationResultList.add(validationResult);
+    FormDataDefinition formDataDefinition= new FormDataDefinition();
+    formDataDefinition.setId(TEST_ID);
+    formDataDefinition.setFormId(TEST_FORM_ID);
+    formDataDefinition.setVersion(TEST_VERSION);
+    formDataDefinition.setFormData(null);
+    formDataDefinition.setFormMetaData(null);
+    FormDataAuditResponse formDataAuditResponse=new FormDataAuditResponse(formDataDefinition.getId(),formDataDefinition.getVersion());
+    when(formDataAuditService.saveFormDataAudit(any())).thenReturn(formDataAuditResponse);
+    Mockito.when(mockFormValidationServiceImpl.validateData(any(), any(), anyString())).thenReturn(validationResultList);
+    Mockito.when(mockObjectMapper.convertValue(any(), eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
+    Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
+    mockFormDataServiceImpl.saveFormData(formDataSchema, "formData.name:akhil", null, null);
+    Mockito.verify(mockMongoTemplate, times(1)).save(any(), anyString());
+    Assertions.assertEquals(Integer.valueOf(formDataDefinition.getVersion()),formDataAuditResponse.getVersion());
+  }
+  @Test
+  void saveFormDataNewCollectionAuditExceptionTest() throws IOException {
+    FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
+    Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
+    FormDataSchema formDataSchema = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, TEST_FORM_DATA, TEST_FORM_META_DATA);
+    ValidationResult validationResult = new ValidationResult("name");
+    List<ValidationResult> validationResultList = new ArrayList<>();
+    validationResultList.add(validationResult);
+    FormDataDefinition formDataDefinition= new FormDataDefinition();
+    formDataDefinition.setId(TEST_ID);
+    formDataDefinition.setFormId(TEST_FORM_ID);
+    formDataDefinition.setVersion(TEST_VERSION);
+    formDataDefinition.setFormData(null);
+    formDataDefinition.setFormMetaData(null);
+    FormDataAuditResponse formDataAuditResponse=new FormDataAuditResponse(formDataDefinition.getId(),formDataDefinition.getVersion()+1);
+    Mockito.when(mockFormValidationServiceImpl.validateData(any(), any(), anyString())).thenReturn(validationResultList);
+    Mockito.when(mockObjectMapper.convertValue(any(), eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
+    Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
+    when(formDataAuditService.saveFormDataAudit(any())).thenThrow(JsonProcessingException.class);
+    Assertions.assertThrows(InvalidInputException.class,()->mockFormDataServiceImpl.saveFormData(formDataSchema, "formData.name:akhil", null, null));
+    Mockito.verify(mockMongoTemplate, times(1)).save(any(), anyString());
+  }
+  @Test
+  void saveFormDataNewCollectionAuditFailureTest() throws IOException {
+
+    FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
+    Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
+    FormDataSchema formDataSchema = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, TEST_FORM_DATA, TEST_FORM_META_DATA);
+    ValidationResult validationResult = new ValidationResult("name");
+    List<ValidationResult> validationResultList = new ArrayList<>();
+    validationResultList.add(validationResult);
+    FormDataDefinition formDataDefinition= new FormDataDefinition();
+    formDataDefinition.setId(TEST_ID);
+    formDataDefinition.setFormId(TEST_FORM_ID);
+    formDataDefinition.setVersion(TEST_VERSION);
+    formDataDefinition.setFormData(null);
+    formDataDefinition.setFormMetaData(null);
+    FormDataAuditResponse formDataAuditResponse=new FormDataAuditResponse(formDataDefinition.getId(),null);
+    when(formDataAuditService.saveFormDataAudit(any())).thenReturn(formDataAuditResponse);
+    Mockito.when(mockFormValidationServiceImpl.validateData(any(), any(), anyString())).thenReturn(validationResultList);
+    Mockito.when(mockObjectMapper.convertValue(any(), eq(FormDataDefinition.class))).thenReturn(new FormDataDefinition());
+    Mockito.when(mockUserDetails.getUserDetails()).thenReturn(userList);
+    Assertions.assertThrows(InvalidInputException.class,()->    mockFormDataServiceImpl.saveFormData(formDataSchema, "formData.name:akhil", null, null));
+    Mockito.verify(mockMongoTemplate, times(1)).save(any(), anyString());
+  }
+
+  @Test
+  void updateFormDataWithFiltersTest() throws JsonProcessingException {
+    FormDataSchema formDataSchema = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, new HashMap<>(), TEST_FORM_META_DATA);
+    FormDataDefinition formDataDefinition = new FormDataDefinition();
+    formDataDefinition.setFormData(new HashMap<>());
+    formDataDefinition.setId("101");
+    Mockito.when(mockMongoTemplate.findOne(queryArgumentCaptor.capture(), any(), anyString())).thenReturn(formDataDefinition);
+    FormDataAuditResponse formDataAuditResponse=new FormDataAuditResponse(formDataDefinition.getId(),formDataDefinition.getVersion()+1);
+    when(formDataAuditService.saveFormDataAudit(any())).thenReturn(formDataAuditResponse);
+    mockFormDataServiceImpl.updateFormData(formDataSchema, "formData.name:akhil", null, null);
+    Assertions.assertEquals("Query: { \"_id\" : \"1\", \"$and\" : [{ \"$and\" : [{ \"formData.name\" : \"akhil\"}]}, {}, {}]}, Fields: {}, Sort: {}", queryArgumentCaptor.getValue().toString());
+    Mockito.verify(mockMongoTemplate, times(1)).save(any(), anyString());
+  }
 
     @Test
     void updateFormDataWithOutFiltersTest()
