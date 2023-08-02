@@ -40,7 +40,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
@@ -317,7 +316,6 @@ class FormDataServiceElasticDisabledTest {
   }
   @Test
   void saveFormDataNewCollectionAuditFailureTest() throws IOException {
-
     FormResponseSchema formResponseSchemaTest = new FormResponseSchema();
     Mockito.when(mockFormService.getRuntimeFormById(anyString())).thenReturn(formResponseSchemaTest);
     FormDataSchema formDataSchema = new FormDataSchema(TEST_ID, TEST_FORM_ID, TEST_VERSION, TEST_FORM_DATA, TEST_FORM_META_DATA);
