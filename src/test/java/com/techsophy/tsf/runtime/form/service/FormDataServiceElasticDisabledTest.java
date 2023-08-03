@@ -56,7 +56,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith({MockitoExtension.class})
 class FormDataServiceElasticDisabledTest {
-
   @Captor
   ArgumentCaptor<Query> queryArgumentCaptor;
   @Mock
