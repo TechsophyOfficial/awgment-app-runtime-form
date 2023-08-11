@@ -12,6 +12,6 @@ public class Auditable
     private String createdOn;
     @LastModifiedBy
     private String updatedById;
-    @LastModifiedDate
+//    @LastModifiedDate
     private String updatedOn;
 }
