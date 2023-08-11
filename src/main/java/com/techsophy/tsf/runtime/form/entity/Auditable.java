@@ -8,7 +8,6 @@ public class Auditable
 {
     @CreatedBy
     private String createdById;
-    @CreatedDate
     private String createdOn;
     @LastModifiedBy
     private String updatedById;
