@@ -62,8 +62,8 @@ public class FormDataAuditServiceImpl implements FormDataAuditService
         BigInteger loggedInUserId = new BigInteger(loggedInUserDetails.get(ID)+"");
         FormDataAuditDefinition formDataAuditDefinition=objectMapper.convertValue(formDataAuditSchema,FormDataAuditDefinition.class);
         formDataAuditDefinition.setCreatedById(String.valueOf(loggedInUserId));
-        formDataAuditDefinition.setCreatedOn(String.valueOf(Date.from(Instant.now())));
-        formDataAuditDefinition.setUpdatedOn(String.valueOf(Date.from(Instant.now())));
+        formDataAuditDefinition.setCreatedOn(String.valueOf(Instant.now()));
+        formDataAuditDefinition.setUpdatedOn(String.valueOf(Instant.now()));
         mongoTemplate.save(formDataAuditDefinition, TP_RUNTIME_FORM_DATA +formDataAuditSchema.getFormId()+AUDIT);
         return new FormDataAuditResponse(formDataAuditSchema.getId(), formDataAuditSchema.getVersion());
     }
