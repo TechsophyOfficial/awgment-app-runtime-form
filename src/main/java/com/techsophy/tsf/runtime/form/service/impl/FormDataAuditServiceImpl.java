@@ -59,6 +59,7 @@ public class FormDataAuditServiceImpl implements FormDataAuditService {
     FormDataAuditDefinition formDataAuditDefinition = objectMapper.convertValue(formDataAuditSchema, FormDataAuditDefinition.class);
     logger.info("After Audit object creation: " + formDataAuditDefinition.getUpdatedById());
     formDataAuditDefinition.setCreatedById(String.valueOf(loggedInUserId));
+    formDataAuditDefinition.setUpdatedById(String.valueOf(loggedInUserId));
     formDataAuditDefinition.setCreatedOn(String.valueOf(Instant.now()));
     formDataAuditDefinition.setUpdatedOn(String.valueOf(Instant.now()));
     logger.info("Before saving to Audit in DB: " + formDataAuditDefinition.getUpdatedById());

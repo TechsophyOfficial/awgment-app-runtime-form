@@ -6,6 +6,7 @@ import com.techsophy.tsf.runtime.form.dto.SequenceGeneratorResponse;
 import com.techsophy.tsf.runtime.form.entity.SequenceGeneratorDefinition;
 import com.techsophy.tsf.runtime.form.repository.SequenceGeneratorRepository;
 import com.techsophy.tsf.runtime.form.service.SequenceGeneratorService;
+import com.techsophy.tsf.runtime.form.utils.UserDetails;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
@@ -18,15 +19,18 @@ public class SequenceGeneratorServiceImpl implements SequenceGeneratorService
 {
     private SequenceGeneratorRepository sequenceGeneratorRepository;
     private IdGeneratorImpl idGeneratorImpl;
+    private UserDetails userDetails;
 
     @Override
     public SequenceGeneratorResponse generateSequence(SequenceGeneratorDTO idGeneratorDTO)
     {
+        String loggedInUserId = userDetails.getCurrentAuditor().orElse(null);
         String sequenceName=idGeneratorDTO.getSequenceName();
         int length= Integer.parseInt((idGeneratorDTO.getLength()));
         SequenceGeneratorDefinition existingDefinition;
         SequenceGeneratorDefinition sequenceGeneratorDefinition=new SequenceGeneratorDefinition();
         sequenceGeneratorDefinition.setUpdatedOn(String.valueOf(Date.from(Instant.now())));
+        sequenceGeneratorDefinition.setUpdatedById(loggedInUserId);
         if(sequenceGeneratorRepository.existsBySequenceNameAndLength(sequenceName,length))
         {
            existingDefinition = sequenceGeneratorRepository.findBySequenceNameAndLength(sequenceName,length);
@@ -43,6 +47,7 @@ public class SequenceGeneratorServiceImpl implements SequenceGeneratorService
            }
            sequenceGeneratorDefinition.setLastValue(lastValue+1);
            sequenceGeneratorDefinition.setCreatedOn(existingDefinition.getCreatedOn());
+           sequenceGeneratorDefinition.setCreatedById(loggedInUserId);
            sequenceGeneratorDefinition.setId(existingDefinition.getId());
            sequenceGeneratorRepository.save(sequenceGeneratorDefinition);
         }
@@ -53,6 +58,7 @@ public class SequenceGeneratorServiceImpl implements SequenceGeneratorService
             sequenceGeneratorDefinition.setLastValue(1L);
             sequenceGeneratorDefinition.setSequenceName(sequenceName);
             sequenceGeneratorDefinition.setCreatedOn(String.valueOf(Date.from(Instant.now())));
+            sequenceGeneratorDefinition.setCreatedById(loggedInUserId);
             sequenceGeneratorRepository.save(sequenceGeneratorDefinition);
         }
         String format=PERCENTAGE_ZERO+sequenceGeneratorDefinition.getLength()+D;
