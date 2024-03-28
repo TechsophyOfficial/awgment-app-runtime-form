@@ -187,8 +187,10 @@ public class FormDataServiceImpl implements FormDataService {
     if (formDataDefinition == null) {
       throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC, globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC, formDataSchema.getId()));
     }
+    String loggedInUserId = userDetails.getCurrentAuditor().orElse(null);
     formDataDefinition.setVersion(formDataDefinition.getVersion() + 1);
     formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
+    formDataDefinition.setUpdatedById(loggedInUserId);
     Map<String, Object> modifiedFormData = formDataDefinition.getFormData();
     modifiedFormData.putAll(formDataSchema.getFormData());
     Optional.ofNullable(formDataSchema.getFormMetaData()).ifPresent(formDataDefinition::setFormMetaData);

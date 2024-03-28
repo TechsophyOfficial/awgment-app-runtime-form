@@ -47,11 +47,13 @@ public class FormAclServiceImpl implements FormAclService {
     public FormAclDto saveFormAcl(FormAclDto formAclDto) {
         FormAclEntity existFormAcl = formAclRepository.findByFormId(formAclDto.getFormId()).orElse(null);
         FormAclEntity formAclEntity = objectMapper.convertValue(formAclDto,FormAclEntity.class);
+        String loggedInUserId = userDetails.getCurrentAuditor().orElse(null);
+        formAclEntity.setUpdatedById(String.valueOf(loggedInUserId));
+        formAclEntity.setUpdatedOn(String.valueOf(Date.from(Instant.now())));
         if(existFormAcl==null)
         {
             //Here one to one mapping for Id and FormId
             formAclEntity.setId(new BigInteger(formAclDto.getFormId()));
-            String loggedInUserId = userDetails.getCurrentAuditor().orElse(null);
             formAclEntity.setCreatedOn(String.valueOf(Date.from(Instant.now())));
             formAclEntity.setCreatedById(String.valueOf(loggedInUserId));
 
