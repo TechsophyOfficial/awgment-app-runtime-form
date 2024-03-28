@@ -6,10 +6,8 @@ import org.springframework.data.annotation.*;
 @Data
 public class Auditable
 {
-    @CreatedBy
     private String createdById;
     private String createdOn;
-    @LastModifiedBy
     private String updatedById;
     private String updatedOn;
 }
