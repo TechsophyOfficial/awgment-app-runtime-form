@@ -115,7 +115,9 @@ public class FormDataServiceImpl implements FormDataService {
       formDataDefinition.setVersion(1);
       formDataDefinition.setCreatedById(String.valueOf(loggedInUserId));
       formDataDefinition.setCreatedOn(String.valueOf(Instant.now()));
+      logger.info("Before saving to DB: "+ formDataDefinition.getUpdatedById());
       saveToMongo(formId, formDataDefinition);
+      logger.info("After saving to DB: "+ formDataDefinition.getUpdatedById());
     } else {
 
       Criteria criteria = Criteria.where("id").is(formDataDefinition.getId());
@@ -134,7 +136,9 @@ public class FormDataServiceImpl implements FormDataService {
         .set("updatedById", formDataDefinition.getUpdatedById())
         .set("updatedOn", formDataDefinition.getUpdatedOn())
         .set("version", formDataDefinition.getVersion());
+      logger.info("Before saving to DB: "+ formDataDefinition.getUpdatedById());
       UpdateResult updateResult = mongoTemplate.updateFirst(filtersonData, update, FormDataDefinition.class, TP_RUNTIME_FORM_DATA + formId);
+      logger.info("After saving to DB: "+ formDataDefinition.getUpdatedById());
       if (updateResult.getMatchedCount() == 0) {
         throw new InvalidInputException(FILTERS_NOT_APPLICABLE, globalMessageSource.get(FILTERS_NOT_APPLICABLE, formDataSchema.getId()));
       }
