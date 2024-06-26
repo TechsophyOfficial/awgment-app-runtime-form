@@ -7,6 +7,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.techsophy.tsf.runtime.form.config.GlobalMessageSource;
+import com.techsophy.tsf.runtime.form.config.TenantScopedMongoTemplate;
 import com.techsophy.tsf.runtime.form.dto.FormDataAuditResponse;
 import com.techsophy.tsf.runtime.form.dto.FormDataAuditResponseSchema;
 import com.techsophy.tsf.runtime.form.dto.FormDataAuditSchema;
@@ -27,6 +28,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.time.Instant;
@@ -46,8 +48,13 @@ public class FormDataAuditServiceImpl implements FormDataAuditService {
   private final ObjectMapper objectMapper;
   private static final Logger logger = LoggerFactory.getLogger(FormDataAuditServiceImpl.class);
 
+  @Autowired
+  private TenantScopedMongoTemplate tenantScopedMongoTemplate;
+
   @Override
+  @Transactional
   public FormDataAuditResponse saveFormDataAudit(FormDataAuditSchema formDataAuditSchema) throws JsonProcessingException {
+    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     Map<String, Object> loggedInUserDetails = userDetails.getUserDetails().get(0);
     if (isEmpty(String.valueOf(loggedInUserDetails.get(ID)))) {
       throw new UserDetailsIdNotFoundException(LOGGED_IN_USER_ID_NOT_FOUND, globalMessageSource.get(LOGGED_IN_USER_ID_NOT_FOUND, loggedInUserDetails.get(ID).toString()));
@@ -70,6 +77,7 @@ public class FormDataAuditServiceImpl implements FormDataAuditService {
 
   @Override
   public List<FormDataAuditResponseSchema> getAllFormDataAuditByFormIdAndDocumentId(String formId, String formDataId) {
+    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     LinkedHashMap<String, Object> formData;
     Map<String, Object> formMetaData;
     FormDataAuditResponseSchema formDataAuditResponseSchema;
