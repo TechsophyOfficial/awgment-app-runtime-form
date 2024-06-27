@@ -48,13 +48,9 @@ public class FormDataAuditServiceImpl implements FormDataAuditService {
   private final ObjectMapper objectMapper;
   private static final Logger logger = LoggerFactory.getLogger(FormDataAuditServiceImpl.class);
 
-  @Autowired
-  private TenantScopedMongoTemplate tenantScopedMongoTemplate;
-
   @Override
   @Transactional
   public FormDataAuditResponse saveFormDataAudit(FormDataAuditSchema formDataAuditSchema) throws JsonProcessingException {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     Map<String, Object> loggedInUserDetails = userDetails.getUserDetails().get(0);
     if (isEmpty(String.valueOf(loggedInUserDetails.get(ID)))) {
       throw new UserDetailsIdNotFoundException(LOGGED_IN_USER_ID_NOT_FOUND, globalMessageSource.get(LOGGED_IN_USER_ID_NOT_FOUND, loggedInUserDetails.get(ID).toString()));
@@ -77,7 +73,6 @@ public class FormDataAuditServiceImpl implements FormDataAuditService {
 
   @Override
   public List<FormDataAuditResponseSchema> getAllFormDataAuditByFormIdAndDocumentId(String formId, String formDataId) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     LinkedHashMap<String, Object> formData;
     Map<String, Object> formMetaData;
     FormDataAuditResponseSchema formDataAuditResponseSchema;
