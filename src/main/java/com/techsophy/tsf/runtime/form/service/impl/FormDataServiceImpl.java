@@ -82,8 +82,6 @@ public class FormDataServiceImpl implements FormDataService {
   private UserDetails userDetails;
   private MongoQueryBuilder queryBuilder;
 
-  @Autowired
-  private TenantScopedMongoTemplate tenantScopedMongoTemplate;
 
   private void handleMongoException(Exception e) {
     boolean exist = e.getMessage().contains(E11000);
@@ -100,7 +98,6 @@ public class FormDataServiceImpl implements FormDataService {
 
   @Override
   public FormDataDefinition saveFormData(FormDataSchema formDataSchema, String filter, String aclFilter, List<String> orFilter) throws IOException {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     String formId = formDataSchema.getFormId();
     FormResponseSchema formResponseSchema = formService.getRuntimeFormById(formId);
     List<ValidationResult> validationResultList = formValidationServiceImpl.validateData(formResponseSchema, formDataSchema, formId);
@@ -174,7 +171,6 @@ public class FormDataServiceImpl implements FormDataService {
   }
 
   private void saveToMongo(String formId, FormDataDefinition formDataDefinition) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     try {
       mongoTemplate.save(formDataDefinition, TP_RUNTIME_FORM_DATA + formId);
     } catch (Exception e) {
@@ -188,7 +184,6 @@ public class FormDataServiceImpl implements FormDataService {
 
   @Override
   public FormDataDefinition updateFormData(FormDataSchema formDataSchema, String filter, String aclFilter, List<String> orFilter) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     FormDataDefinition formDataDefinition = mongoTemplate.findOne(getQuery(formDataSchema, filter, aclFilter, orFilter), FormDataDefinition.class, TP_RUNTIME_FORM_DATA + formDataSchema.getFormId());
     if (formDataDefinition == null) {
       throw new InvalidInputException(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC, globalMessageSource.get(FORM_DATA_NOT_FOUND_WITH_GIVEN_FORMDATAID_IN_MONGO_AND_ELASTIC, formDataSchema.getId()));
@@ -308,7 +303,6 @@ public class FormDataServiceImpl implements FormDataService {
   }
 
   private List<Map<String, Object>> getMapsEmptySort(String formId, String sortBy, String sortOrder, List<Map<String, Object>> relationalMapList, List<AggregationOperation> aggregationOperationsList) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     if (isEmpty(sortBy) && isEmpty(sortOrder)) {
       aggregationOperationsList.add(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)));
       List<Document> aggregateList = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsList),
@@ -367,17 +361,14 @@ public class FormDataServiceImpl implements FormDataService {
   }
 
   private List<FormDataDefinition> getFormDataDefinitionsList(String formId, Query query) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     return mongoTemplate.find(query, FormDataDefinition.class, TP_RUNTIME_FORM_DATA + formId);
   }
 
   private long getCount(String formId, Query query) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     return mongoTemplate.count(query, TP_RUNTIME_FORM_DATA + formId);
   }
 
   private PaginationResponsePayload getPaginationResponsePayloadIfRelationsExists(String formId, String relations, String sort, Pageable pageable, PaginationResponsePayload paginationResponsePayload, List<Map<String, Object>> content, Criteria criteria) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     String sortBy = EMPTY_STRING;
     String sortOrder = EMPTY_STRING;
     if (sort.split(";").length != 0) {
@@ -543,7 +534,6 @@ public class FormDataServiceImpl implements FormDataService {
   }
 
   private List<Map<String, Object>> checkIfRelationsExists(String formId, String relations, String sortBy, String sortOrder, Criteria criteria) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     if (isNotEmpty(relations)) {
       ArrayList<String> mappedArrayOfDocumentsName = new ArrayList<>();
       String[] relationsList = relations.split(COMMA);
@@ -648,7 +638,6 @@ public class FormDataServiceImpl implements FormDataService {
   }
 
   private PaginationResponsePayload getPaginationWithMongoAndRelations(String formId, String relations, String sortBy, String sortOrder, Pageable pageable, PaginationResponsePayload paginationResponsePayload, List<Map<String, Object>> content, Criteria aclFilterCriteria) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     if (isNotEmpty(relations)) {
       ArrayList<String> mappedArrayOfDocumentsName = new ArrayList<>();
       String[] relationsList = relations.split(COMMA);
@@ -686,7 +675,6 @@ public class FormDataServiceImpl implements FormDataService {
   }
 
   private PaginationResponsePayload getPaginationWithMongoAndEmptySort(String formId, String sortBy, String sortOrder, Pageable pageable, PaginationResponsePayload paginationResponsePayload, List<Map<String, Object>> content, List<AggregationOperation> aggregationOperationsList) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     if (isEmpty(sortBy) && isEmpty(sortOrder)) {
       FacetOperation facetOperation = Aggregation.facet(Aggregation.count().as(COUNT)).as(METADATA).and(Aggregation.sort(Sort.by(Sort.Direction.DESC, CREATED_ON)),
         Aggregation.skip(pageable.getOffset()), Aggregation.limit(pageable.getPageSize())).as(DATA);
@@ -707,14 +695,12 @@ public class FormDataServiceImpl implements FormDataService {
   }
 
   private void checkMongoCollectionIfExistsOrNot(String formId) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     if (!mongoTemplate.collectionExists(TP_RUNTIME_FORM_DATA + formId)) {
       throw new FormIdNotFoundException(FORM_DATA_DOES_NOT_EXISTS_WITH_GIVEN_FORMID, globalMessageSource.get(FORM_DATA_DOES_NOT_EXISTS_WITH_GIVEN_FORMID, formId));
     }
   }
 
   public PaginationResponsePayload getAllFormDataByFormId(String formId, String relations, String aclFilter, List<String> orFilter) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     Criteria andCriteria = getAndCriteria(null, aclFilter, orFilter);
     PaginationResponsePayload paginationResponsePayload = new PaginationResponsePayload();
     checkMongoCollectionIfExistsOrNot(formId);
@@ -784,7 +770,6 @@ public class FormDataServiceImpl implements FormDataService {
 
   @Override
   public List getFormDataByFormIdAndId(String formId, String id, String relations, String aclFilter, List<String> orFilter) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     List<Map<String, Object>> responseList = new ArrayList<>();
     if (isNotEmpty(relations)) {
       return getFormDataList(formId, id, relations, aclFilter, orFilter);
@@ -808,7 +793,6 @@ public class FormDataServiceImpl implements FormDataService {
   }
 
   private List<Map<String, Object>> getFormDataList(String formId, String id, String relations, String aclFilter, List<String> orFilter) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     ArrayList<String> mappedArrayOfDocumentsName = new ArrayList<>();
     String[] relationsList = relations.split(COMMA);
     ArrayList<String> relationKeysList = new ArrayList<>();
@@ -833,7 +817,6 @@ public class FormDataServiceImpl implements FormDataService {
 
   @Override
   public void deleteAllFormDataByFormId(String formId) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     try {
       mongoTemplate.dropCollection(TP_RUNTIME_FORM_DATA + formId + AUDIT);
       mongoTemplate.dropCollection(TP_RUNTIME_FORM_DATA + formId);
@@ -851,7 +834,6 @@ public class FormDataServiceImpl implements FormDataService {
 
   @Override
   public void deleteFormDataByFormIdAndId(String formId, String id, String filter, String aclFilter, List<String> orFilter) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     boolean flag = false;
     long count = 0;
     Criteria andCriteria = getAndCriteria(filter, aclFilter, orFilter);
@@ -887,7 +869,6 @@ public class FormDataServiceImpl implements FormDataService {
 
   @Override
   public AggregationResponse aggregateByFormIdFilterGroupBy(String formId, String filter, String groupBy, String operation) {
-    mongoTemplate = tenantScopedMongoTemplate.getMongoTemplate();
     checkMongoCollectionIfExistsOrNot(formId);
     List<AggregationOperation> aggregationOperationsList = new ArrayList<>();
     if (isNotEmpty(filter)) {
