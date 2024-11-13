@@ -484,9 +484,6 @@ public class FormDataServiceImpl implements FormDataService {
     if (!relationalMapList1.isEmpty()) return relationalMapList1;
     Query query = new Query();
     Criteria andCriteria = getAndCriteria(null, aclFilter, orFilter);
-//    if (andCriteria != null) {
-//      query.addCriteria(andCriteria);
-//    }
     String searchString;
     searchString = checkValueOfQ(q);
     List<FormDataResponseSchema> formDataResponseSchemasList = new ArrayList<>();
