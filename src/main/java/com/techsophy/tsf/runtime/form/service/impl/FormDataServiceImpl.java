@@ -484,13 +484,13 @@ public class FormDataServiceImpl implements FormDataService {
     if (!relationalMapList1.isEmpty()) return relationalMapList1;
     Query query = new Query();
     Criteria andCriteria = getAndCriteria(null, aclFilter, orFilter);
-    if (andCriteria != null) {
-      query.addCriteria(andCriteria);
-    }
+//    if (andCriteria != null) {
+//      query.addCriteria(andCriteria);
+//    }
     String searchString;
     searchString = checkValueOfQ(q);
     List<FormDataResponseSchema> formDataResponseSchemasList = new ArrayList<>();
-    List<FormDataResponseSchema> formDataResponseSchemasList1 = ifSortEmpty(formId, sortBy, sortOrder, query, searchString, formDataResponseSchemasList);
+    List<FormDataResponseSchema> formDataResponseSchemasList1 = ifSortEmpty(formId, sortBy, sortOrder, andCriteria, searchString, formDataResponseSchemasList);
     if (!formDataResponseSchemasList1.isEmpty()) return formDataResponseSchemasList1;
     checkIfBothSortByAndSortOrderGivenAsInput(sortBy, sortOrder);
     List<FormDataDefinition> formDataDefinitionsList;
@@ -514,17 +514,24 @@ public class FormDataServiceImpl implements FormDataService {
     return formDataResponseSchemasList;
   }
 
-  private List<FormDataResponseSchema> ifSortEmpty(String formId, String sortBy, String sortOrder, Query query, String searchString, List<FormDataResponseSchema> formDataResponseSchemasList) {
+  private List<FormDataResponseSchema> ifSortEmpty(String formId, String sortBy, String sortOrder, Criteria criteria,String searchString, List<FormDataResponseSchema> formDataResponseSchemasList) {
     if (isEmpty(sortBy) && isEmpty(sortOrder)) {
       List<FormDataDefinition> formDataDefinitionsList;
-      query.addCriteria(new Criteria().orOperator(Criteria.where(UNDERSCORE_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-        Criteria.where(VERSION).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-        Criteria.where(CREATED_ON).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-        Criteria.where(CREATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-        Criteria.where(CREATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-        Criteria.where(UPDATED_ON).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-        Criteria.where(UPDATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
-        Criteria.where(UPDATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
+      Query query = new Query();
+      if(isNotEmpty(searchString)) {
+        Criteria criteria1 = new Criteria();
+        criteria1.andOperator(criteria,new Criteria().orOperator(Criteria.where(UNDERSCORE_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                        Criteria.where(VERSION).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                        Criteria.where(CREATED_ON).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                        Criteria.where(CREATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                        Criteria.where(CREATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                        Criteria.where(UPDATED_ON).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                        Criteria.where(UPDATED_BY_ID).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)),
+                        Criteria.where(UPDATED_BY_NAME).regex(Pattern.compile(searchString, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE))));
+        query.addCriteria(criteria1);
+      } else if (criteria != null) {
+        query.addCriteria(criteria);
+      }
       setQuery(query);
       formDataDefinitionsList = getFormDataDefinitionsList(formId, query);
       prepareFormDataResponseSchemaList(formDataResponseSchemasList, formDataDefinitionsList);
