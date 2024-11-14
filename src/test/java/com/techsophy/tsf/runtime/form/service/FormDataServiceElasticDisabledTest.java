@@ -664,9 +664,9 @@ class FormDataServiceElasticDisabledTest {
     formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
     formDataDefinitionsList.add(formDataDefinition);
     List<Map> aggregateList = new ArrayList<>();
-    Map<String, Object> map = new HashMap<>();
-    map.put(UNDERSCORE_ID, TEST_ID_VALUE);
-    aggregateList.add(map);
+    Map<String, Object> hashMap = new HashMap<>();
+    hashMap.put(UNDERSCORE_ID, TEST_ID_VALUE);
+    aggregateList.add(hashMap);
     when(mockMongoTemplate.find(any(Query.class), eq(FormDataDefinition.class), anyString())).thenReturn(formDataDefinitionsList);
     String filter = "{\"formData.officialEmail\":{\"equals\":\"younus.s@mailinator.com\"}}";
     Mockito.when(filters.buildAndQuery(mongoQueryBuilder)).thenReturn(new Criteria());
@@ -688,9 +688,9 @@ class FormDataServiceElasticDisabledTest {
     formDataDefinitionTest.setUpdatedById(TEST_UPDATED_BY_ID);
     formDataDefinitionTest.setUpdatedOn(String.valueOf(TEST_UPDATED_ON));
     List<Map> aggregateList = new ArrayList<>();
-    Map<String, Object> map = new HashMap<>();
-    map.put(UNDERSCORE_ID, TEST_ID_VALUE);
-    aggregateList.add(map);
+    Map<String, Object> hashMap = new HashMap<>();
+    hashMap.put(UNDERSCORE_ID, TEST_ID_VALUE);
+    aggregateList.add(hashMap);
     Document document = new Document();
     List<Document> documentList = new ArrayList<>();
     documentList.add(document);
