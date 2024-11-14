@@ -616,6 +616,65 @@ class FormDataServiceElasticDisabledTest {
   }
 
   @Test
+  void getAllFormDataByFormIdSortWithoutRelationsTestWithNullCriteria() {
+    Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+    List<FormDataDefinition> formDataDefinitionsList = new ArrayList<>();
+    FormDataDefinition formDataDefinition = new FormDataDefinition();
+    formDataDefinition.setId(TEST_ID_VALUE);
+    Map<String, Object> testFormData = new HashMap<>();
+    testFormData.put(NAME, NAME_VALUE);
+    testFormData.put(AGE, AGE_VALUE);
+    testFormData.put(ID, EMPTY_STRING);
+    Map<String, Object> testFormMetaData = new HashMap<>();
+    testFormMetaData.put(FORM_VERSION, 1);
+    formDataDefinition.setFormData(testFormData);
+    formDataDefinition.setFormMetaData(testFormMetaData);
+    formDataDefinition.setVersion(TEST_VERSION);
+    formDataDefinition.setCreatedById(TEST_CREATED_BY_ID);
+    formDataDefinition.setCreatedOn(String.valueOf(Instant.now()));
+    formDataDefinition.setUpdatedById(TEST_UPDATED_BY_ID);
+    formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
+    formDataDefinitionsList.add(formDataDefinition);
+    List<Map> aggregateList = new ArrayList<>();
+    Map<String, Object> map = new HashMap<>();
+    map.put(UNDERSCORE_ID, TEST_ID_VALUE);
+    aggregateList.add(map);
+    when(mockMongoTemplate.find(any(Query.class), eq(FormDataDefinition.class), anyString())).thenReturn(formDataDefinitionsList);
+    Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID, EMPTY_STRING, Q, "", "", any(), null));
+  }
+
+  @Test
+  void getAllFormDataByFormIdSortWithoutRelationsTestWithCriteria() throws JsonProcessingException {
+    Mockito.when(mockMongoTemplate.collectionExists(anyString())).thenReturn(true);
+    List<FormDataDefinition> formDataDefinitionsList = new ArrayList<>();
+    FormDataDefinition formDataDefinition = new FormDataDefinition();
+    formDataDefinition.setId(TEST_ID_VALUE);
+    Map<String, Object> testFormData = new HashMap<>();
+    testFormData.put(NAME, NAME_VALUE);
+    testFormData.put(AGE, AGE_VALUE);
+    testFormData.put(ID, EMPTY_STRING);
+    Map<String, Object> testFormMetaData = new HashMap<>();
+    testFormMetaData.put(FORM_VERSION, 1);
+    formDataDefinition.setFormData(testFormData);
+    formDataDefinition.setFormMetaData(testFormMetaData);
+    formDataDefinition.setVersion(TEST_VERSION);
+    formDataDefinition.setCreatedById(TEST_CREATED_BY_ID);
+    formDataDefinition.setCreatedOn(String.valueOf(Instant.now()));
+    formDataDefinition.setUpdatedById(TEST_UPDATED_BY_ID);
+    formDataDefinition.setUpdatedOn(String.valueOf(Instant.now()));
+    formDataDefinitionsList.add(formDataDefinition);
+    List<Map> aggregateList = new ArrayList<>();
+    Map<String, Object> map = new HashMap<>();
+    map.put(UNDERSCORE_ID, TEST_ID_VALUE);
+    aggregateList.add(map);
+    when(mockMongoTemplate.find(any(Query.class), eq(FormDataDefinition.class), anyString())).thenReturn(formDataDefinitionsList);
+    String filter = "{\"formData.officialEmail\":{\"equals\":\"younus.s@mailinator.com\"}}";
+    Mockito.when(filters.buildAndQuery(mongoQueryBuilder)).thenReturn(new Criteria());
+    Mockito.when(mockObjectMapper.readValue(anyString(), ArgumentMatchers.eq(Filters.class))).thenReturn(filters);
+    Assertions.assertNotNull(mockFormDataServiceImpl.getAllFormDataByFormIdAndQ(TEST_FORM_ID, EMPTY_STRING, Q, "", "", filter, null));
+  }
+
+  @Test
   void getAllFormDataByFormIdAndQ() {
     Map<String, Object> testFormMetaData = new HashMap<>();
     testFormMetaData.put(FORM_VERSION, 1);
